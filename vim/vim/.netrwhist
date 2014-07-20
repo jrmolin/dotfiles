@@ -1,0 +1,8 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =6
+let g:netrw_dirhist_1='/home/mo/.local'
+let g:netrw_dirhist_2='/home/mo/git/pinstall/install/payload/30_install_python_modules'
+let g:netrw_dirhist_3='/home/mo/git/pinstall/payload/20_install_services'
+let g:netrw_dirhist_4='/etc/network'
+let g:netrw_dirhist_5='/home/mo/sandbox/ruby/vagrant/arbiter/lib/arbiter'
+let g:netrw_dirhist_6='/tmp/staging'
