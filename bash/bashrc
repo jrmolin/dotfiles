@@ -162,4 +162,4 @@ fi
 export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
 export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 
-export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
+#export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
