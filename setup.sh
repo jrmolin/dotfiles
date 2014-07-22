@@ -5,7 +5,7 @@ doit() {
         echo "$@"
     fi
 
-    eval "$@"
+#    eval "$@"
 }
 
 # install vim stuff
@@ -34,4 +34,23 @@ install_curl() {
 }
 
 install_curl
-install_pathogen
+
+WORKDIR=`dirname $0`
+CWD=`pwd`
+cd $WORKDIR
+
+doit git submodule init
+doit git submodule update
+
+if [ -e "$HOME/.vimrc" ]; then
+    doit mv "$HOME/.vimrc" "$HOME/.vimrc.bkup"
+fi
+doit cp vim/vimrc "$HOME/.vimrc"
+
+if [ -d "$HOME/.vim" ]; then
+    doit mv "$HOME/.vim" "$HOME/.vim.bkup"
+fi
+
+doit cp -r vim/vim "$HOME/.vim"
+doit mv "$HOME/.vim/autoload/autoload/pathogen.vim" "$HOME/.vim/autoload/"
+doit rm -rf "$HOME/.vim/autoload/autoload"
