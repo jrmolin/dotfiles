@@ -1,11 +1,13 @@
 #!/bin/bash
+DEBUG=1
+
 
 doit() {
     if [ "x$DEBUG" = "x1" ]; then
         echo "$@"
     fi
 
-#    eval "$@"
+    eval "$@"
 }
 
 # install vim stuff
@@ -18,9 +20,9 @@ install_vim() {
 }
 
 setup_vim() {
-    doit mkdir -pv "${HOME}/.vim/autoload" "${HOME}/.vim/bundle"
+    doit mkdir -pv "vim/vim/autoload" "vim/vim/bundle"
 
-    doit curl https://tpo.pe/pathogen.vim > "${HOME}/.vim/autoload/pathogen.vim"
+    doit curl https://tpo.pe/pathogen.vim > "vim/vim/autoload/pathogen.vim"
 }
 
 # install curl
@@ -33,24 +35,25 @@ install_curl() {
 
 }
 
-install_curl
-
 WORKDIR=`dirname $0`
 CWD=`pwd`
 cd $WORKDIR
+WORKDIR=`pwd`
 
 doit git submodule init
 doit git submodule update
 
+install_curl
+install_vim
+setup_vim
+
 if [ -e "$HOME/.vimrc" ]; then
     doit mv "$HOME/.vimrc" "$HOME/.vimrc.bkup"
 fi
-doit cp vim/vimrc "$HOME/.vimrc"
 
 if [ -d "$HOME/.vim" ]; then
     doit mv "$HOME/.vim" "$HOME/.vim.bkup"
 fi
 
-doit cp -r vim/vim "$HOME/.vim"
-doit mv "$HOME/.vim/autoload/autoload/pathogen.vim" "$HOME/.vim/autoload/"
-doit rm -rf "$HOME/.vim/autoload/autoload"
+doit ln -s $WORKDIR/vim/vim "$HOME/.vim"
+doit ln -s $WORKDIR/vim/vimrc "$HOME/.vimrc"
