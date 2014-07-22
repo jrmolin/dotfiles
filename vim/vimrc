@@ -4,7 +4,7 @@
 " Recommended Plugins:
 " - Pathogen (plugin manager)
 " - Solarized (color)
-" 
+"
 
 
 " Environment {
@@ -36,6 +36,8 @@
 
 
 " General {
+"       set tags=./tags;                        " recursively search for a
+                                                " tags file
         set background=dark                     " Assume a dark background
 
 
@@ -249,6 +251,9 @@
         " pythoncomplete {
             autocmd FileType python set omnifunc=pythoncomplete#Complete
         " }
+        " Makefile {
+            autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
+        " }
 
 
         " vim-latex Settings {
@@ -320,7 +325,4 @@
             endif
             "set term=builtin_ansi               " Make arrow and other keys work
         endif
-" }
-" ctags Settings {
-    set tags=tags;
 " }
