@@ -22,7 +22,7 @@ install_vim() {
 setup_vim() {
     doit mkdir -pv "vim/vim/autoload" "vim/vim/bundle"
 
-    doit curl https://tpo.pe/pathogen.vim > "vim/vim/autoload/pathogen.vim"
+    doit curl -LSso vim/vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 }
 
 # install curl
