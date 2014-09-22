@@ -68,16 +68,25 @@ install_vim
 setup_vim
 install_tmux
 
-if [ -e "$HOME/.vimrc" ]; then
-    doit mv "$HOME/.vimrc" "$HOME/.vimrc.bkup"
-fi
+install_dot() {
+  NAME=`basename $1`
+  isdir=$2
 
-if [ -d "$HOME/.vim" ]; then
-    doit mv "$HOME/.vim" "$HOME/.vim.bkup"
-fi
+    if [ "x$isdir" != "x" ] ; then
+      if [ -e "$HOME/.${NAME}" ]; then
+        doit mv "$HOME/.${NAME}" "$HOME/.${NAME}.bkup"
+      fi
+    else
+      if [ -e "$HOME/.${NAME}" ]; then
+        doit mv "$HOME/.${NAME}" "$HOME/.${NAME}.bkup"
+      fi
+    fi
 
-doit ln -s $WORKDIR/vim/vim "$HOME/.vim"
-doit ln -s $WORKDIR/vim/vimrc "$HOME/.vimrc"
-doit ln -s $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
-doit ln -s $WORKDIR/bash/bashrc "$HOME/.bashrc"
-doit ln -s $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+    doit ln -s $WORKDIR/$1 "$HOME/.${NAME}"
+}
+
+install_dot vim/vim true
+install_dot vim/vimrc
+install_dot tmux/tmux.conf
+install_dot bash/bash_aliases
+install_dot bash/bashrc
