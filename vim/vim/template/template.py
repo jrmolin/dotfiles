@@ -1,24 +1,58 @@
-#!/usr/bin/env python
-
-# generally need this
+#
 import sys
 
-def handle_args(argv):
-	import argparse
-	argparser = argparse.ArgumentParser(description="TODO")
-	argparser.add_argument('-v', '--verbose', dest='verbosity', action='count',
-		default=0, help='verbose mode (aggregate)')
-	argparser.add_argument('query', nargs='*', default=None)
+# verbosity levels
+QUIET = -1
+ERRORS = 0
+WARNINGS = 1
+INFO = 2
+DEBUG = 3
 
-	args = argparser.parse_args(argv)
-
-	return args
+class Options(object):
+    verbosity = ERRORS
+    filename = "test.txt"
 
 def main(argv):
-	args = handle_args(argv)
+    import argparse
+    parser = argparse.ArgumentParser()
 
-	return 0
+    # add optional arguments
+    # don't add -h/--help, as it conflicts with the default parser
 
+    # a mutually exclusive group disallows both options being processed at the
+    # same time
+    volumeGroup = parser.add_mutually_exclusive_group()
+    volumeGroup.add_argument("-v", "--verbose", action="count",
+            help="increase verbosity level")
+    volumeGroup.add_argument("-q", "--quiet", action="count",
+            help="suppress output")
+
+    # add positional arguments
+    parser.add_argument("filename", help="name of file to operate on")
+
+    # parse the arguments
+    # must take out the first element of the array (this file), or it gets
+    # erroneously parsed as a positional argument
+    args = parser.parse_args(argv[1:])
+
+    # create an instance of our options object
+    options = Options()
+
+    # store the verbosity
+    if args.verbose:
+        options.verbosity=args.verbose
+    elif args.quiet:
+        options.verbosity=QUIET
+
+    # store the filename
+    if args.filename:
+        options.filename = args.filename
+    else:
+        parser.print_help()
+
+    # do what you will
+
+    return 0
 
 if __name__ == '__main__':
-	sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv))
