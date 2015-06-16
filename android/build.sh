@@ -1,5 +1,6 @@
 #!/bin/bash
 
+ON_MAC=
 LOCAL=/data/scratch
 PWD=`pwd`
 
@@ -15,7 +16,11 @@ BOOTIMG=boot.img
 
 UNPACKBOOTIMG=/data/android/bin/unpackbootimg
 MKBOOTIMG=/data/android/bin/mkbootimg
-KERNEL=/data/GT-I9500-KK/artifacts/arch/arm/boot/zImage
+if [ "x$ON_MAC" = "x1" ]; then
+    KERNEL=/data/GT-I9500-KK/artifacts/arch/arm/boot/zImage
+else
+    KERNEL=/data/GT-I9500-KK/updates/arch/arm/boot/zImage
+fi
 
 OLDRAMDISK=initramfs.cpio.gz
 NEWKERNEL=boot.bin-zImage
@@ -63,6 +68,10 @@ doit cp ${KERNEL} ${NEWKERNEL}
 doit ${MKBOOTIMG} --kernel ${NEWKERNEL} --ramdisk ${RAMDISK} --pagesize ${PAGESIZE} --base ${BASE} -o ${BOOTIMG}
 doit tar cf ${FLASHFILE} ${BOOTIMG}
 
-doit cp ${FLASHFILE} /mnt/vmhgfs/sup/samsung/
+if [ "x$ON_MAC" = "x" ]; then
+    doit cp ${FLASHFILE} /mnt/hgfs/shared/samsung/
+else
+    doit cp ${FLASHFILE} /mnt/vmhgfs/sup/samsung/
+fi
 
 doit popd
