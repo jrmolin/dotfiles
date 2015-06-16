@@ -115,52 +115,6 @@ if [ -d ~/bin ]; then
 fi
 export EDITOR=vim
 
-BACKUPS=/data/backups/files.db
-function backup() {
-	if [ "$#" -lt "1" ]
-	then
-		echo "need to provide a file to backup (abspath)"
-		return 1
-	fi
-
-	local path=$(readlink -f $1)
-	local owner=$(stat --format "%U:%G" $path)
-	local mode=$(stat --format "%a" $path)
-	local contents=$(cat $path | base64 -)
-	sqlite3 $BACKUPS "insert into files (path,owner,mode,contents) values ('$path','$owner','$mode','$contents');"
-}
-
-function map {
-	# if given a key and value, insert
-	if [ "$#" -eq "2" ]
-	then
-		value=$(echo $2 | base64 -)
-		sqlite3 -batch $BACKUPS <<EOF
-insert into map (key,value) values ("$1", "$value");
-EOF
-		return $?
-	elif [ "$#" -eq "1" ]
-	then
-		value=( $(sqlite3 -batch $BACKUPS <<EOF
-.separator " "
-SELECT value,id FROM map WHERE key="$1" ORDER BY id DESC LIMIT 1;
-EOF
-) )
-		echo $(echo "${value[0]}" | base64 -d -)
-	fi
-}
-
-if [ ! -e "$BACKUPS" ]
-then
-	sqlite3 $BACKUPS "create table files (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, path TEXT, owner TEXT, mode TEXT, contents BLOB);"
-	sqlite3 $BACKUPS "create table map (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, key TEXT, value TEXT);"
-fi
-
-export LOGFILE="$HOME/.logs/logfile.db"
-if [ ! -d `dirname $LOGFILE` ]
-then
-	mkdir -p `dirname $LOGFILE`
-fi
 export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
 export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 
