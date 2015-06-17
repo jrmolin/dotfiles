@@ -2,6 +2,32 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
+# setup colors
+# Text color variables
+txtred=$(tput setaf 1)          # red
+txtgrn=$(tput setaf 2)          # green
+txtyel=$(tput setaf 3)          # yellow
+txtblu=$(tput setaf 4)          # blue
+txtpur=$(tput setaf 5)          # purple
+txttea=$(tput setaf 6)          # teal
+txtwht=$(tput setaf 7)          # white
+txtund=$(tput sgr 0 1)          # Underline
+txtbld=$(tput bold)             # Bold
+bldred=${txtbld}${txtred}       #  red
+bldgrn=${txtbld}${txtgrn}       #  green
+bldyel=${txtbld}${txtyel}       #  yellow
+bldblu=${txtbld}${txtblu}       #  blue
+bldpur=${txtbld}${txtpur}       #  purple
+bldtea=${txtbld}${txttea}       #  teal
+bldwht=${txtbld}${txtwht}       #  white
+txtrst=$(tput sgr0)             # Reset
+gitdiff=${bldred}*${txtrst}
+gitadd=${bldtea}*${txtrst}
+info=${bldwht}*${txtrst}        # Feedback
+pass=${bldblu}*${txtrst}
+warn=${bldred}*${txtrst}
+ques=${bldblu}?${txtrst}
+
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
@@ -53,9 +79,17 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+function parse_git_branch {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+  echo "(${txttea}"${ref#refs/heads/}"${txtrst})"
+}
+
+
 if [ "$color_prompt" = yes ]; then
 #    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\012\$ '
     PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
+    PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u at \h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u at \h\[\033[00m\]\012\$ '
+    PS1="\[${txtpur}\]\u\[${txtrst}\] at \[${txtyel}\]\h\[${txtrst}\] in \[${txtgrn}\]\w\[${txtrst}\] \$(parse_git_branch)\012\$ "
 else
 #    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\012\$ '
     PS1='[ \w ] ${prompt_status}\012\u@\h: \a${debian_chroot:+($debian_chroot)}\u@\h:\$ '
@@ -109,58 +143,16 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+if [ -f /usr/local/bin/virtualenvwrapper.sh ] ; then
+    . /usr/local/bin/virtualenvwrapper.sh
+fi
+
 # add ~/bin to PATH, if it exists
 if [ -d ~/bin ]; then
     export PATH="$PATH:~/bin"
 fi
 export EDITOR=vim
 
-BACKUPS=/data/backups/files.db
-function backup() {
-	if [ "$#" -lt "1" ]
-	then
-		echo "need to provide a file to backup (abspath)"
-		return 1
-	fi
-
-	local path=$(readlink -f $1)
-	local owner=$(stat --format "%U:%G" $path)
-	local mode=$(stat --format "%a" $path)
-	local contents=$(cat $path | base64 -)
-	sqlite3 $BACKUPS "insert into files (path,owner,mode,contents) values ('$path','$owner','$mode','$contents');"
-}
-
-function map {
-	# if given a key and value, insert
-	if [ "$#" -eq "2" ]
-	then
-		value=$(echo $2 | base64 -)
-		sqlite3 -batch $BACKUPS <<EOF
-insert into map (key,value) values ("$1", "$value");
-EOF
-		return $?
-	elif [ "$#" -eq "1" ]
-	then
-		value=( $(sqlite3 -batch $BACKUPS <<EOF
-.separator " "
-SELECT value,id FROM map WHERE key="$1" ORDER BY id DESC LIMIT 1;
-EOF
-) )
-		echo $(echo "${value[0]}" | base64 -d -)
-	fi
-}
-
-if [ ! -e "$BACKUPS" ]
-then
-	sqlite3 $BACKUPS "create table files (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, path TEXT, owner TEXT, mode TEXT, contents BLOB);"
-	sqlite3 $BACKUPS "create table map (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, key TEXT, value TEXT);"
-fi
-
-export LOGFILE="$HOME/.logs/logfile.db"
-if [ ! -d `dirname $LOGFILE` ]
-then
-	mkdir -p `dirname $LOGFILE`
-fi
 export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
 export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 
