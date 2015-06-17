@@ -1,2 +1,4 @@
 
+export TMUX=`which tmux`
+alias tmux='${TMUX} -2'
 #alias google-chrome="/opt/google/google-chrome --ppapi-flash-path=/opt/google/chrome*/PepperFlash/libpepflashplayer.so --ppapi-flash-version=$PEPPER_FLASH_VERSION"
