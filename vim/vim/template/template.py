@@ -1,4 +1,6 @@
-#
+# -*- encoding: utf-8 -*-
+#! /usr/bin/env python
+
 import sys
 
 # verbosity levels
@@ -7,6 +9,7 @@ ERRORS = 0
 WARNINGS = 1
 INFO = 2
 DEBUG = 3
+
 
 class Options(object):
     verbosity = ERRORS
