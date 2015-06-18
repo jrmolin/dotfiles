@@ -157,3 +157,5 @@ export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
+#LS_COLORS=$LS_COLORS:'di=0;35:' ; export LS_COLORS
+export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
