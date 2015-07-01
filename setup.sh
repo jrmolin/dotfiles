@@ -53,6 +53,14 @@ install_curl() {
 
 }
 
+link_file() {
+    if [ -e $1 ]; then
+        doit mv $1 "${1}.bkup"
+    fi
+
+    doit ln -s "$1" "$2"
+}
+
 WORKDIR=`dirname $0`
 CWD=`pwd`
 cd $WORKDIR
@@ -76,8 +84,10 @@ if [ -d "$HOME/.vim" ]; then
     doit mv "$HOME/.vim" "$HOME/.vim.bkup"
 fi
 
-doit ln -s $WORKDIR/vim/vim "$HOME/.vim"
-doit ln -s $WORKDIR/vim/vimrc "$HOME/.vimrc"
-doit ln -s $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
-doit ln -s $WORKDIR/bash/bashrc "$HOME/.bashrc"
-doit ln -s $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+link_file $WORKDIR/vim/vim "$HOME/.vim"
+link_file $WORKDIR/vim/vim "$HOME/.vim"
+link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
+link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
+link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
+link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+link_file $WORKDIR/bash/dir_colors "$HOME/.dir_colors"

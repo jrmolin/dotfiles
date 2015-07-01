@@ -148,8 +148,8 @@ if [ -f /usr/local/bin/virtualenvwrapper.sh ] ; then
 fi
 
 # add ~/bin to PATH, if it exists
-if [ -d ~/bin ]; then
-    export PATH="$PATH:~/bin"
+if [ -d "$HOME/bin" ]; then
+    export PATH="$PATH:$HOME/bin"
 fi
 export EDITOR=vim
 
@@ -165,3 +165,13 @@ PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then
 
 # set solarized color scheme
 export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+eval $(dir_colors $HOME/.dir_colors)
+
+if [ -d "$HOME/.rvm/" ]; then
+    export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+fi
+
+### Added by the Heroku Toolbelt
+if [ -d "/usr/local/heroki" ]; then
+    export PATH="/usr/local/heroku/bin:$PATH"
+fi
