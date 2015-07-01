@@ -3,3 +3,5 @@
 #
 export TMUX=`which tmux`
 alias tmux='${TMUX} -2'
+
+alias ls="`which ls` -F --color=auto"
