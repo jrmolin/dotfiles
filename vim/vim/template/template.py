@@ -11,11 +11,13 @@ WARNINGS = 1
 INFO = 2
 DEBUG = 3
 
+
 class Options(object):
     verbosity = ERRORS
     filename = "test.txt"
 
-def handle_arguments(argv):
+def main(argv):
+    import argparse
     parser = argparse.ArgumentParser()
 
     # add optional arguments
@@ -35,7 +37,7 @@ def handle_arguments(argv):
     # parse the arguments
     # must take out the first element of the array (this file), or it gets
     # erroneously parsed as a positional argument
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv[1:])
 
     # create an instance of our options object
     options = Options()
@@ -55,9 +57,6 @@ def handle_arguments(argv):
     # do what you will
 
     return 0
-
-def main(argv):
-    options = handle_arguments(argv[1:])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
