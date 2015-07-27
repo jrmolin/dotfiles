@@ -1,4 +1,7 @@
-#
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
 import sys
 
 # verbosity levels
@@ -12,8 +15,7 @@ class Options(object):
     verbosity = ERRORS
     filename = "test.txt"
 
-def main(argv):
-    import argparse
+def handle_arguments(argv):
     parser = argparse.ArgumentParser()
 
     # add optional arguments
@@ -33,7 +35,7 @@ def main(argv):
     # parse the arguments
     # must take out the first element of the array (this file), or it gets
     # erroneously parsed as a positional argument
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(argv)
 
     # create an instance of our options object
     options = Options()
@@ -53,6 +55,9 @@ def main(argv):
     # do what you will
 
     return 0
+
+def main(argv):
+    options = handle_arguments(argv[1:])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

@@ -251,6 +251,9 @@
         " pythoncomplete {
             autocmd FileType python set omnifunc=pythoncomplete#Complete
         " }
+        " scons files {
+            autocmd BufNewFile,BufEnter SCons* :setfiletype python
+        " }
         " Makefile {
             autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
         " }
