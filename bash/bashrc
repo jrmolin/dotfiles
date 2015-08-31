@@ -169,10 +169,6 @@ export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
 
-# set solarized color scheme
-export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
-eval $(dir_colors $HOME/.dir_colors)
-
 # docker tomfoolery
 function newbox () {
 docker run --name $1 --volumes-from=volume_container -it -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/opt/pwd" -e BOX_NAME=$1 nathanleclaire/devbox
@@ -187,3 +183,6 @@ if [ -d "/usr/local/heroki" ]; then
     export PATH="/usr/local/heroku/bin:$PATH"
 fi
 
+if [ "$(uname)" = "Darwin" ]; then
+    export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
+fi
