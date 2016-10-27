@@ -17,7 +17,7 @@
 
         " VIMRC Functions
         " {rtp}/autoload/has.vim
-        function! l:has_colorscheme(name)
+        function! s:has_colorscheme(name)
             let pat = 'colors/'.a:name.'.vim'
             return !empty(globpath(&rtp, pat))
         endfunction
@@ -93,13 +93,13 @@
 
 " Vim UI {
         " Color Scheme {
-            if l:has_colorscheme('solarized')
+            if s:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
                 let g:solarized_visibility="high"
                 color solarized
-            elseif l:has_colorscheme('torte')
+            elseif s:has_colorscheme('torte')
                 color torte
             else
                 color default
