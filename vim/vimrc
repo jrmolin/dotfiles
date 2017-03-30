@@ -6,7 +6,6 @@
 " - Solarized (color)
 "
 
-
 " Environment {
         " Basics {
             " Disable 'vi' compatibility; this affects other settings, so it must
@@ -14,10 +13,15 @@
             set nocompatible
         " }
 
+        " CPP macro shifting {
+           " disable vim's annoying not letting you put macros at any level
+           let sk = substitute(&cinkeys, ',0#', "", "g")
+           let &cinkeys = sk
+        " }
 
         " VIMRC Functions
         " {rtp}/autoload/has.vim
-        function! l:has_colorscheme(name)
+        function! s:has_colorscheme(name)
             let pat = 'colors/'.a:name.'.vim'
             return !empty(globpath(&rtp, pat))
         endfunction
@@ -62,9 +66,7 @@
 
 
         " Automatically 'chdir' to current file's directory
-        if exists("+autochdir")
-            set autochdir
-        endif
+        set autochdir
 
 
         set lazyredraw                          " Don't redraw when executing macros
@@ -93,55 +95,52 @@
 
 " Vim UI {
         " Color Scheme {
-            if l:has_colorscheme('solarized')
+            if s:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
                 let g:solarized_visibility="high"
                 color solarized
-            elseif l:has_colorscheme('torte')
+            elseif s:has_colorscheme('torte')
                 color torte
             else
                 color default
             endif
         " }
         "
-        " Highlight characters that go over the 80-column limit
+        " Highlight characters that go over the 100-column limit
         ":highlight OverLength ctermbg=red ctermfg=white guibg=red guifg=white
-        ":match OverLength '\%81v.*'
+        ":match OverLength '\%101v.*'
         "
         if exists('+colorcolumn')
-            set colorcolumn=80
+            set colorcolumn=100
         else
-            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
+            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>100v.\+', -1)
         endif
 
 
         set tabpagemax=15                       " Only show 15 tabs
         set showmode                            " Display the current mode
 
-
         set cursorline                          " Highlight the current line
-
 
         if has('cmdline_info')
             set ruler                           " Show the ruler
             set rulerformat=%30(%=\:%n%y%m%r%w\ %l,%c%V\ %P%)
             set showcmd                         " Show partial commands on status line
-                                            " and Selected characters/lines in
-                                            " visual mode
+                                                " and Selected characters/lines in
+                                                " visual mode
         endif
 
 
         if has('statusline')
             set laststatus=2
 
-
             " Broken down into easily includeable segments
             set statusline=%<%f\ [%n]                    " Filename/buffer
-            set statusline+=%w%h%m%r                     " Options
+            set statusline+=\ %w%h%m%r                     " Options
             "set statusline+=%{fugitive#statusline()} " Git Hotness
-            "set statusline+=\ [%{&ff}/%Y]                " Filetype
+            set statusline+=\ [%{&ff}/%Y]                " Filetype
             "set statusline+=\ [%{getcwd()}]              " Current dir
             set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
         endif
@@ -167,7 +166,9 @@
 
 
         " Highlight problematic whitespace
-        set listchars=tab:,.,trail:.,extends:#,nbsp:.
+        set listchars=tab:»\ ,trail:÷,extends:÷,nbsp:÷
+                " turn off swapping foreground and background on special keys
+        highlight SpecialKey cterm=none
 " }
 
 
@@ -198,7 +199,7 @@
         map <C-K> <C-W>k<C-W>
         map <C-L> <C-W>l<C-W>
         map <C-H> <C-W>h<C-W>
-    
+
         " Map Command+T to autocomplete
         imap <C-Space> <C-x><C-o>
         imap <C-@> <C-Space>
@@ -248,6 +249,9 @@
 
 
 " Plugins {
+            augroup filetype
+                au! BufRead,BufNewFile *Makefile* set filetype=make
+            augroup END
         " pythoncomplete {
             autocmd FileType python set omnifunc=pythoncomplete#Complete
         " }
@@ -255,6 +259,35 @@
             autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
         " }
 
+        " llvm {
+            " Delete trailing whitespace and tabs at the end of each line
+            command! DeleteTrailingWs :%s/\s\+$//
+
+        " Enable syntax highlighting for LLVM files. To use, copy
+        " utils/vim/llvm.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.ll     set filetype=llvm
+            augroup END
+
+        " Enable syntax highlighting for tablegen files. To use, copy
+        " utils/vim/tablegen.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.td     set filetype=tablegen
+            augroup END
+        " }
+
+        " Enable syntax highlighting for scons files.
+            augroup filetype
+                au! BufRead,BufNewFile SCons*   set filetype=python
+            augroup END
+        " }
+
+        " Enable syntax highlighting for fasmg files. To use, copy
+        " utils/vim/tablegen.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.inc,*.fasm set filetype=fasm
+            augroup END
+        " }
 
         " vim-latex Settings {
             let g:Tex_DefaultTargetFormat = 'pdf'
@@ -275,7 +308,7 @@
             let g:Tex_FormatDependency_ps  = 'dvi,ps'
             let g:Tex_FormatDependency_pspdf = 'dvi,ps,pspdf'
             let g:Tex_FormatDependency_dvipdf = 'dvi,dvipdf'
-            
+
             let g:Tex_ViewRule_pdf = 'open -a Preview'
 
 
@@ -325,4 +358,17 @@
             endif
             "set term=builtin_ansi               " Make arrow and other keys work
         endif
+" }
+
+" silly functions {
+function! SpaceOutSelection()
+    let l:lnum1 = getpos("'<")[1]
+    let l:lnum2 = getpos("'>")[1]
+    echom l:lnum1 . "::" . l:lnum2
+    echom "normal! :" . l:lnum2 . "<CR>"
+    echom "normal! joD"
+    echom "normal! :" . l:lnum1 . "<CR>"
+    echom "normal! OD"
+    echom l:lnum2
+endfunction
 " }

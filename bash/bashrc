@@ -114,6 +114,10 @@ esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
+
+    # set solarized color scheme
+    export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
@@ -154,6 +158,10 @@ if [ -f /usr/local/bin/virtualenvwrapper.sh ] ; then
     . /usr/local/bin/virtualenvwrapper.sh
 fi
 
+if [ -f "$HOME/functions.sh" ] ; then
+    . "$HOME/functions.sh"
+fi
+
 # add ~/bin to PATH, if it exists
 if [ -d "$HOME/bin" ]; then
     export PATH="$PATH:$HOME/bin"
@@ -168,10 +176,6 @@ export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
-
-# set solarized color scheme
-export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
-eval $(dir_colors $HOME/.dir_colors)
 
 # docker tomfoolery
 function newbox () {
