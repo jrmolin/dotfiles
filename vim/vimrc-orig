@@ -1,37 +1,41 @@
-" vim: foldmethod=syntax
+﻿"
 " System-wide VIM resource file
 "
 " Recommended Plugins:
+" - Pathogen (plugin manager)
 " - Solarized (color)
 "
 
-" Environment {{{
-        " Basics {{{
+
+" Environment {
+        " Basics {
             " Disable 'vi' compatibility; this affects other settings, so it must
             " be the first line
             set nocompatible
-        " }}}
+        " }
 
-" }}}
 
-" Vundle and its packages {{{
+        " VIMRC Functions
+        " {rtp}/autoload/has.vim
+        function! l:has_colorscheme(name)
+            let pat = 'colors/'.a:name.'.vim'
+            return !empty(globpath(&rtp, pat))
+        endfunction
 
-    set rtp+=~/.vim/bundle/Vundle.vim
-    call vundle#begin()
 
-    Plugin 'VundleVim/Vundle.vim'
-    " Sensible defaults
-    Plugin 'tpope/vim-sensible'
-    " git
-    Plugin 'tpope/vim-fugitive'
-    " Better status line
-    Plugin 'vim-airline/vim-airline'
+        " Pathogen {
+            silent! call pathogen#infect()
+        " }
+" }
 
-    Plugin 'altercation/vim-colors-solarized'
-    call vundle#end()
-" }}}
 
-" General {{{
+" System {
+        silent !mkdir ~/.vimlocal > /dev/null 2>&1
+        silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
+" }
+
+
+" General {
 "       set tags=./tags;                        " recursively search for a
                                                 " tags file
         set background=dark                     " Assume a dark background
@@ -41,12 +45,14 @@
             set term=$TERM                      " Make arrow and other keys work
         endif
 
+
         filetype plugin on                      " Enable filetype plugins
         filetype indent on                      " Enable filetype indentations
         syntax on                               " Syntax highlighting
         set mouse=a                             " Automatically enable mouse usage
         set mousehide                           " Hide the mouse cursor while typing
         scriptencoding utf-8
+
 
         if has('x') && has('gui')               " On Linux use '+' register copy/paste
             set clipboard=unnamedplus
@@ -60,14 +66,11 @@
             set autochdir
         endif
 
-        au BufRead,BufNewFile SConstruct,SConscript    set filetype=python
 
         set lazyredraw                          " Don't redraw when executing macros
         "set autowrite                          " Automatically write a file when
                                             " leaving a modified buffer
 
-        " folding
-        set foldcolumn=3
 
         " Better UNIX/Windows compatibility
         set viewoptions=folds,options,cursor,unix,slash
@@ -85,74 +88,37 @@
             set undofile                        " Setup persistent 'undo' files
             set undoreload=10000                " Maximum lines to save for reload
         endif
-" }}}
+" }
 
-" Reformat the current paragraph
-nnoremap Q gq
-vnoremap Q gq
 
-" Plugin setup
-
-" Makefile stuff {{{
-
-    " Don't expand tabs for Makefiles
-    au FileType makefile setlocal noexpandtab
-
-" }}}
-
-" OCaml stuff {{{
-    au BufRead,BufNewFile *.ml,*.mli compiler ocaml
-    au FileType ocaml setlocal softtabstop=2
-    au FileType ocaml setlocal shiftwidth=2
-    au FileType ocaml call SuperTabSetDefaultCompletionType("<c-x><c-o>")
-" }}}
-
-" System {{{
-        silent !mkdir ~/.vimlocal > /dev/null 2>&1
-        silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
-" }}}
-
-" Vim UI {{{
-        " VIMRC Functions {{{
-        " {rtp}/autoload/has.vim
-        function! s:has_colorscheme(name)
-            let pat = 'colors/'.a:name.'.vim'
-            return !empty(globpath(&rtp, pat))
-        endfunction
-        " }}}
-
-        " Color Scheme {{{
-            if s:has_colorscheme('solarized')
+" Vim UI {
+        " Color Scheme {
+            if l:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
                 let g:solarized_visibility="high"
                 color solarized
-            elseif s:has_colorscheme('torte')
+            elseif l:has_colorscheme('torte')
                 color torte
             else
                 color default
             endif
-        " }}}
-
+        " }
         "
-        " Highlight characters that go over the 100-column limit
+        " Highlight characters that go over the 80-column limit
         ":highlight OverLength ctermbg=red ctermfg=white guibg=red guifg=white
-        ":match OverLength '\%101v.*'
+        ":match OverLength '\%81v.*'
         "
         if exists('+colorcolumn')
-            set colorcolumn=100
+            set colorcolumn=80
         else
-            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>100v.\+', -1)
+            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
         endif
 
-        if (has("termguicolors"))
-          set termguicolors
-        endif
 
         set tabpagemax=15                       " Only show 15 tabs
         set showmode                            " Display the current mode
-        set hidden
 
 
         set cursorline                          " Highlight the current line
@@ -170,6 +136,7 @@ vnoremap Q gq
         if has('statusline')
             set laststatus=2
 
+
             " Broken down into easily includeable segments
             set statusline=%<%f\ [%n]                    " Filename/buffer
             set statusline+=%w%h%m%r                     " Options
@@ -179,10 +146,10 @@ vnoremap Q gq
             set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
         endif
 
+
         set backspace=indent,eol,start  " Backspace for dummies
         set linespace=0                     " No extra spaces between rows
-        set number                          " Line numbers on
-        " set relativenumber                  " Line numbers on (reverse)
+        set nu                              " Line numbers on
         set showmatch                       " Show matching brackets/parentheses
         set incsearch                       " Find as you type
         set hlsearch                        " Highlight search terms
@@ -198,12 +165,13 @@ vnoremap Q gq
         set list
         set vb                              " Use visual bells
 
+
         " Highlight problematic whitespace
-        set listchars=tab:»\ ,trail:÷,extends:#,nbsp:÷
-" }}}
+        set listchars=tab:,.,trail:.,extends:#,nbsp:.
+" }
 
 
-" Formatting {{{
+" Formatting {
         "set nowrap                          " Wrap long lines
         set autoindent                      " Indent at the same level of previous line
         set shiftwidth=4                    " Use indents of 4 spaces
@@ -216,10 +184,10 @@ vnoremap Q gq
 
 
         set ff=unix                         " Set the default file format to UNIX
-" }}}
+" }
 
 
-" Key (re)Mappings {{{
+" Key (re)Mappings {
         " The default leader is '\', but many people prefer ',' as it's in a
         " standard location.
         let mapleader = ','
@@ -230,20 +198,10 @@ vnoremap Q gq
         map <C-K> <C-W>k<C-W>
         map <C-L> <C-W>l<C-W>
         map <C-H> <C-W>h<C-W>
-
+    
         " Map Command+T to autocomplete
         imap <C-Space> <C-x><C-o>
         imap <C-@> <C-Space>
-        " inoremap <expr> <C-K> ShowDigraphs()
-
-        " function! ShowDigraphs()
-            " digraphs
-            " call getchar()
-            " return "\<C-K>"
-        " endfunction
-
-        " Map <leader>+s to save
-        nnoremap <Leader>w :w<CR>
 
 
         " Wrapped lines goes down/up to next row, rather than next line in file
@@ -267,9 +225,11 @@ vnoremap Q gq
         " Toggle search highlighting
         nmap <silent> <leader>/ :set invhlsearch<CR>
 
+
         " Visual shifting (does not exit Visual mode)
         vnoremap < <gv
         vnoremap > >gv
+
 
         " Fix home and end keybindings for screen, particularly on mac
         " - for some reason, this fixes the arrow keys too.
@@ -278,27 +238,72 @@ vnoremap Q gq
         map [H g0
         imap [H g0
 
+
         " Add ‘vim’ bindings to make ‘vimrc’ easier to edit
         "
         " ,v brings up ".vimrc"
         " ,V reloads it -- making all changes active (have to save first)
         map <silent> <leader>V :source $HOME/.vimrc<CR>:filetype detect<CR>:exe ":echo \"vimrc reloaded\""<CR>
-" }}}
+" }
 
 
-" Plugins {{{
-        " pythoncomplete {{{
+" Plugins {
+        " pythoncomplete {
             autocmd FileType python set omnifunc=pythoncomplete#Complete
-        " }}}
-        " Makefile {{{
+        " }
+        " Makefile {
             autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
-        " }}}
+        " }
 
 
-" }}}
+        " vim-latex Settings {
+            let g:Tex_DefaultTargetFormat = 'pdf'
 
 
-" GUI Settings {{{
+            let g:Tex_CompileRule_dvi = 'latex --interaction=nonstopmode "$*"'
+            let g:Tex_CompileRule_ps = 'dvips -Pwww -o "$*.ps" "$*.dvi"'
+            let g:Tex_CompileRule_pspdf = 'ps2pdf "$*.ps"'
+            let g:Tex_CompileRule_dvipdf = 'dvipdfm "$*.dvi"'
+            let g:Tex_CompileRule_pdf = 'pdflatex -synctex=1 --interaction=nonstopmode "$*"'
+
+
+            let g:Tex_ViewRule_dvi = 'texniscope'
+            let g:Tex_ViewRule_ps = 'Preview'
+            let g:Tex_ViewRule_pdf = 'Skim'
+
+
+            let g:Tex_FormatDependency_ps  = 'dvi,ps'
+            let g:Tex_FormatDependency_pspdf = 'dvi,ps,pspdf'
+            let g:Tex_FormatDependency_dvipdf = 'dvi,dvipdf'
+            
+            let g:Tex_ViewRule_pdf = 'open -a Preview'
+
+
+            " let g:Tex_IgnoredWarnings ='
+            "           \"Underfull\n".
+            "           \"Overfull\n".
+            "           \"specifier changed to\n".
+            "           \"You have requested\n".
+            "           \"Missing number, treated as zero.\n".
+            "           \"There were undefined references\n".
+            "           \"Citation %.%# undefined\n".
+            "           \"\oval, \circle, or \line size unavailable\n"'
+
+
+            " OPTIONAL: Starting with Vim 7, the filetype of empty .tex files defaults to
+            " 'plaintex' instead of 'tex', which results in vim-latex not being loaded.
+            " The following changes the default filetype back to 'tex':
+            let g:tex_flavor='latex'
+        " }
+
+
+        " indent {
+            filetype plugin indent on
+        " }
+" }
+
+
+" GUI Settings {
         " GVIM- (here instead of .gvimrc)
         if has('gui_running')
             " Graceful font degradation
@@ -320,10 +325,4 @@ vnoremap Q gq
             endif
             "set term=builtin_ansi               " Make arrow and other keys work
         endif
-" }}}
-"
-" airline {{{
-    let g:airline#extensions#tabline#enabled = 1
-    let g:airline#extensions#tabline#show_tabs = 1
-" }}}
-
+" }
