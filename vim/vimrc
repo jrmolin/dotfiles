@@ -15,6 +15,18 @@
 " }}}
 
 " Vundle and its packages {{{
+        " CPP macro shifting {
+           " disable vim's annoying not letting you put macros at any level
+           let sk = substitute(&cinkeys, ',0#', "", "g")
+           let &cinkeys = sk
+        " }
+
+        " VIMRC Functions
+        " {rtp}/autoload/has.vim
+        function! s:has_colorscheme(name)
+            let pat = 'colors/'.a:name.'.vim'
+            return !empty(globpath(&rtp, pat))
+        endfunction
 
     set rtp+=~/.vim/bundle/Vundle.vim
     call vundle#begin()
@@ -56,9 +68,7 @@
 
 
         " Automatically 'chdir' to current file's directory
-        if exists("+autochdir")
-            set autochdir
-        endif
+        set autochdir
 
         au BufRead,BufNewFile SConstruct,SConscript    set filetype=python
 
@@ -98,13 +108,6 @@ vnoremap Q gq
     " Don't expand tabs for Makefiles
     au FileType makefile setlocal noexpandtab
 
-" }}}
-
-" OCaml stuff {{{
-    au BufRead,BufNewFile *.ml,*.mli compiler ocaml
-    au FileType ocaml setlocal softtabstop=2
-    au FileType ocaml setlocal shiftwidth=2
-    au FileType ocaml call SuperTabSetDefaultCompletionType("<c-x><c-o>")
 " }}}
 
 " System {{{
@@ -154,16 +157,14 @@ vnoremap Q gq
         set showmode                            " Display the current mode
         set hidden
 
-
         set cursorline                          " Highlight the current line
-
 
         if has('cmdline_info')
             set ruler                           " Show the ruler
             set rulerformat=%30(%=\:%n%y%m%r%w\ %l,%c%V\ %P%)
             set showcmd                         " Show partial commands on status line
-                                            " and Selected characters/lines in
-                                            " visual mode
+                                                " and Selected characters/lines in
+                                                " visual mode
         endif
 
 
@@ -172,9 +173,9 @@ vnoremap Q gq
 
             " Broken down into easily includeable segments
             set statusline=%<%f\ [%n]                    " Filename/buffer
-            set statusline+=%w%h%m%r                     " Options
+            set statusline+=\ %w%h%m%r                     " Options
             "set statusline+=%{fugitive#statusline()} " Git Hotness
-            "set statusline+=\ [%{&ff}/%Y]                " Filetype
+            set statusline+=\ [%{&ff}/%Y]                " Filetype
             "set statusline+=\ [%{getcwd()}]              " Current dir
             set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
         endif
@@ -200,6 +201,9 @@ vnoremap Q gq
 
         " Highlight problematic whitespace
         set listchars=tab:»\ ,trail:÷,extends:#,nbsp:÷
+                " turn off swapping foreground and background on special keys
+        highlight SpecialKey cterm=none
+
 " }}}
 
 
@@ -287,18 +291,62 @@ vnoremap Q gq
 
 
 " Plugins {{{
+        " Makefile {{{
+            autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
+            augroup filetype
+                au! BufRead,BufNewFile *Makefile* set filetype=make
+            augroup END
+        " }}}
+
         " pythoncomplete {{{
             autocmd FileType python set omnifunc=pythoncomplete#Complete
         " }}}
-        " Makefile {{{
-            autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
-        " }}}
+
+        " llvm {
+            " Delete trailing whitespace and tabs at the end of each line
+            command! DeleteTrailingWs :%s/\s\+$//
+
+        " Enable syntax highlighting for LLVM files. To use, copy
+        " utils/vim/llvm.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.ll     set filetype=llvm
+            augroup END
+
+        " Enable syntax highlighting for tablegen files. To use, copy
+        " utils/vim/tablegen.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.td     set filetype=tablegen
+            augroup END
+        " }
+
+        " Enable syntax highlighting for scons files.
+            augroup filetype
+                au! BufRead,BufNewFile SCons*   set filetype=python
+            augroup END
+        " }
+
+        " Enable syntax highlighting for fasmg files. To use, copy
+        " utils/vim/tablegen.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.inc,*.fasm set filetype=fasm
+            augroup END
+        " }
+
+        " vim-latex Settings {
+            let g:Tex_DefaultTargetFormat = 'pdf'
 
 
 " }}}
 
 
 " GUI Settings {{{
+
+        " indent {
+            filetype plugin indent on
+        " }
+" }
+
+
         " GVIM- (here instead of .gvimrc)
         if has('gui_running')
             " Graceful font degradation
@@ -327,3 +375,17 @@ vnoremap Q gq
     let g:airline#extensions#tabline#show_tabs = 1
 " }}}
 
+" }
+
+" silly functions {
+function! SpaceOutSelection()
+    let l:lnum1 = getpos("'<")[1]
+    let l:lnum2 = getpos("'>")[1]
+    echom l:lnum1 . "::" . l:lnum2
+    echom "normal! :" . l:lnum2 . "<CR>"
+    echom "normal! joD"
+    echom "normal! :" . l:lnum1 . "<CR>"
+    echom "normal! OD"
+    echom l:lnum2
+endfunction
+" }

@@ -114,6 +114,10 @@ esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
+
+    # set solarized color scheme
+    export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
@@ -152,6 +156,10 @@ fi
 
 if [ -f /usr/local/bin/virtualenvwrapper.sh ] ; then
     . /usr/local/bin/virtualenvwrapper.sh
+fi
+
+if [ -f "$HOME/functions.sh" ] ; then
+    . "$HOME/functions.sh"
 fi
 
 # add ~/bin to PATH, if it exists
