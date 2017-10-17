@@ -3,6 +3,7 @@
 "
 " Recommended Plugins:
 " - Solarized (color)
+" - Vundle (plugin manager)
 "
 
 " Environment {{{
@@ -16,7 +17,7 @@
 
 " Vundle and its packages {{{
         " CPP macro shifting {
-           " disable vim's annoying not letting you put macros at any level
+           " disable vim's annoying habit of not letting you put macros at any level
            let sk = substitute(&cinkeys, ',0#', "", "g")
            let &cinkeys = sk
         " }
@@ -32,12 +33,15 @@
     call vundle#begin()
 
     Plugin 'VundleVim/Vundle.vim'
+
     " Sensible defaults
     Plugin 'tpope/vim-sensible'
+
     " git
     Plugin 'tpope/vim-fugitive'
+
     " Better status line
-    Plugin 'vim-airline/vim-airline'
+    "Plugin 'vim-airline/vim-airline'
 
     Plugin 'altercation/vim-colors-solarized'
     call vundle#end()
@@ -47,7 +51,6 @@
 "       set tags=./tags;                        " recursively search for a
                                                 " tags file
         set background=dark                     " Assume a dark background
-
 
         if !has('gui')
             set term=$TERM                      " Make arrow and other keys work
@@ -66,15 +69,14 @@
             set clipboard=unnamed
         endif
 
-
         " Automatically 'chdir' to current file's directory
         set autochdir
 
         au BufRead,BufNewFile SConstruct,SConscript    set filetype=python
 
         set lazyredraw                          " Don't redraw when executing macros
-        "set autowrite                          " Automatically write a file when
-                                            " leaving a modified buffer
+        set autowrite                           " Automatically write a file when
+                                                " leaving a modified buffer
 
         " folding
         set foldcolumn=3
@@ -110,6 +112,13 @@ vnoremap Q gq
 
 " }}}
 
+" javascript stuff {{{
+
+    " Expand tabs for javascript files
+    au FileType javascript setlocal expandtab
+
+" }}}
+
 " System {{{
         silent !mkdir ~/.vimlocal > /dev/null 2>&1
         silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
@@ -125,17 +134,17 @@ vnoremap Q gq
         " }}}
 
         " Color Scheme {{{
-            if s:has_colorscheme('solarized')
-                let g:solarized_termcolors=256
-                let g:solarized_termtrans=1
-                let g:solarized_contrast="high"
-                let g:solarized_visibility="high"
-                color solarized
-            elseif s:has_colorscheme('torte')
-                color torte
-            else
-                color default
-            endif
+        if s:has_colorscheme('solarized')
+            let g:solarized_termcolors=256
+            let g:solarized_termtrans=1
+            let g:solarized_contrast="high"
+            let g:solarized_visibility="high"
+            color solarized
+        elseif s:has_colorscheme('torte')
+            color torte
+        else
+            color default
+        endif
         " }}}
 
         "
@@ -162,6 +171,7 @@ vnoremap Q gq
         if has('cmdline_info')
             set ruler                           " Show the ruler
             set rulerformat=%30(%=\:%n%y%m%r%w\ %l,%c%V\ %P%)
+
             set showcmd                         " Show partial commands on status line
                                                 " and Selected characters/lines in
                                                 " visual mode
@@ -174,9 +184,9 @@ vnoremap Q gq
             " Broken down into easily includeable segments
             set statusline=%<%f\ [%n]                    " Filename/buffer
             set statusline+=\ %w%h%m%r                     " Options
-            "set statusline+=%{fugitive#statusline()} " Git Hotness
+            set statusline+=%{fugitive#statusline()} " Git Hotness
             set statusline+=\ [%{&ff}/%Y]                " Filetype
-            "set statusline+=\ [%{getcwd()}]              " Current dir
+            set statusline+=\ [%{getcwd()}]              " Current dir
             set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
         endif
 
@@ -249,6 +259,7 @@ vnoremap Q gq
         " Map <leader>+s to save
         nnoremap <Leader>w :w<CR>
 
+        nnoremap <Leader>s :%s/ \+$//<CR>
 
         " Wrapped lines goes down/up to next row, rather than next line in file
         nnoremap j gj
@@ -297,6 +308,10 @@ vnoremap Q gq
                 au! BufRead,BufNewFile *Makefile* set filetype=make
             augroup END
         " }}}
+        "
+        augroup Clips
+            au! BufRead,BufNewFile *.clp set filetype=clips
+        augroup END
 
         " pythoncomplete {{{
             autocmd FileType python set omnifunc=pythoncomplete#Complete
@@ -334,7 +349,7 @@ vnoremap Q gq
 
         " vim-latex Settings {
             let g:Tex_DefaultTargetFormat = 'pdf'
-
+        " }
 
 " }}}
 
@@ -372,7 +387,7 @@ vnoremap Q gq
 "
 " airline {{{
     let g:airline#extensions#tabline#enabled = 1
-    let g:airline#extensions#tabline#show_tabs = 1
+    " let g:airline#extensions#tabline#show_tabs = 1
 " }}}
 
 " }

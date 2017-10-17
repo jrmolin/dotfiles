@@ -191,12 +191,29 @@ if [ "$(uname)" = "Darwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 fi
 
-if [ -f "$HOME/.profile" ] ; then
-    source "$HOME/.profile"
-fi
+root() {
+    DIRECTORY=".git"
+    ld=`pwd`
+    until [ -d "$DIRECTORY" ]
+    do
+        pwd=`pwd`
+        cd ..
+
+        if [ "/" == "$pwd" ];
+        then
+            cd $ld
+            echo "could not find $DIRECTORY directory in ancestry; staying put"
+            break
+        fi
+    done
+}
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/jmolinatto/.sdkman"
 [[ -s "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
