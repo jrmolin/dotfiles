@@ -115,7 +115,7 @@ if [ -d ~/bin ]; then
 fi
 export EDITOR=vim
 
-BACKUPS=~/.config/backups/files.db
+BACKUPS=$HOME/.config/backups/files.db
 function backup() {
     if [ "$#" -lt "1" ]
     then
@@ -152,11 +152,12 @@ EOF
 
 if [ ! -e "$BACKUPS" ]
 then
+    mkdir -pv `dirname $BACKUPS`
     sqlite3 $BACKUPS "create table files (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, path TEXT, owner TEXT, mode TEXT, contents BLOB);"
     sqlite3 $BACKUPS "create table map (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, key TEXT, value TEXT);"
 fi
 
-export LOGFILE="$HOME/.logs/logfile.db"
+export LOGFILE="$HOME/.configs/backups/logfile.db"
 if [ ! -d `dirname $LOGFILE` ]
 then
     mkdir -p `dirname $LOGFILE`
