@@ -1,72 +1,51 @@
-" vim: foldmethod=syntax
+﻿"
 " System-wide VIM resource file
 "
 " Recommended Plugins:
+" - Pathogen (plugin manager)
 " - Solarized (color)
-" - Vundle (plugin manager)
 "
 
-" Environment {{{
-        " Basics {{{
+
+" Environment {
+        " Basics {
             " Disable 'vi' compatibility; this affects other settings, so it must
             " be the first line
             set nocompatible
-        " }}}
-
-        " CPP macro shifting {
-          " disable vim's annoying habit of not letting macros go anywhere
-          let sk = substitute(&cinkeys, ',0#', "", "g")
-          let &cinkeys = sk
-" }}}
-
-" Vundle and its packages {{{
-        " CPP macro shifting {
-           " disable vim's annoying habit of not letting you put macros at any level
-           let sk = substitute(&cinkeys, ',0#', "", "g")
-           let &cinkeys = sk
         " }
+
 
         " VIMRC Functions
         " {rtp}/autoload/has.vim
-        function! s:has_colorscheme(name)
+        function! l:has_colorscheme(name)
             let pat = 'colors/'.a:name.'.vim'
             return !empty(globpath(&rtp, pat))
         endfunction
 
-    set rtp+=~/.vim/bundle/Vundle.vim
-    call vundle#begin()
 
-    Plugin 'VundleVim/Vundle.vim'
+        " Pathogen {
+            silent! call pathogen#infect()
+        " }
+" }
 
-    " Sensible defaults
-    Plugin 'tpope/vim-sensible'
 
 " System {
         silent !mkdir ~/.vimlocal > /dev/null 2>&1
         silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
-        silent !mkdir ~/.vimlocal/swapdir > /dev/null 2>&1
 " }
-    " git
-    Plugin 'tpope/vim-fugitive'
 
-    " Better status line
-    "Plugin 'vim-airline/vim-airline'
 
-    Plugin 'altercation/vim-colors-solarized'
-    call vundle#end()
-" }}}
-
-" General {{{
+" General {
 "       set tags=./tags;                        " recursively search for a
                                                 " tags file
         set background=dark                     " Assume a dark background
+
 
         if !has('gui')
             set term=$TERM                      " Make arrow and other keys work
         endif
 
 
-        filetype on                             " Enable filetype
         filetype plugin on                      " Enable filetype plugins
         filetype indent on                      " Enable filetype indentations
         syntax on                               " Syntax highlighting
@@ -74,23 +53,24 @@
         set mousehide                           " Hide the mouse cursor while typing
         scriptencoding utf-8
 
+
         if has('x') && has('gui')               " On Linux use '+' register copy/paste
             set clipboard=unnamedplus
         elseif has('gui')                       " On Max/Windows, use '*'
             set clipboard=unnamed
         endif
 
-        " Automatically 'chdir' to current file's directory
-        set autochdir
 
-        au BufRead,BufNewFile SConstruct,SConscript    set filetype=python
+        " Automatically 'chdir' to current file's directory
+        if exists("+autochdir")
+            set autochdir
+        endif
+
 
         set lazyredraw                          " Don't redraw when executing macros
-        set autowrite                           " Automatically write a file when
-                                                " leaving a modified buffer
+        "set autowrite                          " Automatically write a file when
+                                            " leaving a modified buffer
 
-        " folding
-        set foldcolumn=3
 
         " Better UNIX/Windows compatibility
         set viewoptions=folds,options,cursor,unix,slash
@@ -108,92 +88,68 @@
             set undofile                        " Setup persistent 'undo' files
             set undoreload=10000                " Maximum lines to save for reload
         endif
-
-        set dir=~/.vimlocal/swapdir/
 " }
-" }}}
 
-" Reformat the current paragraph
-    nnoremap Q gq
-    vnoremap Q gq
-
-" Plugin setup
-
-" javascript stuff {{{
-
-    " Expand tabs for javascript files
-    au FileType javascript setlocal expandtab
-
-" }}}
 
 " Vim UI {
-        " VIMRC Functions {{{
-        " {rtp}/autoload/has.vim
-        function! s:has_colorscheme(name)
-            let pat = 'colors/'.a:name.'.vim'
-            return !empty(globpath(&rtp, pat))
-        endfunction
-        " }}}
-
         " Color Scheme {
-            if s:has_colorscheme('solarized')
+            if l:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
                 let g:solarized_visibility="high"
                 color solarized
-            elseif s:has_colorscheme('torte')
+            elseif l:has_colorscheme('torte')
                 color torte
             else
                 color default
             endif
         " }
-
-        " Highlight characters that go over the 100-column limit
+        "
+        " Highlight characters that go over the 80-column limit
         ":highlight OverLength ctermbg=red ctermfg=white guibg=red guifg=white
-        ":match OverLength '\%101v.*'
+        ":match OverLength '\%81v.*'
         "
         if exists('+colorcolumn')
-            set colorcolumn=100
+            set colorcolumn=80
         else
-            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>100v.\+', -1)
+            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
         endif
 
-        if (has("termguicolors"))
-          set termguicolors
-        endif
 
         set tabpagemax=15                       " Only show 15 tabs
         set showmode                            " Display the current mode
-        set hidden
+
 
         set cursorline                          " Highlight the current line
+
 
         if has('cmdline_info')
             set ruler                           " Show the ruler
             set rulerformat=%30(%=\:%n%y%m%r%w\ %l,%c%V\ %P%)
-
             set showcmd                         " Show partial commands on status line
-                                                " and Selected characters/lines in
-                                                " visual mode
+                                            " and Selected characters/lines in
+                                            " visual mode
         endif
+
 
         if has('statusline')
             set laststatus=2
 
+
             " Broken down into easily includeable segments
             set statusline=%<%f\ [%n]                    " Filename/buffer
-            set statusline+=\ %w%h%m%r                     " Options
-            set statusline+=%{fugitive#statusline()} " Git Hotness
-            set statusline+=\ [%{&ff}/%Y]                " Filetype
-            set statusline+=\ [%{getcwd()}]              " Current dir
+            set statusline+=%w%h%m%r                     " Options
+            "set statusline+=%{fugitive#statusline()} " Git Hotness
+            "set statusline+=\ [%{&ff}/%Y]                " Filetype
+            "set statusline+=\ [%{getcwd()}]              " Current dir
             set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
         endif
 
+
         set backspace=indent,eol,start  " Backspace for dummies
         set linespace=0                     " No extra spaces between rows
-        set number                          " Line numbers on
-        " set relativenumber                  " Line numbers on (reverse)
+        set nu                              " Line numbers on
         set showmatch                       " Show matching brackets/parentheses
         set incsearch                       " Find as you type
         set hlsearch                        " Highlight search terms
@@ -209,16 +165,13 @@
         set list
         set vb                              " Use visual bells
 
+
         " Highlight problematic whitespace
-        set listchars=tab:»\ ,trail:÷,extends:÷,nbsp:÷
-        " turn off swapping foreground and background on special keys
-        highlight SpecialKey cterm=none gui=none
+        set listchars=tab:,.,trail:.,extends:#,nbsp:.
 " }
 
-" }}}
 
-
-" Formatting {{{
+" Formatting {
         "set nowrap                          " Wrap long lines
         set autoindent                      " Indent at the same level of previous line
         set shiftwidth=4                    " Use indents of 4 spaces
@@ -231,50 +184,52 @@
 
 
         set ff=unix                         " Set the default file format to UNIX
-" }}}
+" }
 
 
-" Key (re)Mappings {{{
+" Key (re)Mappings {
         " The default leader is '\', but many people prefer ',' as it's in a
         " standard location.
         let mapleader = ','
 
 
         " Easier moving in tabs and windows
-        "map <C-J> <C-W>j<C-W>
-        "map <C-K> <C-W>k<C-W>
-        "map <C-L> <C-W>l<C-W>
-        "map <C-H> <C-W>h<C-W>
-
+        map <C-J> <C-W>j<C-W>
+        map <C-K> <C-W>k<C-W>
+        map <C-L> <C-W>l<C-W>
+        map <C-H> <C-W>h<C-W>
+    
         " Map Command+T to autocomplete
         imap <C-Space> <C-x><C-o>
         imap <C-@> <C-Space>
-        " inoremap <expr> <C-K> ShowDigraphs()
 
-        " function! ShowDigraphs()
-            " digraphs
-            " call getchar()
-            " return "\<C-K>"
-        " endfunction
-
-        " Map <leader>+s to save
-        nnoremap <Leader>w :w<CR>
-
-        nnoremap <Leader>s :%s/ \+$//<CR>
 
         " Wrapped lines goes down/up to next row, rather than next line in file
         nnoremap j gj
         nnoremap k gk
 
-        nnoremap <leader>s :%s/ \+$//<CR>
-        nnoremap <leader>t :set expandtab<CR>:retab<CR>
+
+        " Code folding options
+        nmap <leader>f0 :set foldlevel=0<CR>
+        nmap <leader>f1 :set foldlevel=1<CR>
+        nmap <leader>f2 :set foldlevel=2<CR>
+        nmap <leader>f3 :set foldlevel=3<CR>
+        nmap <leader>f4 :set foldlevel=4<CR>
+        nmap <leader>f5 :set foldlevel=5<CR>
+        nmap <leader>f6 :set foldlevel=6<CR>
+        nmap <leader>f7 :set foldlevel=7<CR>
+        nmap <leader>f8 :set foldlevel=8<CR>
+        nmap <leader>f9 :set foldlevel=9<CR>
+
 
         " Toggle search highlighting
         nmap <silent> <leader>/ :set invhlsearch<CR>
 
+
         " Visual shifting (does not exit Visual mode)
         vnoremap < <gv
         vnoremap > >gv
+
 
         " Fix home and end keybindings for screen, particularly on mac
         " - for some reason, this fixes the arrow keys too.
@@ -283,58 +238,64 @@
         map [H g0
         imap [H g0
 
+
         " Add ‘vim’ bindings to make ‘vimrc’ easier to edit
         "
         " ,v brings up ".vimrc"
         " ,V reloads it -- making all changes active (have to save first)
         map <silent> <leader>V :source $HOME/.vimrc<CR>:filetype detect<CR>:exe ":echo \"vimrc reloaded\""<CR>
-" }}}
+" }
 
 
 " Plugins {
+        " pythoncomplete {
+            autocmd FileType python set omnifunc=pythoncomplete#Complete
+        " }
         " Makefile {
-            autocmd FileType make set noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
-            augroup filetype
-                au! BufRead,BufNewFile *Makefile* set filetype=make
-            augroup END
-        " }}}
-        "
-        augroup Clips
-            au! BufRead,BufNewFile *.clp set filetype=clips
-        augroup END
-
-        " llvm {
-
-        " Enable syntax highlighting for LLVM files. To use, copy
-        " utils/vim/llvm.vim to ~/.vim/syntax .
-            augroup filetype
-                au! BufRead,BufNewFile *.ll     set filetype=llvm
-            augroup END
-
-        " Enable syntax highlighting for tablegen files. To use, copy
-        " utils/vim/tablegen.vim to ~/.vim/syntax .
-            augroup filetype
-                au! BufRead,BufNewFile *.td     set filetype=tablegen
-            augroup END
+            autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
         " }
 
-        " Enable syntax highlighting for scons files.
-            augroup filetype
-                au! BufRead,BufNewFile SCons*   set filetype=python
-            augroup END
+
+        " vim-latex Settings {
+            let g:Tex_DefaultTargetFormat = 'pdf'
+
+
+            let g:Tex_CompileRule_dvi = 'latex --interaction=nonstopmode "$*"'
+            let g:Tex_CompileRule_ps = 'dvips -Pwww -o "$*.ps" "$*.dvi"'
+            let g:Tex_CompileRule_pspdf = 'ps2pdf "$*.ps"'
+            let g:Tex_CompileRule_dvipdf = 'dvipdfm "$*.dvi"'
+            let g:Tex_CompileRule_pdf = 'pdflatex -synctex=1 --interaction=nonstopmode "$*"'
+
+
+            let g:Tex_ViewRule_dvi = 'texniscope'
+            let g:Tex_ViewRule_ps = 'Preview'
+            let g:Tex_ViewRule_pdf = 'Skim'
+
+
+            let g:Tex_FormatDependency_ps  = 'dvi,ps'
+            let g:Tex_FormatDependency_pspdf = 'dvi,ps,pspdf'
+            let g:Tex_FormatDependency_dvipdf = 'dvi,dvipdf'
+            
+            let g:Tex_ViewRule_pdf = 'open -a Preview'
+
+
+            " let g:Tex_IgnoredWarnings ='
+            "           \"Underfull\n".
+            "           \"Overfull\n".
+            "           \"specifier changed to\n".
+            "           \"You have requested\n".
+            "           \"Missing number, treated as zero.\n".
+            "           \"There were undefined references\n".
+            "           \"Citation %.%# undefined\n".
+            "           \"\oval, \circle, or \line size unavailable\n"'
+
+
+            " OPTIONAL: Starting with Vim 7, the filetype of empty .tex files defaults to
+            " 'plaintex' instead of 'tex', which results in vim-latex not being loaded.
+            " The following changes the default filetype back to 'tex':
+            let g:tex_flavor='latex'
         " }
 
-        " Enable syntax highlighting for fasmg files. To use, copy
-        " utils/vim/tablegen.vim to ~/.vim/syntax .
-            augroup filetype
-                au! BufRead,BufNewFile *.inc,*.fasm set filetype=fasm
-            augroup END
-        " }
-
-" }}}
-
-
-" GUI Settings {{{
 
         " indent {
             filetype plugin indent on
@@ -342,6 +303,7 @@
 " }
 
 
+" GUI Settings {
         " GVIM- (here instead of .gvimrc)
         if has('gui_running')
             " Graceful font degradation
@@ -363,24 +325,4 @@
             endif
             "set term=builtin_ansi               " Make arrow and other keys work
         endif
-" }}}
-"
-" airline {{{
-    let g:airline#extensions#tabline#enabled = 1
-    " let g:airline#extensions#tabline#show_tabs = 1
-" }}}
-
-" }
-
-" silly functions {
-function! SpaceOutSelection()
-    let l:lnum1 = getpos("'<")[1]
-    let l:lnum2 = getpos("'>")[1]
-    echom l:lnum1 . "::" . l:lnum2
-    echom "normal! :" . l:lnum2 . "<CR>"
-    echom "normal! joD"
-    echom "normal! :" . l:lnum1 . "<CR>"
-    echom "normal! OD"
-    echom l:lnum2
-endfunction
 " }

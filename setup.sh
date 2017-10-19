@@ -28,12 +28,6 @@ install_vim() {
     fi
 }
 
-setup_vim() {
-    doit mkdir -pv "vim/vim/autoload" "vim/vim/bundle"
-
-    doit curl -LSso vim/vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
-}
-
 # install tmux
 install_tmux() {
     local TMUX=`which tmux`
@@ -53,6 +47,14 @@ install_curl() {
 
 }
 
+link_file() {
+    if [ -e $1 ]; then
+        doit mv $1 "${1}.bkup"
+    fi
+
+    doit ln -s "$1" "$2"
+}
+
 WORKDIR=`dirname $0`
 CWD=`pwd`
 cd $WORKDIR
@@ -65,7 +67,6 @@ install_sqlite
 
 install_curl
 install_vim
-setup_vim
 install_tmux
 
 install_dot() {
@@ -90,3 +91,6 @@ install_dot vim/vimrc
 install_dot tmux/tmux.conf
 install_dot bash/bash_aliases
 install_dot bash/bashrc
+install_dot bash/bash_functions
+
+link_file $WORKDIR/bash/dircolors "$HOME/.dircolors"
