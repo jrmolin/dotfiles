@@ -154,10 +154,6 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-if [ -f /usr/local/bin/virtualenvwrapper.sh ] ; then
-    . /usr/local/bin/virtualenvwrapper.sh
-fi
-
 if [ -f "$HOME/functions.sh" ] ; then
     . "$HOME/functions.sh"
 fi
@@ -168,8 +164,14 @@ if [ -d "$HOME/bin" ]; then
 fi
 export EDITOR=vim
 
-export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
-export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
+if [ -d "/usr/lib/jvm/jdk1.7.0_51" ];
+then
+    export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
+fi
+if [ -d "/usr/lib/ant/apache-ant-1.9.3" ];
+then
+    export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
+fi
 
 #export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
 
@@ -177,43 +179,7 @@ export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
 
-# docker tomfoolery
-function newbox () {
-docker run --name $1 --volumes-from=volume_container -it -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/opt/pwd" -e BOX_NAME=$1 nathanleclaire/devbox
-}
-
-### Added by the Heroku Toolbelt
-if [ -d "/usr/local/heroki" ]; then
-    export PATH="/usr/local/heroku/bin:$PATH"
-fi
-
 if [ "$(uname)" = "Darwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 fi
 
-root() {
-    DIRECTORY=".git"
-    ld=`pwd`
-    until [ -d "$DIRECTORY" ]
-    do
-        pwd=`pwd`
-        cd ..
-
-        if [ "/" == "$pwd" ];
-        then
-            cd $ld
-            echo "could not find $DIRECTORY directory in ancestry; staying put"
-            break
-        fi
-    done
-}
-
-export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/Users/jmolinatto/.sdkman"
-[[ -s "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh"
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
