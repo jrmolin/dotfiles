@@ -14,10 +14,15 @@
             set nocompatible
         " }
 
+        " CPP macro shifting {
+          " disable vim's annoying habit of not letting macros go anywhere
+          let sk = substitute(&cinkeys, ',0#', "", "g")
+          let &cinkeys = sk
+        " }
 
         " VIMRC Functions
         " {rtp}/autoload/has.vim
-        function! l:has_colorscheme(name)
+        function! s:has_colorscheme(name)
             let pat = 'colors/'.a:name.'.vim'
             return !empty(globpath(&rtp, pat))
         endfunction
@@ -32,6 +37,7 @@
 " System {
         silent !mkdir ~/.vimlocal > /dev/null 2>&1
         silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
+        silent !mkdir ~/.vimlocal/swapdir > /dev/null 2>&1
 " }
 
 
@@ -46,6 +52,7 @@
         endif
 
 
+        filetype on                             " Enable filetype
         filetype plugin on                      " Enable filetype plugins
         filetype indent on                      " Enable filetype indentations
         syntax on                               " Syntax highlighting
@@ -62,10 +69,7 @@
 
 
         " Automatically 'chdir' to current file's directory
-        if exists("+autochdir")
-            set autochdir
-        endif
-
+        set autochdir
 
         set lazyredraw                          " Don't redraw when executing macros
         "set autowrite                          " Automatically write a file when
@@ -88,32 +92,34 @@
             set undofile                        " Setup persistent 'undo' files
             set undoreload=10000                " Maximum lines to save for reload
         endif
+
+        set dir=~/.vimlocal/swapdir/
 " }
 
 
 " Vim UI {
         " Color Scheme {
-            if l:has_colorscheme('solarized')
+            if s:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
                 let g:solarized_visibility="high"
                 color solarized
-            elseif l:has_colorscheme('torte')
+            elseif s:has_colorscheme('torte')
                 color torte
             else
                 color default
             endif
         " }
         "
-        " Highlight characters that go over the 80-column limit
+        " Highlight characters that go over the 100-column limit
         ":highlight OverLength ctermbg=red ctermfg=white guibg=red guifg=white
-        ":match OverLength '\%81v.*'
+        ":match OverLength '\%101v.*'
         "
         if exists('+colorcolumn')
-            set colorcolumn=80
+            set colorcolumn=100
         else
-            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
+            au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>100v.\+', -1)
         endif
 
 
@@ -141,7 +147,7 @@
             set statusline=%<%f\ [%n]                    " Filename/buffer
             set statusline+=%w%h%m%r                     " Options
             "set statusline+=%{fugitive#statusline()} " Git Hotness
-            "set statusline+=\ [%{&ff}/%Y]                " Filetype
+            set statusline+=\ [%{&ff}/%Y]                " Filetype
             "set statusline+=\ [%{getcwd()}]              " Current dir
             set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
         endif
@@ -167,7 +173,9 @@
 
 
         " Highlight problematic whitespace
-        set listchars=tab:,.,trail:.,extends:#,nbsp:.
+        set listchars=tab:»\ ,trail:÷,extends:÷,nbsp:÷
+        " turn off swapping foreground and background on special keys
+        highlight SpecialKey cterm=none gui=none
 " }
 
 
@@ -194,11 +202,11 @@
 
 
         " Easier moving in tabs and windows
-        map <C-J> <C-W>j<C-W>
-        map <C-K> <C-W>k<C-W>
-        map <C-L> <C-W>l<C-W>
-        map <C-H> <C-W>h<C-W>
-    
+        "map <C-J> <C-W>j<C-W>
+        "map <C-K> <C-W>k<C-W>
+        "map <C-L> <C-W>l<C-W>
+        "map <C-H> <C-W>h<C-W>
+
         " Map Command+T to autocomplete
         imap <C-Space> <C-x><C-o>
         imap <C-@> <C-Space>
@@ -208,6 +216,8 @@
         nnoremap j gj
         nnoremap k gk
 
+        nnoremap <leader>s :%s/ \+$//<CR>
+        nnoremap <leader>t :set expandtab<CR>:retab<CR>
 
         " Code folding options
         nmap <leader>f0 :set foldlevel=0<CR>
@@ -249,13 +259,13 @@
 
 " Plugins {
         " pythoncomplete {
-            autocmd FileType python set omnifunc=pythoncomplete#Complete
+            " autocmd FileType python :set omnifunc=pythoncomplete#Complete
         " }
         " scons files {
             autocmd BufNewFile,BufEnter SCons* :setfiletype python
         " }
         " Makefile {
-            autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
+            autocmd FileType make set noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
         " }
 
 
@@ -278,7 +288,7 @@
             let g:Tex_FormatDependency_ps  = 'dvi,ps'
             let g:Tex_FormatDependency_pspdf = 'dvi,ps,pspdf'
             let g:Tex_FormatDependency_dvipdf = 'dvi,dvipdf'
-            
+
             let g:Tex_ViewRule_pdf = 'open -a Preview'
 
 

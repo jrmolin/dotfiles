@@ -1,0 +1,10 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_1='/home/mo/Documents/certs'
+let g:netrw_dirhist_2='/home/mo/sandbox/www/example/playoftheday/.well-known'
+let g:netrw_dirhist_3='/home/mo/git/random/www/static-react/components'
+let g:netrw_dirhist_4='/home/mo/git/random/www/static-react/components/Button'
+let g:netrw_dirhist_5='/home/mo/git/random/www/flux-example/src/js'
+let g:netrw_dirhist_6='/home/mo/git/beginner-c/object-oriented'
+let g:netrw_dirhist_7='/etc/NetworkManager/VPN'
+let g:netrw_dirhist_8='/home/mo/sandbox/go'
