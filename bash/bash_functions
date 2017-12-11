@@ -2,14 +2,9 @@
 
 enableVirtualenv() {
     venvwr="/usr/local/bin/virtualenvwrapper.sh"
-<<<<<<< HEAD
     venvwr_python="/usr/local/bin/python2"
     venvwr_virtualenv="/usr/local/bin/virtualenv"
     UNAME=`uname`
-=======
-    export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python2
-    export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
->>>>>>> 85ab6f1df8156a44605a90c00437d2c050d7294a
 
     if [ -f $venvwr ] ; then
         # only do this part for darwin

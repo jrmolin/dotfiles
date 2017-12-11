@@ -60,8 +60,7 @@ CWD=`pwd`
 cd $WORKDIR
 WORKDIR=`pwd`
 
-doit git submodule init
-doit git submodule update
+doit git submodule update --init --recursive
 
 install_sqlite
 
