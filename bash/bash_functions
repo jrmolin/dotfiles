@@ -2,9 +2,14 @@
 
 enableVirtualenv() {
     venvwr="/usr/local/bin/virtualenvwrapper.sh"
+<<<<<<< HEAD
     venvwr_python="/usr/local/bin/python2"
     venvwr_virtualenv="/usr/local/bin/virtualenv"
     UNAME=`uname`
+=======
+    export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python2
+    export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
+>>>>>>> 85ab6f1df8156a44605a90c00437d2c050d7294a
 
     if [ -f $venvwr ] ; then
         # only do this part for darwin
@@ -93,9 +98,22 @@ enableGo() {
             mkdir -pv $HOME/sandbox/go
         fi
 
+        # set the GOPATH so things work
         export GOHOME=$HOME/shared/golang
         export GOPATH=$GOHOME
         export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
+
+    fi
+}
+
+enableYara() {
+    YARAHOME=${HOME}/yara
+    if [ -d "${YARAHOME}" ]
+    then
+
+        export YARAHOME
+        export YARAMANPATH=$YARAHOME/share/man
+        export PATH="$PATH:$YARAHOME/bin"
     fi
 }
 
@@ -108,17 +126,76 @@ enableIos() {
 
 docker-redis() {
     running=$(docker ps | grep redis | awk '{ print $1 }')
-    if ["x$running" != "x"];
+    if [ "x$running" != "x" ];
     then
         res=$(docker stop $running)
         res=$(docker rm $running)
     fi
 
     stopped=$(docker ps -a | grep redis | awk '{ print $1 }')
-    if ["x$stopped" != "x"];
+    if [ "x$stopped" != "x" ];
     then
         res=$(docker rm $stopped)
     fi
 
-    res=$(docker run --name my-redis -p 6379:6379 -d redis)
+    res=$(docker run --name my-redis -p 6379:6379 -d redis:alpine)
 }
+
+function backup() {
+    if [ "$#" -lt "1" ]
+    then
+        echo "need to provide a file to backup (abspath)"
+        return 1
+    fi
+
+    local path=$(readlink -f $1)
+    local owner=$(stat --format "%U:%G" $path)
+    local mode=$(stat --format "%a" $path)
+    local contents=$(cat $path | base64 -)
+    sqlite3 $BACKUPS "insert into files (path,owner,mode,contents) values ('$path','$owner','$mode','$contents');"
+}
+
+function map {
+    # if given a key and value, insert
+    if [ "$#" -eq "2" ]
+    then
+        value=$(echo $2 | base64 -)
+        sqlite3 -batch $BACKUPS <<EOF
+insert into map (key,value) values ("$1", "$value");
+EOF
+        return $?
+    elif [ "$#" -eq "1" ]
+    then
+        value=( $(sqlite3 -batch $BACKUPS <<EOF
+.separator " "
+SELECT value,id FROM map WHERE key="$1" ORDER BY id DESC LIMIT 1;
+EOF
+) )
+        echo $(echo "${value[0]}" | base64 -d -)
+    fi
+}
+
+killhipchat() {
+    pid=$(ps aux | grep hipchat | grep -v grep | awk '{ print $2 }')
+    echo "killing ${pid}"
+    kill $pid
+
+}
+
+enableBackups() {
+    export BACKUPS=$HOME/.config/backups/files.db
+
+    if [ ! -e "$BACKUPS" ]
+    then
+        mkdir -pv `dirname $BACKUPS`
+        sqlite3 $BACKUPS "create table files (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, path TEXT, owner TEXT, mode TEXT, contents BLOB);"
+        sqlite3 $BACKUPS "create table map (id INTEGER PRIMARY KEY, dt datetime default current_timestamp, key TEXT, value TEXT);"
+    fi
+
+    export LOGFILE="$HOME/.configs/backups/logfile.db"
+    if [ ! -d `dirname $LOGFILE` ]
+    then
+        mkdir -p `dirname $LOGFILE`
+    fi
+}
+
