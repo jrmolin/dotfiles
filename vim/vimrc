@@ -293,14 +293,14 @@
 
 " Plugins {
         " Makefile {
-            autocmd FileType make set noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
+            autocmd FileType make setlocal noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
             augroup filetype
-                au! BufRead,BufNewFile *Makefile* set filetype=make
+                au! BufRead,BufNewFile *Makefile* setlocal filetype=make
             augroup END
         " }}}
         "
         augroup Clips
-            au! BufRead,BufNewFile *.clp set filetype=clips
+            au! BufRead,BufNewFile *.clp setlocal filetype=clips
         augroup END
 
         " llvm {
@@ -308,26 +308,32 @@
         " Enable syntax highlighting for LLVM files. To use, copy
         " utils/vim/llvm.vim to ~/.vim/syntax .
             augroup filetype
-                au! BufRead,BufNewFile *.ll     set filetype=llvm
+                au! BufRead,BufNewFile *.ll     setlocal filetype=llvm
             augroup END
 
         " Enable syntax highlighting for tablegen files. To use, copy
         " utils/vim/tablegen.vim to ~/.vim/syntax .
             augroup filetype
-                au! BufRead,BufNewFile *.td     set filetype=tablegen
+                au! BufRead,BufNewFile *.td     setlocal filetype=tablegen
             augroup END
         " }
 
         " Enable syntax highlighting for scons files.
             augroup filetype
-                au! BufRead,BufNewFile SCons*   set filetype=python
+                au! BufRead,BufNewFile SCons*   setlocal filetype=python
             augroup END
         " }
 
         " Enable syntax highlighting for fasmg files. To use, copy
         " utils/vim/tablegen.vim to ~/.vim/syntax .
             augroup filetype
-                au! BufRead,BufNewFile *.inc,*.fasm set filetype=fasm
+                au! BufRead,BufNewFile *.inc,*.fasm setlocal filetype=fasm
+            augroup END
+        " }
+
+        " Fix things for go files
+            augroup filetype
+                au! BufRead,BufNewFile *.go setlocal filetype=go noexpandtab tabstop=4 shiftwidth=4 softtabstop=4 list!
             augroup END
         " }
 
