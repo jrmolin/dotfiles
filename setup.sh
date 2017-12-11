@@ -69,14 +69,6 @@ install_curl
 install_vim
 install_tmux
 
-if [ -e "$HOME/.vimrc" ]; then
-    doit mv "$HOME/.vimrc" "$HOME/.vimrc.bkup"
-fi
-
-if [ -d "$HOME/.vim" ]; then
-    doit mv "$HOME/.vim" "$HOME/.vim.bkup"
-fi
-
 link_file $WORKDIR/vim/vim "$HOME/.vim"
 link_file $WORKDIR/vim/vim "$HOME/.vim"
 link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"

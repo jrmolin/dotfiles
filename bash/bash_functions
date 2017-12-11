@@ -1,11 +1,36 @@
+#!/bin/bash
+
+enableVirtualenv() {
+    venvwr="/usr/local/bin/virtualenvwrapper.sh"
+    if [ -f $venvwr ] ; then
+        . $venvwr
+    fi
+}
+
+enableRvm() {
+    export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+    [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+}
+
+enableSdkman() {
+    #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+    export SDKMAN_DIR="/Users/jmolinatto/.sdkman"
+    [[ -s "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh"
+}
+
+enableOcaml() {
+    # OPAM configuration
+    export PATH="$HOME/.cargo/bin:$PATH"
+    source ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+}
 
 # docker tomfoolery
 function newbox () {
 docker run --name $1 --volumes-from=volume_container -it -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/opt/pwd" -e BOX_NAME=$1 nathanleclaire/devbox
 }
 
-### Added by the Heroku Toolbelt
 enableHeroku() {
+    ### Added by the Heroku Toolbelt
     if [ -d "/usr/local/heroki" ]; then
         export PATH="/usr/local/heroku/bin:$PATH"
     fi
@@ -44,6 +69,46 @@ enableNvm() {
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
 
-enableVirtualenv() {
-    [[ -f "/usr/local/bin/virtualenvwrapper.sh" ]] && . "/usr/local/bin/virtualenvwrapper.sh"
+enablePyenv() {
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init -)"
+}
+
+enableGo() {
+    if [ -d /usr/local/go ]
+    then
+        if [ ! -d $HOME/sandbox/go ]
+        then
+            mkdir -pv $HOME/sandbox/go
+        fi
+
+        export GOHOME=$HOME/shared/golang
+        export GOPATH=$GOHOME
+        export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
+    fi
+}
+
+
+enableIos() {
+    export iOSOpenDevPath=/opt/iOSOpenDev
+    export iOSOpenDevDevice=
+    export PATH=${iOSOpenDevPath}/bin:$PATH
+}
+
+docker-redis() {
+    running=$(docker ps | grep redis | awk '{ print $1 }')
+    if ["x$running" != "x"];
+    then
+        res=$(docker stop $running)
+        res=$(docker rm $running)
+    fi
+
+    stopped=$(docker ps -a | grep redis | awk '{ print $1 }')
+    if ["x$stopped" != "x"];
+    then
+        res=$(docker rm $stopped)
+    fi
+
+    res=$(docker run --name my-redis -p 6379:6379 -d redis)
 }
