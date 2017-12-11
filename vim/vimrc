@@ -83,7 +83,7 @@
         " Automatically 'chdir' to current file's directory
         set autochdir
 
-        au BufRead,BufNewFile SConstruct,SConscript    set filetype=python
+        au BufRead,BufNewFile SConstruct,SConscript    setlocal filetype=python
 
         set lazyredraw                          " Don't redraw when executing macros
         set autowrite                           " Automatically write a file when
@@ -260,13 +260,12 @@
         " Map <leader>+s to save
         nnoremap <Leader>w :w<CR>
 
-        nnoremap <Leader>s :%s/ \+$//<CR>
+        nnoremap <Leader>s :%s/\s\+$//<CR>
 
         " Wrapped lines goes down/up to next row, rather than next line in file
         nnoremap j gj
         nnoremap k gk
 
-        nnoremap <leader>s :%s/ \+$//<CR>
         nnoremap <leader>t :set expandtab<CR>:retab<CR>
 
         " Toggle search highlighting
@@ -293,14 +292,14 @@
 
 " Plugins {
         " Makefile {
-            autocmd FileType make set noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
+            autocmd FileType make setlocal noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
             augroup filetype
-                au! BufRead,BufNewFile *Makefile* set filetype=make
+                au! BufRead,BufNewFile *Makefile* setlocal filetype=make
             augroup END
         " }}}
         "
         augroup Clips
-            au! BufRead,BufNewFile *.clp set filetype=clips
+            au! BufRead,BufNewFile *.clp setlocal filetype=clips
         augroup END
 
         " llvm {
@@ -308,26 +307,33 @@
         " Enable syntax highlighting for LLVM files. To use, copy
         " utils/vim/llvm.vim to ~/.vim/syntax .
             augroup filetype
-                au! BufRead,BufNewFile *.ll     set filetype=llvm
+                au! BufRead,BufNewFile *.ll     setlocal filetype=llvm
             augroup END
 
         " Enable syntax highlighting for tablegen files. To use, copy
         " utils/vim/tablegen.vim to ~/.vim/syntax .
             augroup filetype
-                au! BufRead,BufNewFile *.td     set filetype=tablegen
+                au! BufRead,BufNewFile *.td     setlocal filetype=tablegen
             augroup END
         " }
 
         " Enable syntax highlighting for scons files.
             augroup filetype
-                au! BufRead,BufNewFile SCons*   set filetype=python
+                au! BufRead,BufNewFile SCons*   setlocal filetype=python
             augroup END
         " }
 
         " Enable syntax highlighting for fasmg files. To use, copy
         " utils/vim/tablegen.vim to ~/.vim/syntax .
             augroup filetype
-                au! BufRead,BufNewFile *.inc,*.fasm set filetype=fasm
+                au! BufRead,BufNewFile *.inc,*.fasm setlocal filetype=fasm
+            augroup END
+        " }
+
+        " Fix tab/space for go files
+        " utils/vim/tablegen.vim to ~/.vim/syntax .
+            augroup filetype
+                au! BufRead,BufNewFile *.go setlocal filetype=go list!  noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
             augroup END
         " }
 

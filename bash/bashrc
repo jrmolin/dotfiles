@@ -244,3 +244,4 @@ if [ "$(uname)" = "Darwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 fi
 
+MANPATH=$MANPATH:$HOME/share/man

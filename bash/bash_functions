@@ -79,6 +79,17 @@ enableGo() {
     fi
 }
 
+enableYara() {
+    YARAHOME=${HOME}/yara
+    if [ -d "${YARAHOME}" ]
+    then
+
+        export YARAHOME
+        export YARAMANPATH=$YARAHOME/share/man
+        export PATH="$PATH:$YARAHOME/bin"
+    fi
+}
+
 
 enableIos() {
     export iOSOpenDevPath=/opt/iOSOpenDev
@@ -101,4 +112,11 @@ docker-redis() {
     fi
 
     res=$(docker run --name my-redis -p 6379:6379 -d redis)
+}
+
+killhipchat() {
+    pid=$(ps aux | grep hipchat | grep -v grep | awk '{ print $2 }')
+    echo "killing ${pid}"
+    kill $pid
+
 }
