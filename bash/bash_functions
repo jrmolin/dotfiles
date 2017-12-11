@@ -56,6 +56,16 @@ root() {
     done
 }
 
+enableRvm() {
+    export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+}
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+enableSdkman() {
+    export SDKMAN_DIR="/Users/jmolinatto/.sdkman"
+    [[ -s "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh"
+}
+
 enableNvm() {
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

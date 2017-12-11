@@ -69,28 +69,11 @@ install_curl
 install_vim
 install_tmux
 
-install_dot() {
-  NAME=`basename $1`
-  isdir=$2
-
-    if [ "x$isdir" != "x" ] ; then
-      if [ -e "$HOME/.${NAME}" ]; then
-        doit mv "$HOME/.${NAME}" "$HOME/.${NAME}.bkup"
-      fi
-    else
-      if [ -e "$HOME/.${NAME}" ]; then
-        doit mv "$HOME/.${NAME}" "$HOME/.${NAME}.bkup"
-      fi
-    fi
-
-    doit ln -s $WORKDIR/$1 "$HOME/.${NAME}"
-}
-
-install_dot vim/vim true
-install_dot vim/vimrc
-install_dot tmux/tmux.conf
-install_dot bash/bash_aliases
-install_dot bash/bashrc
-install_dot bash/bash_functions
-
+link_file $WORKDIR/vim/vim "$HOME/.vim"
+link_file $WORKDIR/vim/vim "$HOME/.vim"
+link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
+link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
+link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
+link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
 link_file $WORKDIR/bash/dircolors "$HOME/.dircolors"
