@@ -24,8 +24,14 @@ enableRvm() {
 
 enableSdkman() {
     #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-    export SDKMAN_DIR="/Users/jmolinatto/.sdkman"
-    [[ -s "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh"
+    SDKMAN_DIR="${HOME}/.sdkman"
+    INIT="{SDKMAN_DIR}/bin/sdkman-init.sh"
+    if [ -s "${SDKMAN_INIT}" ] ;
+    then
+        export SDKMAN_DIR
+        source "${SDKMAN_INIT}"
+
+    fi
 }
 
 enableOcaml() {
@@ -67,12 +73,6 @@ enableRvm() {
     export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 }
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-enableSdkman() {
-    export SDKMAN_DIR="/Users/jmolinatto/.sdkman"
-    [[ -s "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/jmolinatto/.sdkman/bin/sdkman-init.sh"
-}
-
 enableNvm() {
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -111,7 +111,6 @@ enableYara() {
         export PATH="$PATH:$YARAHOME/bin"
     fi
 }
-
 
 enableIos() {
     export iOSOpenDevPath=/opt/iOSOpenDev
