@@ -258,6 +258,7 @@ vnoremap Q gq
 
         " Map <leader>+s to save
         nnoremap <Leader>w :w<CR>
+        nnoremap <Leader>f :echom @%<CR>
 
         nnoremap <Leader>s :%s/ \+$//<CR>
 
@@ -281,6 +282,9 @@ vnoremap Q gq
 
         " Toggle search highlighting
         nmap <silent> <leader>/ :set invhlsearch<CR>
+
+        " replace highlighted search
+        nmap <expr>  M  ':%s/' . @/ . '//g<LEFT><LEFT>'
 
         " Visual shifting (does not exit Visual mode)
         vnoremap < <gv
