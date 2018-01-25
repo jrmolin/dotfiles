@@ -48,8 +48,8 @@ install_curl() {
 }
 
 link_file() {
-    if [ -e $1 ]; then
-        doit mv $1 "${1}.bkup"
+    if [ -e $2 ]; then
+        doit mv $2 "${2}.bkup"
     fi
 
     doit ln -s "$1" "$2"
@@ -68,7 +68,6 @@ install_curl
 install_vim
 install_tmux
 
-link_file $WORKDIR/vim/vim "$HOME/.vim"
 link_file $WORKDIR/vim/vim "$HOME/.vim"
 link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
 link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
