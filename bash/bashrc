@@ -174,12 +174,6 @@ then
 fi
 
 #export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
-if [ -e "/usr/local/bin/virtualenvwrapper.sh" ]
-then
-    function enableVirtualenvWrapper() {
-        source "/usr/local/bin/virtualenvwrapper.sh"
-    }
-fi
 
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
@@ -189,6 +183,11 @@ PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then
 
 if [ "$(uname)" = "Darwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
+
+    if [ -f $(brew --prefix)/etc/bash_completion ]; then
+      . $(brew --prefix)/etc/bash_completion
+    fi
+
 fi
 
 MANPATH=$MANPATH:$HOME/share/man

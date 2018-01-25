@@ -193,3 +193,12 @@ enableBackups() {
     fi
 }
 
+deleteSnapshots() {
+    if [ "x$(uname)" == "xDarwin" ] ;
+    then
+        for i in $(sudo tmutil listlocalsnapshotdates | grep 2018)
+        do
+            sudo tmutil deletelocalsnapshots $i
+        done
+    fi
+}
