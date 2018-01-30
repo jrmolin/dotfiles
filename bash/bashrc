@@ -184,10 +184,15 @@ PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then
 if [ "$(uname)" = "Darwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 
-    if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    if [ -f $(brew --prefix)/etc/bash_completion ];
+    then
       . $(brew --prefix)/etc/bash_completion
     fi
+fi
 
+if [ -e "${HOME}/.bash_completion" ] ;
+then
+    . ${HOME}/.bash_completion
 fi
 
 MANPATH=$MANPATH:$HOME/share/man

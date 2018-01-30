@@ -47,11 +47,24 @@ install_curl() {
 
 }
 
-link_file() {
-    if [ -e $2 ]; then
+# link the file, after making a backup
+copy_original() {
+    # if it's a file
+    if [ -f "$1" ]
+    then
+        doit mv $2 "${2}.bkup"
+    elif [ -L "$1" && -e "$1" ]
+    then
+        doit unlink $2
+    elif [ -d "$1" ]
+    then
         doit mv $2 "${2}.bkup"
     fi
 
+}
+
+link_file() {
+    copy_original $1 $2
     doit ln -s "$1" "$2"
 }
 
@@ -73,6 +86,8 @@ link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
 link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
 link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
 link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
+link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
 link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
 link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
 link_file $WORKDIR/bash/dircolors "$HOME/.dircolors"
