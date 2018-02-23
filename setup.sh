@@ -52,19 +52,19 @@ copy_original() {
     # if it's a file
     if [ -f "$1" ]
     then
-        doit mv $2 "${2}.bkup"
+        doit mv $1 "${1}.bkup"
     elif [ -L "$1" && -e "$1" ]
     then
-        doit unlink $2
+        doit unlink $1
     elif [ -d "$1" ]
     then
-        doit mv $2 "${2}.bkup"
+        doit mv $1 "${1}.bkup"
     fi
 
 }
 
 link_file() {
-    copy_original $1 $2
+    copy_original $2
     doit ln -s "$1" "$2"
 }
 

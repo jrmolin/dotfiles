@@ -106,4 +106,9 @@ function unpause()
     runVmwareCommand $1 "unpause"
 }
 
+function suspend()
+{
+    HARD_SOFT=${2:-"soft"}
+    runVmwareCommand $1 "suspend" $HARD_SOFT
+}
 
