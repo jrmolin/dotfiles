@@ -259,9 +259,24 @@
 
         " Map <leader>+s to save
         nnoremap <Leader>w :w<CR>
+
+        " echo the file name of the editing file
         nnoremap <Leader>f :echom @%<CR>
 
+        " echo the current pwd
+        nnoremap <Leader>p :pwd<CR>
+
+        " echo the full path to the file being viewed/edited
+        nnoremap <Leader>; :echo expand('%:p')<CR>
+
+        " delete all ending spaces on each line
         nnoremap <Leader>s :%s/\s\+$//<CR>
+
+        " swap two words
+        nnoremap <Leader>x hdeep
+
+        " put the current path into the buffer
+        nnoremap <Leader>. :put =expand('%:p')<CR>
 
         " Wrapped lines goes down/up to next row, rather than next line in file
         nnoremap j gj

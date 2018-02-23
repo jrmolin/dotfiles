@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "x$(uname)" != "Darwin" ]
+if [ "x$(uname)" != "xDarwin" ]
 then
     return
 fi

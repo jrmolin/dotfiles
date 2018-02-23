@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+_rebuild_py()
+{
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  case "$prev" in
+   --architecture)
+     COMPREPLY=( $( compgen -W "x64 x86" -- $cur ) )
+     return 0
+     ;;
+   --buildtype)
+     COMPREPLY=( $( compgen -W "Debug Release" -- $cur ) )
+     return 0
+     ;;
+   --project)
+     projects=$(/bin/ls -1 Libraries)
+     projects="$projects $(/bin/ls -1 Plugins)"
+     COMPREPLY=( $( compgen -W "$projects" -- $cur ) )
+     return 0
+     ;;
+  esac
+
+  # completing an option
+  if [[ "$cur" == -* ]]; then
+      COMPREPLY=( $( compgen -W "--architecture --buildtype --project" -- $cur ) )
+  fi
+}
+
+complete -F _rebuild_py rebuild.sh

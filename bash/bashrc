@@ -181,7 +181,7 @@ PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then
 
 [[ -s "${HOME}/.bash_functions" ]] && source "${HOME}/.bash_functions"
 
-if [ "$(uname)" = "Darwin" ]; then
+if [ "x$(uname)" = "xDarwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 
     if [ -f $(brew --prefix)/etc/bash_completion ];
