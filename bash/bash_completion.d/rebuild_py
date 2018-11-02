@@ -15,8 +15,8 @@ _rebuild_py()
      return 0
      ;;
    --project)
-     projects=$(/bin/ls -1 Libraries)
-     projects="$projects $(/bin/ls -1 Plugins)"
+     projects=$(grep 'Project name="' RazorSolution.xml | cut -d '"' -f2)
+     projects=$(echo "$projects" | tr '[:upper:]' '[:lower:]')
      COMPREPLY=( $( compgen -W "$projects" -- $cur ) )
      return 0
      ;;
@@ -29,3 +29,4 @@ _rebuild_py()
 }
 
 complete -F _rebuild_py rebuild.sh
+complete -F _rebuild_py rebuild

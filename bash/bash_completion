@@ -1,9 +1,11 @@
 #!/bin/bash
 
-if [ -d "${HOME}/.bash_completion.d" ] ;
+COMPLETION_DIR="${HOME}/.bash_completion.d"
+
+if [ -d "${COMPLETION_DIR}" ] ;
 then
-    for f in "${HOME}/.bash_completion.d/*" ;
+    for f in $(ls -1 "${COMPLETION_DIR}/") ;
     do
-        source $f
+        source ${COMPLETION_DIR}/$f
     done
 fi

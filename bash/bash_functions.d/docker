@@ -1,0 +1,240 @@
+#!/usr/bin/env bash
+
+
+# npm ()
+# {
+#     docker run \
+#         -it --rm \
+#         --net=host \
+#         --user=${UID}:${GID} \
+#         -v $(pwd):/source \
+#         --entrypoint npm \
+#         moli/node $*
+# }
+#
+# node ()
+# {
+#     docker run \
+#         -it --rm \
+#         --net=host \
+#         --user=${UID}:${GID} \
+#         -v $(pwd):/source \
+#         moli/node $*
+# }
+#
+# gatsby ()
+# {
+#     docker run \
+#         -it \
+#         --rm \
+#         --net=host \
+#         --user=${UID}:${GID} \
+#         -v $(pwd):/usr/src/app \
+#         moli/gatsby $*
+# }
+#
+# slack()
+# {
+#     xhost local:root
+#     docker run --rm -it \
+#         -v /etc/localtime:/etc/localtime:ro \
+#         -v /tmp/.X11-unix:/tmp/.X11-unix \
+#         -e DISPLAY=unix$DISPLAY \
+#         --device /dev/snd \
+#         --device /dev/dri \
+#         --device /dev/video0 \
+#         --group-add audio \
+#         --group-add video \
+#         -v "${HOME}/.slack:/root/.config/Slack" \
+#         -v "${HOME}/.slack/downloads:/root/Downloads" \
+#         --ipc="host" \
+#         --name slack \
+#         moli/slack "$@"
+# }
+#
+# htop()
+# {
+#     docker run --rm -it --pid host jess/htop
+# }
+
+
+formatter()
+{
+    docker run --rm -it \
+        -v $(pwd):/source \
+        -u $UID:$GID \
+        clang-format $*
+}
+
+bazel()
+{
+    docker run --rm \
+        -v $(pwd):/usr/src/app \
+        -it bazel2 bazel $*
+}
+
+rebuild()
+{
+    docker run --rm \
+        -it -v "$(pwd)":/usr/src/app \
+        -e _UID=$UID \
+        -e _GID=$GID \
+        toolchain \
+        $*
+}
+
+dockerpython3()
+{
+    docker run -it --rm --name python-3-script \
+        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim python $*
+}
+
+pip3()
+{
+    docker run -it --rm --name python-3-script \
+        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim pip3 $*
+}
+
+virtualenv3()
+{
+    docker run -it --rm --name python-3-script \
+        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim python -m venv $*
+}
+
+graphviz()
+{
+    docker run -it --rm --name dot \
+        -v "$(pwd)":/scratch -w /scratch -u $UID:$GID moli/alpine $*
+}
+
+drill()
+{
+    docker run -it --rm --name drill \
+        -v "$(pwd)":/scratch -w /scratch -u $UID:$GID \
+        moli/alpine drill $*
+}
+
+keepassxc()
+{
+    docker run -d -v /tmp/.X11-unix:/tmp/.X11-unix \
+        -v /etc/machine-id:/etc/machine-id:ro \
+        -v /usr/share/X11/xkb:/usr/share/X11/xkb/:ro \
+        -v $HOME/.config/keepassxc:/root/.config/keepassxc \
+        -e DISPLAY=unix$DISPLAY \
+        keepassxc
+}
+
+dockercmake()
+{
+    docker run -it -e HOME=/home/anon -e USER=anon -u $UID:$GID \
+        -v $(pwd):/usr/src/app -w /usr/src/app \
+        --entrypoint cmake build-tools $*
+}
+
+svn()
+{
+    docker run -it -e HOME=/home/anon -e USER=anon -u $UID:$GID \
+        -v $(pwd):/usr/src/app -w /usr/src/app \
+        --entrypoint svn build-tools $*
+}
+
+dockerImagesClean()
+{
+    HASHES=$(docker images | grep '<none>' | awk '{print $3}')
+    if test "x${HASHES}x" != "xx"
+    then
+        for h in "${HASHES}"
+        do
+            docker rmi $h
+        done
+    fi
+}
+
+dockerPsClean()
+{
+    HASHES=$(docker ps -a -q -f "status=exited" | awk '{print $1}')
+    if test "x${HASHES}x" != "xx"
+    then
+        for h in "${HASHES}"
+        do
+            docker stop $h
+            docker rm $h
+        done
+    fi
+}
+
+dockerpython()
+{
+    docker run -it --rm \
+        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
+        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
+}
+
+dockerbpython()
+{
+    docker run -it --rm \
+        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
+        --entrypoint bpython moli/python
+}
+
+R()
+{
+    docker run -it --rm \
+        -v ~/.docker/home:/home/anon -e _UID=$UID -e _GID=$UID \
+        -e R_HISTFILE=/home/anon/.RHistory \
+        rproject $*
+}
+
+nodered()
+{
+    docker run -it --rm --name mynodered \
+        -p 1880:1880 \
+        -e FLOWS=/data/flows/flows.json \
+        -v ~/.docker/home/node-red:/data/flows \
+        nodered/node-red-docker
+}
+
+dockerState()
+{
+    local name=$1
+    local state
+    state=$(docker inspect --format "{{.State.Running}}" "$name" 2>/dev/null)
+
+    echo "$state"
+}
+
+stopIfRunning()
+{
+    local name=$1
+    local state
+    state=$(dockerState "$name")
+
+    if [[ "$state" == "true" ]]
+    then
+        docker stop "$name"
+        docker rm "$name"
+    elif [[ "x$state"  != "x" ]]
+    then
+        docker rm "$name"
+    fi
+
+}
+
+startJenkins()
+{
+    local LOCAL_PORT=${1:-49000}
+    local name=jenkins
+
+    stopIfRunning $name
+
+    docker run -u root \
+        --rm \
+        -d \
+        -p ${LOCAL_PORT}:8080 \
+        -p 50000:50000 \
+        -e JENKINS_OPTS="--prefix=/jenkins" \
+        -v /opt/docker/jenkinsci:/var/jenkins_home \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        --name $name \
+        jenkinsci/blueocean
+}

@@ -1,4 +1,4 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
+# $HOME/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
@@ -118,7 +118,7 @@ if [ -x /usr/bin/dircolors ]; then
     # set solarized color scheme
     export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    test -r $HOME/.dircolors && eval "$(dircolors -b $HOME/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
@@ -138,14 +138,48 @@ alias s='less'
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
+sourceIfExists()
+{
+    _PATH=$1
+
+    if [ -f "$_PATH" ]
+    then
+        source "$_PATH"
+    fi
+}
+
+appendUnique()
+{
+    if [[ ":$PATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        if [ -d "$1" ]
+        then
+            PATH="$PATH:$1"
+        fi
+    fi
+}
+
+addUniqueToClasspath() {
+    if [[ ":$CLASSPATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        CLASSPATH="$CLASSPATH:$1"
+    fi
+}
+
+if [ -z "$CLASSPATH" ]
+then
+    CLASSPATH="."
+fi
+
+export CLASSPATH
+
 # Alias definitions.
 # You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
+# $HOME/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
+sourceIfExists $HOME/.bash_aliases
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -154,23 +188,83 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-if [ -f "$HOME/functions.sh" ] ; then
-    . "$HOME/functions.sh"
-fi
+sourceIfExists "$HOME/functions.sh"
 
-# add ~/bin to PATH, if it exists
-if [ -d "$HOME/bin" ]; then
-    export PATH="$PATH:$HOME/bin"
-fi
+# add $HOME/.local/bin to PATH, if it exists
+appendUnique "$HOME/.local/bin"
+
+# add $HOME/local-installations/lua-5.3.5/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/lua-5.3.5/bin"
+
+# add $HOME/local-installations/cmake/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/cmake/bin"
+
+# add $HOME/local-installations/python-3.7.0/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/python-3.7.0/bin"
+
+# add $HOME/.local/builds/bin to PATH, if it exists
+appendUnique "$HOME/local/builds/bin"
+
+# add $HOME/bin to PATH, if it exists
+appendUnique "$HOME/bin"
+
+# # add /opt/java/jdk-10.0.2/bin to PATH, if it exists
+# appendUnique "/opt/java/jdk-10.0.2/bin"
+
+# add /opt/java/jdk1.8.0_192/bin to PATH, if it exists
+appendUnique "/opt/java/jdk1.8.0_192/bin"
+
+# add $HOME/local-installations/node-v8.11.4-linux-x64/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/node-v8.11.4-linux-x64/bin"
+
+# add $HOME/local-installations/groovy-2.5.2/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/groovy-2.5.2/bin"
+
+# add $HOME/local-installations/newsboat/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/newsboat/bin"
+
+# add $HOME/.local/npm/bin to PATH, if it exists
+appendUnique "$HOME/.local/npm/bin"
+
+# add /opt/eclipse to PATH, if it exists
+appendUnique "/opt/eclipse"
+
+# add antlr to the classpath
+addUniqueToClasspath "$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
+
 export EDITOR=vim
 
-if [ -d "/usr/lib/jvm/jdk1.7.0_51" ];
+JAVAC=$(which javac)
+
+if [ -n "${JAVAC}" ]
 then
-    export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
+    JAVAC=$(readlink -f $JAVAC)
+    JAVA_BIN=$(dirname "${JAVAC}")
+    JAVA_HOME=$(dirname "${JAVA_BIN}")
 fi
-if [ -d "/usr/lib/ant/apache-ant-1.9.3" ];
+
+if [ -n "${JAVA_HOME}" ]
 then
-    export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
+    export JAVA_HOME
+fi
+
+GRAILS=$(which grails)
+
+if [ -n "${GRAILS}" ]
+then
+    GRAILS=$(readlink -f $GRAILS)
+    GRAILS_BIN=$(dirname "${GRAILS}")
+    GRAILS_HOME=$(dirname "${GRAILS_BIN}")
+fi
+
+if [ -n "${JAVA_HOME}" ]
+then
+    export JAVA_HOME
+fi
+
+if [ -n "${GRAILS_HOME}" ]
+then
+    export GRAILS_HOME
 fi
 
 #export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
@@ -179,7 +273,7 @@ fi
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
 
-[[ -s "${HOME}/.bash_functions" ]] && source "${HOME}/.bash_functions"
+sourceIfExists $HOME/.bash_functions
 
 if [ "x$(uname)" = "xDarwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
@@ -190,9 +284,16 @@ if [ "x$(uname)" = "xDarwin" ]; then
     fi
 fi
 
-if [ -e "${HOME}/.bash_completion" ] ;
-then
-    . ${HOME}/.bash_completion
-fi
+#
+# MO_POWERLINE_REPOSITORY_ROOT=`pip show powerline-status | grep Location | cut -d' ' -f2`
+# MO_POWERLINE_SH="${MO_POWERLINE_REPOSITORY_ROOT}/powerline/bindings/bash/powerline.sh"
+
+# if [ -f ${MO_POWERLINE_SH} ]
+# then
+#     powerline-daemon -q
+#     POWERLINE_BASH_CONTINUATION=1
+#     POWERLINE_BASH_SELECT=1
+#     . "${MO_POWERLINE_SH}"
+# fi
 
 MANPATH=$MANPATH:$HOME/share/man

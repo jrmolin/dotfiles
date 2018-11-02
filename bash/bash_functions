@@ -58,26 +58,36 @@ function enableHeroku()
     fi
 }
 
-function root()
-{
-    DIRECTORY=".git"
+projectRoot() {
+    local _FILE=${1:-.git}
     cur=`pwd`
     last="/"
     found=1
-    until [ -d "$cur/$DIRECTORY" ]
+    until [ -e "$cur/$_FILE" ]
     do
         last=$cur
         cur=$(dirname $cur)
 
         if [ "/" == "$cur" ];
         then
-            echo "could not find $DIRECTORY directory in ancestry; staying put"
+            echo ""
             found=0
             break
         fi
     done
 
     if [ $found = 1 ]
+    then
+        echo "${cur}"
+    fi
+}
+
+root() {
+    local _FILE=${1:-.git}
+
+    local _root=$(projectRoot $DIRECTORY)
+
+    if [ "x${_root}" != "x" ]
     then
         cd $cur
     fi
@@ -104,17 +114,27 @@ function enablePyenv()
 
 function enableGo()
 {
-    if [ -d /usr/local/go ]
+    GOINSTALL="$HOME/local-installations/go"
+    if [ -d "$GOINSTALL" ]
     then
-        if [ ! -d $HOME/sandbox/go ]
+        if [ "x$(uname)" = "xLinux" ]
         then
-            mkdir -pv $HOME/sandbox/go
-        fi
+            if [ ! -d $HOME/sandbox/go ]
+            then
+                mkdir -pv $HOME/sandbox/go
+            fi
 
-        # set the GOPATH so things work
-        export GOHOME=$HOME/shared/golang
-        export GOPATH=$GOHOME
-        export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
+            # set the GOPATH so things work
+            export GOHOME=$HOME/sandbox/go
+            export GOPATH=$GOHOME
+            export PATH="$PATH:$GOINSTALL/bin:$GOPATH/bin"
+        elif [ "x$(uname)" = "xDarwin" ]
+        then
+            # set the GOPATH so things work
+            export GOHOME=$HOME/shared/golang
+            export GOPATH=$GOHOME
+            export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
+        fi
 
     fi
 }
@@ -232,6 +252,75 @@ function enableBackups()
         mkdir -p `dirname $LOGFILE`
     fi
 }
+
+function enableAntlr()
+{
+    ANTLR=/usr/local/lib/antlr-4.7.1-complete.jar
+    export CLASSPATH=".:$ANTLR:$CLASSPATH"
+    alias antlr4='java -Xmx500M -cp "$CLASSPATH" org.antlr.v4.Tool'
+    alias grun='java org.antlr.v4.gui.TestRig'
+}
+
+function enableToolchain()
+{
+    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+    if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
+    then
+        echo "it's already there"
+    else
+        PATH=${TOOLCHAIN}:$PATH
+        echo "added ${TOOLCHAIN} to PATH"
+    fi
+}
+
+function disableToolchain ()
+{
+    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+
+    PATH=${PATH//":$TOOLCHAIN:"/":"}
+    PATH=${PATH/#"$TOOLCHAIN:"/}
+    PATH=${PATH/%":$TOOLCHAIN"/}
+    echo $PATH
+}
+
+function temperature()
+{
+    GO=`which go`
+
+    if [ "x${GO}x" != 'xx' ]
+    then
+        _temperature=`weather | gawk 'match($0, /The temperature is ([^,]+)/, ary) {print ary[1]}'`
+        echo $_temperature
+    else
+        echo "go environment not found"
+    fi
+}
+
+function with()
+{
+    local name="$1"
+
+    if [[ "x$name" == "xhistory" ]]
+    then
+        set +o history
+    else
+        echo "Usage: with <history>"
+    fi
+
+}
+
+function endwith()
+{
+    local name="$1"
+
+    if [[ "x$name" == "xhistory" ]]
+    then
+        set -o history
+    else
+        echo "Usage: endwith <history>"
+    fi
+}
+
 
 if [ -d "${HOME}/.bash_functions.d" ]
 then
