@@ -61,7 +61,7 @@
                                                 " tags file
         set background=dark                     " Assume a dark background
 
-        if !has('gui')
+        if !has('gui') && !has('nvim')
             set term=$TERM                      " Make arrow and other keys work
         endif
 
@@ -303,11 +303,13 @@
         vmap <silent> // y/<C-R>"<CR>
 
         " clear out the highlighted thing
-        nmap <silent> ;/ /as0df9asdfbasfd<CR>
+        nmap <silent> ;/ :let @/ = ""<CR>
 
         " Visual shifting (does not exit Visual mode)
         vnoremap < <gv
         vnoremap > >gv
+        vnoremap <S-Tab> <gv
+        vnoremap <Tab> >gv
 
         " Fix home and end keybindings for screen, particularly on mac
         " - for some reason, this fixes the arrow keys too.
@@ -320,6 +322,7 @@
         "
         " ,v brings up ".vimrc"
         " ,V reloads it -- making all changes active (have to save first)
+        map <silent> <leader>v :split $HOME/.vimrc<CR><C-W>_
         map <silent> <leader>V :source $HOME/.vimrc<CR>:filetype detect<CR>:exe ":echo \"vimrc reloaded\""<CR>
 " }}}
 

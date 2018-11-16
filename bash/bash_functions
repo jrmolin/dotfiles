@@ -60,36 +60,58 @@ function enableHeroku()
 
 projectRoot() {
     local _FILE=${1:-.git}
+    local _ISDIR=${2:-}
     cur=`pwd`
     last="/"
-    found=1
-    until [ -e "$cur/$_FILE" ]
+    found=0
+    until [ "$last" == "$cur" ]
     do
+        if [[ -n "$_ISDIR" ]] && [[ -d "$cur/$_FILE" ]]
+        then
+            found=1
+            break
+        elif [[ -z "$_ISDIR" ]] && [[ -e "$cur/$_FILE" ]]
+        then
+            found=1
+            break
+        fi
+
         last=$cur
         cur=$(dirname $cur)
 
-        if [ "/" == "$cur" ];
-        then
-            echo ""
-            found=0
-            break
-        fi
     done
 
     if [ $found = 1 ]
     then
         echo "${cur}"
+    else
+        echo ""
+    fi
+}
+
+rootFile() {
+    local _FILE=${1:-.git}
+
+    local _root=$(projectRoot $_FILE)
+
+    if [ "x${_root}" != "x" ]
+    then
+        cd $_root
+    else
+        echo "could not find [$_FILE] in the directory ancestry"
     fi
 }
 
 root() {
     local _FILE=${1:-.git}
 
-    local _root=$(projectRoot $DIRECTORY)
+    local _root=$(projectRoot $_FILE 1)
 
     if [ "x${_root}" != "x" ]
     then
-        cd $cur
+        cd $_root
+    else
+        echo "could not find [$_FILE] in the directory ancestry"
     fi
 }
 
@@ -320,6 +342,20 @@ function endwith()
         echo "Usage: endwith <history>"
     fi
 }
+
+#export PROJECT_ROOT_DIR
+#function cd()
+#{
+#    builtin cd "$*"
+#
+#    local meh=$(projectRoot .git 1)
+#    if [ -n "$meh" ]
+#    then
+#        PROJECT_ROOT_DIR=$meh
+#    else
+#        PROJECT_ROOT_DIR=
+#    fi
+#}
 
 
 if [ -d "${HOME}/.bash_functions.d" ]

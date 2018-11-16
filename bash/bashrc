@@ -223,11 +223,20 @@ appendUnique "$HOME/local-installations/groovy-2.5.2/bin"
 # add $HOME/local-installations/newsboat/bin to PATH, if it exists
 appendUnique "$HOME/local-installations/newsboat/bin"
 
+# add $HOME/local-installations/includeos/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/includeos/bin"
+
+# add $HOME/local-installations/sprint-2.0.5.RELEASE/bin to PATH, if it exists
+appendUnique "$HOME/local-installations/spring-2.0.5.RELEASE/bin"
+
 # add $HOME/.local/npm/bin to PATH, if it exists
 appendUnique "$HOME/.local/npm/bin"
 
 # add /opt/eclipse to PATH, if it exists
 appendUnique "/opt/eclipse"
+
+# add /opt/java/clojure-1.9.0.397/bin to PATH, if it exists
+appendUnique "/opt/java/clojure-1.9.0.397/bin"
 
 # add antlr to the classpath
 addUniqueToClasspath "$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
@@ -283,6 +292,8 @@ if [ "x$(uname)" = "xDarwin" ]; then
       . $(brew --prefix)/etc/bash_completion
     fi
 fi
+
+export PROJECT_ROOT_DIR
 
 #
 # MO_POWERLINE_REPOSITORY_ROOT=`pip show powerline-status | grep Location | cut -d' ' -f2`
