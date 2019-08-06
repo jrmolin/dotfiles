@@ -148,6 +148,18 @@ sourceIfExists()
     fi
 }
 
+addUnique()
+{
+    if [[ ":$PATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        if [ -d "$1" ]
+        then
+            PATH="$1:$PATH"
+        fi
+    fi
+}
+
 appendUnique()
 {
     if [[ ":$PATH:" != *":$1:"* ]]
@@ -191,7 +203,13 @@ fi
 sourceIfExists "$HOME/functions.sh"
 
 # add $HOME/.local/bin to PATH, if it exists
-appendUnique "$HOME/.local/bin"
+addUnique "$HOME/.local/bin"
+
+# add $HOME/.local/builds/bin to PATH, if it exists
+addUnique "$HOME/local/builds/bin"
+
+# add $HOME/bin to PATH, if it exists
+addUnique "$HOME/bin"
 
 # add $HOME/local-installations/lua-5.3.5/bin to PATH, if it exists
 appendUnique "$HOME/local-installations/lua-5.3.5/bin"
@@ -201,12 +219,6 @@ appendUnique "$HOME/local-installations/cmake/bin"
 
 # add $HOME/local-installations/python-3.7.0/bin to PATH, if it exists
 appendUnique "$HOME/local-installations/python-3.7.0/bin"
-
-# add $HOME/.local/builds/bin to PATH, if it exists
-appendUnique "$HOME/local/builds/bin"
-
-# add $HOME/bin to PATH, if it exists
-appendUnique "$HOME/bin"
 
 # # add /opt/java/jdk-10.0.2/bin to PATH, if it exists
 # appendUnique "/opt/java/jdk-10.0.2/bin"
@@ -308,3 +320,11 @@ export PROJECT_ROOT_DIR
 # fi
 
 MANPATH=$MANPATH:$HOME/share/man
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/mo/.sdkman"
+[[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

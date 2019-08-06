@@ -191,7 +191,7 @@ nodered()
         -p 1880:1880 \
         -e FLOWS=/data/flows/flows.json \
         -v ~/.docker/home/node-red:/data/flows \
-        nodered/node-red-docker
+        moli/nodered
 }
 
 dockerState()
@@ -238,3 +238,4 @@ startJenkins()
         --name $name \
         jenkinsci/blueocean
 }
+

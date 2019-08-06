@@ -40,8 +40,16 @@ function enableSdkman()
 function enableOcaml()
 {
     # OPAM configuration
-    export PATH="$HOME/.cargo/bin:$PATH"
-    source ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+    test -r ${HOME}/.opam/opam-init/init.sh && \
+        . ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+
+    eval $(opam env)
+}
+
+function enableRust()
+{
+    test -r ${HOME}/.cargo/env && \
+        . ${HOME}/.cargo/env > /dev/null 2> /dev/null
 }
 
 # docker tomfoolery
@@ -213,7 +221,7 @@ function getSslCert
         openssl x509 -inform pem -noout -text
 }
 
-function backup
+function oldbackup
 {
     if [ "$#" -lt "1" ]
     then
@@ -228,7 +236,7 @@ function backup
     sqlite3 $BACKUPS "insert into files (path,owner,mode,contents) values ('$path','$owner','$mode','$contents');"
 }
 
-function map
+function oldmap
 {
     # if given a key and value, insert
     if [ "$#" -eq "2" ]
@@ -343,6 +351,18 @@ function endwith()
     fi
 }
 
+function dco()
+{
+    local path="$HOME/.dco_path"
+
+    if [ -e "$HOME/.dco_path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
+
 #export PROJECT_ROOT_DIR
 #function cd()
 #{
@@ -357,6 +377,22 @@ function endwith()
 #    fi
 #}
 
+function bc2bc()
+{
+    local ibase=${1:- "A"}
+    local obase=${2:- "A"}
+    echo "ibase=${ibase};obase=${obase};$3" | bc
+}
+
+function dec2hex()
+{
+    bc2bc "A" "16" "$1"
+}
+
+function hex2dec()
+{
+    bc2bc "16" "A" "$1"
+}
 
 if [ -d "${HOME}/.bash_functions.d" ]
 then
