@@ -130,7 +130,6 @@ link_file() {
         echo "[$_target] already exists! skipping"
     else
         echo "source: $_source ; target: $_target"
-        return
         doit ln -s $_source $_target
     fi
 }
@@ -166,6 +165,7 @@ _install curl
 _install vim
 _install tmux
 
+link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
 link_file $WORKDIR/vim/vim "$HOME/.vim"
 link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
 link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
