@@ -211,36 +211,6 @@ addUnique "$HOME/local/builds/bin"
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
 
-# add $HOME/local-installations/lua-5.3.5/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/lua-5.3.5/bin"
-
-# add $HOME/local-installations/cmake/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/cmake/bin"
-
-# add $HOME/local-installations/python-3.7.0/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/python-3.7.0/bin"
-
-# # add /opt/java/jdk-10.0.2/bin to PATH, if it exists
-# appendUnique "/opt/java/jdk-10.0.2/bin"
-
-# add /opt/java/jdk1.8.0_192/bin to PATH, if it exists
-appendUnique "/opt/java/jdk1.8.0_192/bin"
-
-# add $HOME/local-installations/node-v8.11.4-linux-x64/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/node-v8.11.4-linux-x64/bin"
-
-# add $HOME/local-installations/groovy-2.5.2/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/groovy-2.5.2/bin"
-
-# add $HOME/local-installations/newsboat/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/newsboat/bin"
-
-# add $HOME/local-installations/includeos/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/includeos/bin"
-
-# add $HOME/local-installations/sprint-2.0.5.RELEASE/bin to PATH, if it exists
-appendUnique "$HOME/local-installations/spring-2.0.5.RELEASE/bin"
-
 # add $HOME/.local/npm/bin to PATH, if it exists
 appendUnique "$HOME/.local/npm/bin"
 
@@ -251,42 +221,50 @@ appendUnique "/opt/eclipse"
 appendUnique "/opt/java/clojure-1.9.0.397/bin"
 
 # add antlr to the classpath
-addUniqueToClasspath "$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
+_ANTLR="$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
+if [ -e $_ANTLR ]
+then
+    addUniqueToClasspath $_ANTLR
+fi
 
 export EDITOR=vim
 
-JAVAC=$(which javac)
+function enableJava()
+{
+    # add /opt/java/jdk1.8.0_192/bin to PATH, if it exists
+    appendUnique "/opt/java/jdk1.8.0_192/bin"
 
-if [ -n "${JAVAC}" ]
-then
-    JAVAC=$(readlink -f $JAVAC)
-    JAVA_BIN=$(dirname "${JAVAC}")
-    JAVA_HOME=$(dirname "${JAVA_BIN}")
-fi
+    JAVAC=$(which javac)
 
-if [ -n "${JAVA_HOME}" ]
-then
-    export JAVA_HOME
-fi
+    if [ -n "${JAVAC}" ]
+    then
+        JAVAC=$(readlink -f $JAVAC)
+        JAVA_BIN=$(dirname "${JAVAC}")
+        JAVA_HOME=$(dirname "${JAVA_BIN}")
+    fi
 
-GRAILS=$(which grails)
+    if [ -n "${JAVA_HOME}" ]
+    then
+        export JAVA_HOME
+    fi
+}
 
-if [ -n "${GRAILS}" ]
-then
-    GRAILS=$(readlink -f $GRAILS)
-    GRAILS_BIN=$(dirname "${GRAILS}")
-    GRAILS_HOME=$(dirname "${GRAILS_BIN}")
-fi
+function enableGrails()
+{
+    GRAILS=$(which grails)
 
-if [ -n "${JAVA_HOME}" ]
-then
-    export JAVA_HOME
-fi
+    if [ -n "${GRAILS}" ]
+    then
+        GRAILS=$(readlink -f $GRAILS)
+        GRAILS_BIN=$(dirname "${GRAILS}")
+        GRAILS_HOME=$(dirname "${GRAILS_BIN}")
+    fi
 
-if [ -n "${GRAILS_HOME}" ]
-then
-    export GRAILS_HOME
-fi
+    if [ -n "${GRAILS_HOME}" ]
+    then
+        export GRAILS_HOME
+    fi
+}
 
 #export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
 
