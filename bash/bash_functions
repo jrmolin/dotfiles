@@ -93,7 +93,7 @@ projectRoot() {
     then
         echo "${cur}"
     else
-        echo ""
+        echo "."
     fi
 }
 
