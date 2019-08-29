@@ -355,7 +355,19 @@ function dco()
 {
     local path="$HOME/.dco_path"
 
-    if [ -e "$HOME/.dco_path" ]
+    if [ -e "$path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
+
+function dotfiles()
+{
+    local path="$HOME/.dotfiles_path"
+
+    if [ -e "$path" ]
     then
         cd $(< $path)
     else
