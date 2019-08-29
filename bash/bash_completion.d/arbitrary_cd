@@ -4,11 +4,6 @@ __arbitrary_cd_cur=
 __arbitrary_cd_full=
 declare -a -g __arbitrary_cd_suggestions
 
-################################################################################
-# declare variables here
-################################################################################
-__arbitrary_cd_shared_dir=/opt/shared
-
 __arbitrary_cd_debug=0
 __arbitrary_cd_dump()
 {
@@ -25,7 +20,7 @@ __arbitrary_cd_lstrip()
 
 __arbitrary_cd_strip_trailing_slash()
 {
-    echo $(echo $1 | sed "s|/*$||")
+    echo $1 | sed "s|/*$||"
 }
 
 __arbitrary_cd_prepend_root()
@@ -34,7 +29,6 @@ __arbitrary_cd_prepend_root()
     shift
 
     local _dirs="$@"
-    local _outs=""
     local _prepend=$_root
 
     if [ -n "$_root" ]
@@ -53,8 +47,9 @@ __arbitrary_cd_prepend_root()
 
 __arbitrary_cd_get_subdirs()
 {
+    local base=${1:-"."}
     # get rid of the trailing slash
-    local _root=$(__arbitrary_cd_strip_trailing_slash $1)
+    local _root=$(__arbitrary_cd_strip_trailing_slash $base)
 
     # dump the root
     __arbitrary_cd_dump "${FUNCNAME[0]}:: root: $_root"
@@ -90,11 +85,10 @@ __arbitrary_cd_get_dirs()
         __arbitrary_cd_cur=
         __arbitrary_cd_full=
 
-    # if the user passed in a __arbitrary_cd_full sub-directory, create __arbitrary_cd_suggestions based on that
-    elif [ -d "$_base/$__arbitrary_cd_cur" ]
+    # if the user passed in a sub-directory, create suggestions based on that
+    elif [ -d "$_base/$__arbitrary_cd_cur" ] && [ "x$__arbitrary_cd_cur" != "x." ]
     then
         __arbitrary_cd_get_subdirs "$_base/$__arbitrary_cd_cur"
-        #__arbitrary_cd_prepend_root "$_base/$__arbitrary_cd_cur"
         __arbitrary_cd_full=$__arbitrary_cd_cur
         __arbitrary_cd_cur=""
     else
@@ -118,7 +112,6 @@ __arbitrary_cd_get_dirs()
         local _tmpBase=$(__arbitrary_cd_strip_trailing_slash "$_base/$full_cur")
 
         __arbitrary_cd_get_subdirs "$_tmpBase"
-        #__arbitrary_cd_prepend_root "$_full_cur"
         __arbitrary_cd_cur=$last
         __arbitrary_cd_full=$full_cur
     fi
@@ -131,15 +124,15 @@ _arbitrary_cd_get_suggestions()
     if [ -n "${__arbitrary_cd_full}" ]
     then
         __arbitrary_cd_full=$(__arbitrary_cd_strip_trailing_slash $__arbitrary_cd_full)
-
-        if [ "x." = "x$__arbitrary_cd_full" ]
-        then
-            __arbitrary_cd_full=
-        fi
     fi
 
     for i in ${__arbitrary_cd_suggestions[@]}
     do
+        if [ "x$i" = "x." ]
+        then
+            continue
+        fi
+
         if [ -n "${__arbitrary_cd_full}" ]
         then
             reply="$reply ${__arbitrary_cd_full}/$i"
@@ -162,15 +155,12 @@ _arbitrary_cd_runner()
     __arbitrary_cd_cur=
     __arbitrary_cd_full=
 
-    __arbitrary_cd_dump "${FUNCNAME[0]}: comp words: ${COMP_WORDS[@]}"
     if [[ "${#COMP_WORDS[@]}" > 2 ]]
     then
         return
     fi
 
     __arbitrary_cd_cur=$(__arbitrary_cd_lstrip ${COMP_WORDS[COMP_CWORD]})
-
-    __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_cur: [$__arbitrary_cd_cur]"
 
     __arbitrary_cd_get_dirs ${1}
 
@@ -191,7 +181,7 @@ _arbitrary_cd_runner()
     then
         __arbitrary_cd_prepend_root $__arbitrary_cd_full
         __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_suggestions: [${__arbitrary_cd_suggestions[@]}]"
-        COMPREPLY=("${__arbitrary_cd_suggestions[0]}/")
+        COMPREPLY=("${__arbitrary_cd_suggestions[0]}")
     else
         COMPREPLY=($(_arbitrary_cd_get_suggestions))
     fi
@@ -227,16 +217,17 @@ function pcd()
 }
 
 # the completion function for navigating to a subdirectory of the shared directory
+__arbitrary_cd_shared_dir=/opt/shared
 _scd()
 {
     _arbitrary_cd_runner ${__arbitrary_cd_shared_dir}
 }
 
-
 scd()
 {
     cd "${__arbitrary_cd_shared_dir}/$1"
 }
+
 complete -o nospace -o filenames -F _hcd hcd
 complete -o nospace -o filenames -F _pcd pcd
 complete -o nospace -o filenames -F _scd scd
