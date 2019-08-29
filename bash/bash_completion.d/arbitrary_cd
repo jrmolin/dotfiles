@@ -1,0 +1,243 @@
+#!/usr/bin/env bash
+
+__arbitrary_cd_cur=
+__arbitrary_cd_full=
+declare -a -g __arbitrary_cd_suggestions
+
+################################################################################
+# declare variables here
+################################################################################
+__arbitrary_cd_shared_dir=/opt/shared
+
+__arbitrary_cd_debug=0
+__arbitrary_cd_dump()
+{
+    if [[ 1 = $__arbitrary_cd_debug ]]
+    then
+        echo "$@" >> $HOME/.arbitrary-cd-dump.txt
+    fi
+}
+
+__arbitrary_cd_lstrip()
+{
+    echo $(echo $1 | sed -e "s/^[[:space:]]*//")
+}
+
+__arbitrary_cd_strip_trailing_slash()
+{
+    echo $(echo $1 | sed "s|/*$||")
+}
+
+__arbitrary_cd_prepend_root()
+{
+    local _root=$(__arbitrary_cd_strip_trailing_slash $1)
+    shift
+
+    local _dirs="$@"
+    local _outs=""
+    local _prepend=$_root
+
+    if [ -n "$_root" ]
+    then
+        _prepend="$_root/"
+    else
+        _prepend=""
+    fi
+
+    for i in ${!__arbitrary_cd_suggestions[@]}
+    do
+        __arbitrary_cd_dump "${FUNCNAME[0]}:: ${__arbitrary_cd_suggestions[$i]}"
+        __arbitrary_cd_suggestions[$i]="${_prepend}${__arbitrary_cd_suggestions[$i]}"
+    done
+}
+
+__arbitrary_cd_get_subdirs()
+{
+    # get rid of the trailing slash
+    local _root=$(__arbitrary_cd_strip_trailing_slash $1)
+
+    # dump the root
+    __arbitrary_cd_dump "${FUNCNAME[0]}:: root: $_root"
+
+    # find the root
+    local _dirs=($(command find $_root -maxdepth 1 -type d | sort ))
+    local _out=""
+    __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_suggestions: [${__arbitrary_cd_suggestions[@]}]"
+    for i in ${_dirs[@]}
+    do
+        if [[ "$i" = "$_root" ]]
+        then
+            continue
+        fi
+
+        i=${i#$_root/}
+
+        #__arbitrary_cd_dump "dir $i"
+        __arbitrary_cd_suggestions+=($i)
+    done
+    __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_suggestions: [${__arbitrary_cd_suggestions[@]}]"
+}
+
+__arbitrary_cd_get_dirs()
+{
+    local _base=$1
+
+    __arbitrary_cd_dump "${FUNCNAME[0]}: base[$_base] __arbitrary_cd_cur[$__arbitrary_cd_cur]"
+    # if nothing has been added, just get the subdirectories under the root
+    if [ -z "$__arbitrary_cd_cur" ]
+    then
+        __arbitrary_cd_get_subdirs "$_base"
+        __arbitrary_cd_cur=
+        __arbitrary_cd_full=
+
+    # if the user passed in a __arbitrary_cd_full sub-directory, create __arbitrary_cd_suggestions based on that
+    elif [ -d "$_base/$__arbitrary_cd_cur" ]
+    then
+        __arbitrary_cd_get_subdirs "$_base/$__arbitrary_cd_cur"
+        #__arbitrary_cd_prepend_root "$_base/$__arbitrary_cd_cur"
+        __arbitrary_cd_full=$__arbitrary_cd_cur
+        __arbitrary_cd_cur=""
+    else
+
+        # handle partial directories here
+
+        # split the current path by separator
+        local _path=($(echo $__arbitrary_cd_cur | tr '/' ' '))
+
+        # get the last directory (could be partial) in the path
+        last=${_path[-1]}
+        __arbitrary_cd_dump "${FUNCNAME[0]}: path: $__arbitrary_cd_cur :: ${_path[@]} :: $last"
+        local full_cur=""
+
+        # remove the last directory (could be partial)
+        full_cur=${__arbitrary_cd_cur::-${#last}}
+
+        __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_full-__arbitrary_cd_cur: [$full_cur]"
+
+        # if we have a valid sub, add it to the base
+        local _tmpBase=$(__arbitrary_cd_strip_trailing_slash "$_base/$full_cur")
+
+        __arbitrary_cd_get_subdirs "$_tmpBase"
+        #__arbitrary_cd_prepend_root "$_full_cur"
+        __arbitrary_cd_cur=$last
+        __arbitrary_cd_full=$full_cur
+    fi
+
+}
+
+_arbitrary_cd_get_suggestions()
+{
+    # if there is something in full, process it
+    if [ -n "${__arbitrary_cd_full}" ]
+    then
+        __arbitrary_cd_full=$(__arbitrary_cd_strip_trailing_slash $__arbitrary_cd_full)
+
+        if [ "x." = "x$__arbitrary_cd_full" ]
+        then
+            __arbitrary_cd_full=
+        fi
+    fi
+
+    for i in ${__arbitrary_cd_suggestions[@]}
+    do
+        if [ -n "${__arbitrary_cd_full}" ]
+        then
+            reply="$reply ${__arbitrary_cd_full}/$i"
+        else
+            reply="$reply $i"
+        fi
+    done
+
+    echo $reply
+}
+
+#
+# -- if the user has entered some text, figure out if there is a valid path in there
+# -- if there is a valid path (and no more), create proper __arbitrary_cd_suggestions
+#
+#
+_arbitrary_cd_runner()
+{
+    __arbitrary_cd_suggestions=()
+    __arbitrary_cd_cur=
+    __arbitrary_cd_full=
+
+    __arbitrary_cd_dump "${FUNCNAME[0]}: comp words: ${COMP_WORDS[@]}"
+    if [[ "${#COMP_WORDS[@]}" > 2 ]]
+    then
+        return
+    fi
+
+    __arbitrary_cd_cur=$(__arbitrary_cd_lstrip ${COMP_WORDS[COMP_CWORD]})
+
+    __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_cur: [$__arbitrary_cd_cur]"
+
+    __arbitrary_cd_get_dirs ${1}
+
+    local outs=""
+    if [[ ${#__arbitrary_cd_suggestions} > 0 ]]
+    then
+        for i in ${__arbitrary_cd_suggestions[@]}
+        do
+            outs="$outs $i"
+        done
+    fi
+
+    # now i have all the base directories
+    __arbitrary_cd_suggestions=($(compgen -W "$outs" -- "$__arbitrary_cd_cur"))
+    __arbitrary_cd_dump "${FUNCNAME[0]} __arbitrary_cd_suggestions: [${__arbitrary_cd_suggestions[@]}] -- __arbitrary_cd_cur [$__arbitrary_cd_cur] -- __arbitrary_cd_full [$__arbitrary_cd_full]"
+
+    if [[ 1 == ${#__arbitrary_cd_suggestions[@]} ]]
+    then
+        __arbitrary_cd_prepend_root $__arbitrary_cd_full
+        __arbitrary_cd_dump "${FUNCNAME[0]}: __arbitrary_cd_suggestions: [${__arbitrary_cd_suggestions[@]}]"
+        COMPREPLY=("${__arbitrary_cd_suggestions[0]}/")
+    else
+        COMPREPLY=($(_arbitrary_cd_get_suggestions))
+    fi
+    return 0
+
+}
+
+################################################################################
+# define new completion routines below here
+################################################################################
+
+# the completion function for navigating to a subdirectory of $HOME
+_hcd()
+{
+    _arbitrary_cd_runner $HOME
+}
+
+function hcd()
+{
+    cd "${HOME}/$1"
+}
+
+# the completion function for navigating to a subdirectory of the project root
+_pcd()
+{
+    _arbitrary_cd_runner $(projectRoot .git 1)
+}
+
+function pcd()
+{
+    local meh=$(projectRoot .git 1)
+    cd "${meh}/$1"
+}
+
+# the completion function for navigating to a subdirectory of the shared directory
+_scd()
+{
+    _arbitrary_cd_runner ${__arbitrary_cd_shared_dir}
+}
+
+
+scd()
+{
+    cd "${__arbitrary_cd_shared_dir}/$1"
+}
+complete -o nospace -o filenames -F _hcd hcd
+complete -o nospace -o filenames -F _pcd pcd
+complete -o nospace -o filenames -F _scd scd
+
