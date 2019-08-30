@@ -142,33 +142,6 @@ function enablePyenv()
     eval "$(pyenv init -)"
 }
 
-function enableGo()
-{
-    GOINSTALL="$HOME/local-installations/go"
-    if [ -d "$GOINSTALL" ]
-    then
-        if [ "x$(uname)" = "xLinux" ]
-        then
-            if [ ! -d $HOME/sandbox/go ]
-            then
-                mkdir -pv $HOME/sandbox/go
-            fi
-
-            # set the GOPATH so things work
-            export GOHOME=$HOME/sandbox/go
-            export GOPATH=$GOHOME
-            export PATH="$PATH:$GOINSTALL/bin:$GOPATH/bin"
-        elif [ "x$(uname)" = "xDarwin" ]
-        then
-            # set the GOPATH so things work
-            export GOHOME=$HOME/shared/golang
-            export GOPATH=$GOHOME
-            export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
-        fi
-
-    fi
-}
-
 function enableYara()
 {
     YARAHOME=${HOME}/yara
@@ -257,14 +230,6 @@ EOF
     fi
 }
 
-function killhipchat()
-{
-    pid=$(ps aux | grep hipchat | grep -v grep | awk '{ print $2 }')
-    echo "killing ${pid}"
-    kill $pid
-
-}
-
 function enableBackups()
 {
     export BACKUPS=$HOME/.config/backups/files.db
@@ -303,27 +268,21 @@ function enableToolchain()
     fi
 }
 
+function stripFromPath()
+{
+    local _path=$1
+    PATH=${PATH//":$_path:"/":"}
+    PATH=${PATH/#"$_path:"/}
+    PATH=${PATH/%":$_path"/}
+
+    echo $PATH
+}
+
 function disableToolchain ()
 {
     TOOLCHAIN=/opt/dco/dev/toolchain/bin
 
-    PATH=${PATH//":$TOOLCHAIN:"/":"}
-    PATH=${PATH/#"$TOOLCHAIN:"/}
-    PATH=${PATH/%":$TOOLCHAIN"/}
-    echo $PATH
-}
-
-function temperature()
-{
-    GO=`which go`
-
-    if [ "x${GO}x" != 'xx' ]
-    then
-        _temperature=`weather | gawk 'match($0, /The temperature is ([^,]+)/, ary) {print ary[1]}'`
-        echo $_temperature
-    else
-        echo "go environment not found"
-    fi
+    echo $(stripFromPath $TOOLCHAIN)
 }
 
 function with()
@@ -375,20 +334,6 @@ function dotfiles()
     fi
 }
 
-#export PROJECT_ROOT_DIR
-#function cd()
-#{
-#    builtin cd "$*"
-#
-#    local meh=$(projectRoot .git 1)
-#    if [ -n "$meh" ]
-#    then
-#        PROJECT_ROOT_DIR=$meh
-#    else
-#        PROJECT_ROOT_DIR=
-#    fi
-#}
-
 function bc2bc()
 {
     local ibase=${1:- "A"}
@@ -396,14 +341,44 @@ function bc2bc()
     echo "ibase=${ibase};obase=${obase};$3" | bc
 }
 
+function __bc2bc_usage()
+{
+    local name=${FUNCNAME[1]}
+    if [ "x$name" = "x" ]
+    then
+        echo "this is a private function and is not meant to be called directly"
+        return
+    fi
+    echo "usage: $name <NUMBER>"
+    echo "  NUMBER  the number to be converted, in $1"
+}
+
 function dec2hex()
 {
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "decimal format (example: 8192)"
+        return
+    fi
+
     bc2bc "A" "16" "$1"
 }
 
 function hex2dec()
 {
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "hexadecimal format, without '0x' (example: 2000)"
+        return
+    fi
+
     bc2bc "16" "A" "$1"
+}
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
 }
 
 if [ -d "${HOME}/.bash_functions.d" ]
