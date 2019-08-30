@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+__enable_nix=0
+enableNix() {
+    local file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+
+    if [ "x$__enable_nix" = "x0" ]
+    then
+        [ -e "$file" ] && . "$file" && __enable_nix=1
+    fi
+}
