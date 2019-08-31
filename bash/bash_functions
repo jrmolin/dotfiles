@@ -1,6 +1,7 @@
 #!/bin/bash
 
-enableVirtualenv() {
+function enableVirtualenv()
+{
     venvwr="/usr/local/bin/virtualenvwrapper.sh"
     venvwr_python="/usr/local/bin/python2"
     venvwr_virtualenv="/usr/local/bin/virtualenv"
@@ -17,12 +18,14 @@ enableVirtualenv() {
     fi
 }
 
-enableRvm() {
+function enableRvm()
+{
     export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
     [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 }
 
-enableSdkman() {
+function enableSdkman()
+{
     #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
     SDKMAN_DIR="${HOME}/.sdkman"
     INIT="{SDKMAN_DIR}/bin/sdkman-init.sh"
@@ -34,74 +37,113 @@ enableSdkman() {
     fi
 }
 
-enableOcaml() {
+function enableOcaml()
+{
     # OPAM configuration
-    export PATH="$HOME/.cargo/bin:$PATH"
-    source ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+    test -r ${HOME}/.opam/opam-init/init.sh && \
+        . ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+
+    eval $(opam env)
+}
+
+function enableRust()
+{
+    test -r ${HOME}/.cargo/env && \
+        . ${HOME}/.cargo/env > /dev/null 2> /dev/null
 }
 
 # docker tomfoolery
-function newbox () {
+function newbox
+{
 docker run --name $1 --volumes-from=volume_container -it -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/opt/pwd" -e BOX_NAME=$1 nathanleclaire/devbox
 }
 
-enableHeroku() {
+function enableHeroku()
+{
     ### Added by the Heroku Toolbelt
     if [ -d "/usr/local/heroki" ]; then
         export PATH="/usr/local/heroku/bin:$PATH"
     fi
 }
 
-root() {
-    DIRECTORY=".git"
-    ld=`pwd`
-    until [ -d "$DIRECTORY" ]
+projectRoot() {
+    local _FILE=${1:-.git}
+    local _ISDIR=${2:-}
+    cur=`pwd`
+    last="/"
+    found=0
+    until [ "$last" == "$cur" ]
     do
-        pwd=`pwd`
-        cd ..
-
-        if [ "/" == "$pwd" ];
+        if [[ -n "$_ISDIR" ]] && [[ -d "$cur/$_FILE" ]]
         then
-            cd $ld
-            echo "could not find $DIRECTORY directory in ancestry; staying put"
+            found=1
+            break
+        elif [[ -z "$_ISDIR" ]] && [[ -e "$cur/$_FILE" ]]
+        then
+            found=1
             break
         fi
+
+        last=$cur
+        cur=$(dirname $cur)
+
     done
+
+    if [ $found = 1 ]
+    then
+        echo "${cur}"
+    else
+        echo "."
+    fi
 }
 
-enableRvm() {
+rootFile() {
+    local _FILE=${1:-.git}
+
+    local _root=$(projectRoot $_FILE)
+
+    if [ "x${_root}" != "x" ]
+    then
+        cd $_root
+    else
+        echo "could not find [$_FILE] in the directory ancestry"
+    fi
+}
+
+root() {
+    local _FILE=${1:-.git}
+
+    local _root=$(projectRoot $_FILE 1)
+
+    if [ "x${_root}" != "x" ]
+    then
+        cd $_root
+    else
+        echo "could not find [$_FILE] in the directory ancestry"
+    fi
+}
+
+function enableRvm()
+{
     export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 }
 
-enableNvm() {
+function enableNvm()
+{
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
 
-enablePyenv() {
+function enablePyenv()
+{
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
 }
 
-enableGo() {
-    if [ -d /usr/local/go ]
-    then
-        if [ ! -d $HOME/sandbox/go ]
-        then
-            mkdir -pv $HOME/sandbox/go
-        fi
-
-        # set the GOPATH so things work
-        export GOHOME=$HOME/shared/golang
-        export GOPATH=$GOHOME
-        export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
-
-    fi
-}
-
-enableYara() {
+function enableYara()
+{
     YARAHOME=${HOME}/yara
     if [ -d "${YARAHOME}" ]
     then
@@ -112,13 +154,15 @@ enableYara() {
     fi
 }
 
-enableIos() {
+function enableIos()
+{
     export iOSOpenDevPath=/opt/iOSOpenDev
     export iOSOpenDevDevice=
     export PATH=${iOSOpenDevPath}/bin:$PATH
 }
 
-docker-redis() {
+function docker-redis()
+{
     running=$(docker ps | grep redis | awk '{ print $1 }')
     if [ "x$running" != "x" ];
     then
@@ -135,7 +179,23 @@ docker-redis() {
     res=$(docker run --name my-redis -p 6379:6379 -d redis:alpine)
 }
 
-function backup() {
+function getSslCert
+{
+    SERVER=$1
+    PORT=${2:-443}
+
+    if [ "x$SERVER" = "x" ]
+    then
+        echo "usage: getSslCert <server name (eg google.com)> [<port (eg 8443) -- 443 default>]"
+        return 1
+    fi
+
+    echo | openssl s_client -showcerts -servername $SERVER -connect $SERVER:$PORT 2>/dev/null | \
+        openssl x509 -inform pem -noout -text
+}
+
+function oldbackup
+{
     if [ "$#" -lt "1" ]
     then
         echo "need to provide a file to backup (abspath)"
@@ -149,7 +209,8 @@ function backup() {
     sqlite3 $BACKUPS "insert into files (path,owner,mode,contents) values ('$path','$owner','$mode','$contents');"
 }
 
-function map {
+function oldmap
+{
     # if given a key and value, insert
     if [ "$#" -eq "2" ]
     then
@@ -169,14 +230,8 @@ EOF
     fi
 }
 
-killhipchat() {
-    pid=$(ps aux | grep hipchat | grep -v grep | awk '{ print $2 }')
-    echo "killing ${pid}"
-    kill $pid
-
-}
-
-enableBackups() {
+function enableBackups()
+{
     export BACKUPS=$HOME/.config/backups/files.db
 
     if [ ! -e "$BACKUPS" ]
@@ -192,4 +247,145 @@ enableBackups() {
         mkdir -p `dirname $LOGFILE`
     fi
 }
+
+function enableAntlr()
+{
+    ANTLR=/usr/local/lib/antlr-4.7.1-complete.jar
+    export CLASSPATH=".:$ANTLR:$CLASSPATH"
+    alias antlr4='java -Xmx500M -cp "$CLASSPATH" org.antlr.v4.Tool'
+    alias grun='java org.antlr.v4.gui.TestRig'
+}
+
+function enableToolchain()
+{
+    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+    if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
+    then
+        echo "it's already there"
+    else
+        PATH=${TOOLCHAIN}:$PATH
+        echo "added ${TOOLCHAIN} to PATH"
+    fi
+}
+
+function stripFromPath()
+{
+    local _path=$1
+    PATH=${PATH//":$_path:"/":"}
+    PATH=${PATH/#"$_path:"/}
+    PATH=${PATH/%":$_path"/}
+
+    echo $PATH
+}
+
+function disableToolchain ()
+{
+    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+
+    echo $(stripFromPath $TOOLCHAIN)
+}
+
+function with()
+{
+    local name="$1"
+
+    if [[ "x$name" == "xhistory" ]]
+    then
+        set +o history
+    else
+        echo "Usage: with <history>"
+    fi
+
+}
+
+function endwith()
+{
+    local name="$1"
+
+    if [[ "x$name" == "xhistory" ]]
+    then
+        set -o history
+    else
+        echo "Usage: endwith <history>"
+    fi
+}
+
+function dco()
+{
+    local path="$HOME/.dco_path"
+
+    if [ -e "$path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
+
+function dotfiles()
+{
+    local path="$HOME/.dotfiles_path"
+
+    if [ -e "$path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
+
+function bc2bc()
+{
+    local ibase=${1:- "A"}
+    local obase=${2:- "A"}
+    echo "ibase=${ibase};obase=${obase};$3" | bc
+}
+
+function __bc2bc_usage()
+{
+    local name=${FUNCNAME[1]}
+    if [ "x$name" = "x" ]
+    then
+        echo "this is a private function and is not meant to be called directly"
+        return
+    fi
+    echo "usage: $name <NUMBER>"
+    echo "  NUMBER  the number to be converted, in $1"
+}
+
+function dec2hex()
+{
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "decimal format (example: 8192)"
+        return
+    fi
+
+    bc2bc "A" "16" "$1"
+}
+
+function hex2dec()
+{
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "hexadecimal format, without '0x' (example: 2000)"
+        return
+    fi
+
+    bc2bc "16" "A" "$1"
+}
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
+if [ -d "${HOME}/.bash_functions.d" ]
+then
+    for f in $(ls -1 ${HOME}/.bash_functions.d/*)
+    do
+        . $f
+    done
+fi
 

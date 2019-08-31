@@ -1,0 +1,46 @@
+#/usr/bin/env bash
+
+AGAIN_COMPLETION_COMMANDS_NUMBER=15
+
+_again_completions()
+{
+  if [ "${#COMP_WORDS[@]}" != "2" ]; then
+    return
+  fi
+
+  local commands_number=${AGAIN_COMPLETION_COMMANDS_NUMBER:-50}
+  local IFS=$'\n'
+  local suggestions=($(compgen -W "$(fc -l -$commands_number | sed 's/\t//')" -- "${COMP_WORDS[1]}"))
+
+  if [ "${#suggestions[@]}" == "1" ]; then
+    local number="${suggestions[0]/%\ */}"
+    COMPREPLY=("$number")
+  else
+    for i in "${!suggestions[@]}"; do
+      suggestions[$i]="$(printf '%*s' "-$COLUMNS"  "${suggestions[$i]}")"
+    done
+
+    COMPREPLY=("${suggestions[@]}")
+  fi
+}
+
+again()
+{
+    if [ -z "$1" ]
+    then
+        echo "no command number passed"
+        return -1
+    fi
+
+    exists=$(fc -l -1000 | grep ^$1 -- 2>/dev/null)
+
+    if [ -n "$exists" ]
+    then
+        fc -s -- "$1"
+    else
+        echo "command with number $1 was not found in recent history"
+        return -2
+    fi
+}
+
+complete -F _again_completions again

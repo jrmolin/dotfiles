@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+__arbitrary_cd_cur=
+__arbitrary_cd_full=
+declare -a -g __arbitrary_cd_suggestions
+
+__arbitrary_cd_debug=
+
+if [ "x$__arbitrary_cd_debug" != "x" ]
+then
+    __arbitrary_cd_dump()
+    {
+        if [[ 1 = $__arbitrary_cd_debug ]]
+        then
+            echo "$@" >> $HOME/.arbitrary-cd-dump.txt
+        fi
+    }
+else
+    __arbitrary_cd_dump(){
+        return
+    }
+fi
+
+__arbitrary_cd_lstrip()
+{
+    echo $(echo $1 | sed -e "s/^[[:space:]]*//")
+}
+
+__arbitrary_cd_strip_trailing_slash()
+{
+    echo $1 | sed "s|/*$||"
+}
+
+_arbitrary_cd_runner()
+{
+
+    local cur prev words cword
+    _init_completion || return
+
+    if [[ "$cword" > 1 ]]
+    then
+        return
+    fi
+
+    local base=$(__arbitrary_cd_strip_trailing_slash $(__arbitrary_cd_lstrip $1))
+    if [ "x$base" = "x." ]
+    then
+        base=""
+    fi
+
+    # if cur is empty, set it to $base
+    if [ -z "$cur" ]
+    then
+        cur="$base/"
+    elif [[ "$cur" != "${base}*" ]]
+    then
+        # if cur does not start with $base, prepend it
+        cur="${base}/${cur}"
+    fi
+
+    cur=$(echo "$cur" | sed s#//*#/#g)
+
+    __arbitrary_cd_dump "${FUNCNAME[0]} -- base [$base] -- cur [$cur] -- prev [$prev] -- cword [$cword]"
+
+    # run filedir
+    _filedir -d
+
+    # now i have all the base directories
+    __arbitrary_cd_dump "${FUNCNAME[0]} COMPREPLY: [${COMPREPLY[@]}] -- cur [$cur] -- prev [$prev]"
+
+    local IFS='\n'
+    for i in ${!COMPREPLY[@]}; do
+        local tmp=${COMPREPLY[i]#"$base/"}
+        COMPREPLY[i]="${tmp}/"
+    done
+
+    __arbitrary_cd_dump "${FUNCNAME[0]} COMPREPLY: [${COMPREPLY[@]}] -- cur [$cur] -- prev [$prev]"
+    return 0
+
+}
+################################################################################
+# define new completion routines below here
+################################################################################
+
+# the completion function for navigating to a subdirectory of $HOME
+_hcd()
+{
+    _arbitrary_cd_runner $HOME
+}
+
+function hcd()
+{
+    cd "${HOME}/$1"
+}
+
+# the completion function for navigating to a subdirectory of the project root
+_pcd()
+{
+    _arbitrary_cd_runner $(projectRoot .git 1)
+}
+
+function pcd()
+{
+    local meh=$(projectRoot .git 1)
+    cd "${meh}/$1"
+}
+
+# the completion function for navigating to a subdirectory of the shared directory
+__arbitrary_cd_shared_dir=/opt/shared
+_scd()
+{
+    _arbitrary_cd_runner ${__arbitrary_cd_shared_dir}
+}
+
+scd()
+{
+    cd "${__arbitrary_cd_shared_dir}/$1"
+}
+
+complete -o nospace -o filenames -F _hcd hcd
+complete -o nospace -o filenames -F _pcd pcd
+complete -o nospace -o filenames -F _scd scd
+

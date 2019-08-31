@@ -1,0 +1,114 @@
+#!/bin/bash
+
+if [ "x$(uname)" != "xDarwin" ]
+then
+    return
+fi
+
+function deleteSnapshots()
+{
+    if [ "x$(uname)" == "xDarwin" ] ;
+    then
+        for i in $(sudo tmutil listlocalsnapshotdates | grep 2018)
+        do
+            sudo tmutil deletelocalsnapshots $i
+        done
+    fi
+}
+
+function getVmx()
+{
+    VMDIR="${HOME}/Documents/Virtual Machines"
+    VMNAME=$1
+    VMX=
+
+    case "$VMNAME" in
+        linux)
+            VMX="${VMDIR}/build-ubuntu-16.04-x86_64_vmware_0.5.0-20171211-2032.vmwarevm/build-ubuntu-16.04-x86_64_vmware_0.5.0-20171211-2032.vmx"
+            ;;
+
+        macos)
+            VMX="${VMDIR}/OS X 10.11.vmwarevm/OS X 10.11.vmx"
+            ;;
+
+        router)
+            VMX="${VMDIR}/Router.vmwarevm/Router.vmx"
+            ;;
+
+        windows)
+            VMX="${VMDIR}/Windows 7 x64 test and dev.vmwarevm/Windows 7 x64 test and dev.vmx"
+            ;;
+
+        *)
+            return
+    esac
+
+    echo "$VMX"
+
+}
+
+function runVmwareCommand()
+{
+    VMNAME=$1
+    VMCMD=
+    REST=
+
+    if [[ $# > 1 ]]
+    then
+        VMCMD=$2
+    fi
+
+    if [[ $# > 2 ]]
+    then
+        shift
+        shift
+        REST="$@"
+    fi
+
+    VMX=$(getVmx ${VMNAME})
+
+    if [ "x$VMX" = "x" ]
+    then
+        echo "cannot ${VMCMD} ${VMNAME}, because we could not find the vmx"
+        return -1
+    fi
+
+    CMD="vmrun $VMCMD '${VMX}' $REST"
+
+    eval "$CMD"
+}
+
+function vmlist()
+{
+    eval "vmrun list"
+}
+
+function up()
+{
+    VMNAME=$1
+    HEADLESS=
+
+    if [ "x$2" != "x" ]
+    then
+        HEADLESS="nogui"
+    fi
+
+    runVmwareCommand $VMNAME "start" $HEADLESS
+}
+
+function pause()
+{
+    runVmwareCommand $1 "pause"
+}
+
+function unpause()
+{
+    runVmwareCommand $1 "unpause"
+}
+
+function suspend()
+{
+    HARD_SOFT=${2:-"soft"}
+    runVmwareCommand $1 "suspend" $HARD_SOFT
+}
+

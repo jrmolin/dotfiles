@@ -61,7 +61,7 @@
                                                 " tags file
         set background=dark                     " Assume a dark background
 
-        if !has('gui')
+        if !has('gui') && !has('nvim')
             set term=$TERM                      " Make arrow and other keys work
         endif
 
@@ -259,9 +259,24 @@
 
         " Map <leader>+s to save
         nnoremap <Leader>w :w<CR>
+
+        " echo the file name of the editing file
         nnoremap <Leader>f :echom @%<CR>
 
-        nnoremap <Leader>s :%s/\s\+$//<CR>
+        " echo the current pwd
+        nnoremap <Leader>p :pwd<CR>
+
+        " echo the full path to the file being viewed/edited
+        nnoremap <Leader>; :echo expand('%:p')<CR>
+
+        " delete all ending spaces on each line
+        nnoremap <Leader>s :call StripTrailingWhitespace()<CR>
+
+        " swap two words
+        nnoremap <Leader>x hdeep
+
+        " put the current path into the buffer
+        nnoremap <Leader>. :put =expand('%:p')<CR>
 
         " Wrapped lines goes down/up to next row, rather than next line in file
         nnoremap j gj
@@ -275,9 +290,26 @@
         " replace highlighted search
         nmap <expr>  M  ':%s/' . @/ . '//g<LEFT><LEFT>'
 
+        " start editing from this project's root directory
+        nmap <expr>  <leader>e  ':e ' . FindDirInAncestry('.git') . '/'
+
+        " space it out
+        nmap <silent> ;s :call SpaceItOut()<CR>
+
+        " macro-it-out
+        nmap <silent> ;m ;sa\<ESC>
+
+        " search for what is highlighted
+        vmap <silent> // y/<C-R>"<CR>
+
+        " clear out the highlighted thing
+        nmap <silent> ;/ :let @/ = ""<CR>
+
         " Visual shifting (does not exit Visual mode)
         vnoremap < <gv
         vnoremap > >gv
+        vnoremap <S-Tab> <gv
+        vnoremap <Tab> >gv
 
         " Fix home and end keybindings for screen, particularly on mac
         " - for some reason, this fixes the arrow keys too.
@@ -290,6 +322,7 @@
         "
         " ,v brings up ".vimrc"
         " ,V reloads it -- making all changes active (have to save first)
+        map <silent> <leader>v :split $HOME/.vimrc<CR><C-W>_
         map <silent> <leader>V :source $HOME/.vimrc<CR>:filetype detect<CR>:exe ":echo \"vimrc reloaded\""<CR>
 " }}}
 
@@ -367,7 +400,7 @@
             set guioptions-=T                   " Remove the toolbar
             "set lines=40                        " 40 lines of text instead of 24,
         else
-            if &term == 'xterm' || &term == 'screen'
+            if &term == 'xterm' || &term == 'screen' || &term == 'rxvt-unicode'
                 set t_Co=256                    " Enable 256 colors to stop the
                                             " CSApprox warning and make xterm vim
                                             " shine
@@ -394,4 +427,46 @@ function! SpaceOutSelection()
     echom "normal! OD"
     echom l:lnum2
 endfunction
+
+function! FindDirInAncestry(...)
+    let dirname = a:0 ? a:1 : '.git'
+    " store off our current directory
+    let l:cur = expand('%:p:h')
+    let l:prev = "/"
+    let l:found = 1
+
+    while 1
+        let l:prev = l:cur
+        let l:cur = fnamemodify(l:cur, ':h')
+        let fn = l:cur.(l:cur == '/' ? '' : '/').dirname
+        if filereadable(fn) || isdirectory(fn)
+            return l:cur
+        endif
+
+        if l:cur == l:prev
+            break
+        endif
+    endwhile
+
+    return expand('%:p:h')
+endfunction
+
+function! SpaceItOut()
+    let cnum = virtcol('.')
+    let lnum = line('.')
+    let cend = 100
+    let numSpaces = cend - cnum - 1
+    execute ':normal! ' . numSpaces . 'a '
+    echom "need to add " . numSpaces . " spaces"
+endfunction
+
+function! StripTrailingWhitespace()
+    " remember where we were
+    let l:save = winsaveview()
+
+    %s/\s\+$//e
+    call winrestview(l:save)
+    echo "stripped trailing whitespace"
+endfunction
+
 " }
