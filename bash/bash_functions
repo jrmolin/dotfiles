@@ -282,7 +282,7 @@ function disableToolchain ()
 {
     TOOLCHAIN=/opt/dco/dev/toolchain/bin
 
-    echo $(stripFromPath $TOOLCHAIN)
+    PATH=$(stripFromPath $TOOLCHAIN)
 }
 
 function with()
