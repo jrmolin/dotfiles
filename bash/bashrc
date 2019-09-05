@@ -299,10 +299,13 @@ export PROJECT_ROOT_DIR
 
 MANPATH=$MANPATH:$HOME/share/man
 
+# commented out, because we're using nix now
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/mo/.sdkman"
-[[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
+#export SDKMAN_DIR="/home/mo/.sdkman"
+#[[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# commented out, because we're using nix now
+#export NVM_DIR="$HOME/.nvm"
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# we're using nix now, so bail
+return
+
 function enableGo()
 {
     if [ "xfunction" = "x$(fnexists disableGo)" ]
