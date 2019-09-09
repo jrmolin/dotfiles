@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+if [[ ${BASH_SOURCE[0]} != $0 ]]
+then
+# fetchAndCheckout from git lfs
+function fetchAndCheckout()
+{
+    local gitattributes=$(find . -type f -name .gitattributes)
+
+    # loop and skip things in Graveyard
+    for f in $gitattributes
+    do
+        local _f=${f#./}
+        local _dir=$(dirname $_f)
+
+        if [[ $_dir == *"lz4"* ]]
+        then
+            echo "skipping dependency lz4 directory $_dir"
+        elif [ "x$_dir" = "x." ]
+        then
+            echo "git lfs fetch -a && git lfs checkout"
+            git lfs fetch -a && git lfs checkout
+        else
+            cd $_dir && git lfs fetch -a && git lfs checkout && cd -
+        fi
+    done
+
+}
+
+fi
+
