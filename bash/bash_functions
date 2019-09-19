@@ -52,9 +52,16 @@ function enableSdkman()
 function enableOcaml()
 {
     # OPAM configuration
-    export PATH="$HOME/.cargo/bin:$PATH"
-    source ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
-    enableOcaml=
+    test -r ${HOME}/.opam/opam-init/init.sh && \
+        . ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+
+    eval $(opam env)
+}
+
+function enableRust()
+{
+    test -r ${HOME}/.cargo/env && \
+        . ${HOME}/.cargo/env > /dev/null 2> /dev/null
 }
 
 # docker tomfoolery
@@ -71,22 +78,61 @@ function enableHeroku()
     fi
 }
 
-function root()
-{
-    DIRECTORY="${1:-.git}"
-    ld=`pwd`
-    until [ -d "$DIRECTORY" ]
+projectRoot() {
+    local _FILE=${1:-.git}
+    local _ISDIR=${2:-}
+    cur=`pwd`
+    last="/"
+    found=0
+    until [ "$last" == "$cur" ]
     do
-        pwd=`pwd`
-        cd ..
-
-        if [ "/" == "$pwd" ];
+        if [[ -n "$_ISDIR" ]] && [[ -d "$cur/$_FILE" ]]
         then
-            cd $ld
-            echo "could not find $DIRECTORY directory in ancestry; staying put"
+            found=1
+            break
+        elif [[ -z "$_ISDIR" ]] && [[ -e "$cur/$_FILE" ]]
+        then
+            found=1
             break
         fi
+
+        last=$cur
+        cur=$(dirname $cur)
+
     done
+
+    if [ $found = 1 ]
+    then
+        echo "${cur}"
+    else
+        echo "."
+    fi
+}
+
+rootFile() {
+    local _FILE=${1:-.git}
+
+    local _root=$(projectRoot $_FILE)
+
+    if [ "x${_root}" != "x" ]
+    then
+        cd $_root
+    else
+        echo "could not find [$_FILE] in the directory ancestry"
+    fi
+}
+
+root() {
+    local _FILE=${1:-.git}
+
+    local _root=$(projectRoot $_FILE 1)
+
+    if [ "x${_root}" != "x" ]
+    then
+        cd $_root
+    else
+        echo "could not find [$_FILE] in the directory ancestry"
+    fi
 }
 
 function enableRvm()
@@ -106,24 +152,6 @@ function enablePyenv()
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
-}
-
-function enableGo()
-{
-    GO_BINARY=$(which go)
-    if [ -e "${GO_BINARY}" ]
-    then
-        if [ ! -d $HOME/sandbox/go ]
-        then
-            mkdir -pv $HOME/sandbox/go
-        fi
-
-        # set the GOPATH so things work
-        export GOHOME=$HOME/shared/golang
-        export GOPATH=$GOHOME
-        export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
-
-    fi
 }
 
 function enableYara()
@@ -178,7 +206,7 @@ function getSslCert
         openssl x509 -inform pem -noout -text
 }
 
-function backup
+function oldbackup
 {
     if [ "$#" -lt "1" ]
     then
@@ -193,7 +221,7 @@ function backup
     sqlite3 $BACKUPS "insert into files (path,owner,mode,contents) values ('$path','$owner','$mode','$contents');"
 }
 
-function map
+function oldmap
 {
     # if given a key and value, insert
     if [ "$#" -eq "2" ]
@@ -211,15 +239,6 @@ SELECT value,id FROM map WHERE key="$1" ORDER BY id DESC LIMIT 1;
 EOF
 ) )
         echo $(echo "${value[0]}" | base64 -d -)
-    fi
-}
-
-function enableCargo()
-{
-    local isHere=$(isInPath cargo)
-    if [ "x$isHere" == "x" ]
-    then
-        source ${HOME}/.cargo/env
     fi
 }
 
@@ -271,6 +290,139 @@ function enableBackups()
     then
         mkdir -p `dirname $LOGFILE`
     fi
+}
+
+function enableAntlr()
+{
+    ANTLR=/usr/local/lib/antlr-4.7.1-complete.jar
+    export CLASSPATH=".:$ANTLR:$CLASSPATH"
+    alias antlr4='java -Xmx500M -cp "$CLASSPATH" org.antlr.v4.Tool'
+    alias grun='java org.antlr.v4.gui.TestRig'
+}
+
+function enableToolchain()
+{
+    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+    if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
+    then
+        echo "it's already there"
+    else
+        PATH=${TOOLCHAIN}:$PATH
+        echo "added ${TOOLCHAIN} to PATH"
+    fi
+}
+
+function stripFromPath()
+{
+    local _path=$1
+    PATH=${PATH//":$_path:"/":"}
+    PATH=${PATH/#"$_path:"/}
+    PATH=${PATH/%":$_path"/}
+
+    echo $PATH
+}
+
+function disableToolchain ()
+{
+    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+
+    PATH=$(stripFromPath $TOOLCHAIN)
+}
+
+function with()
+{
+    local name="$1"
+
+    if [[ "x$name" == "xhistory" ]]
+    then
+        set +o history
+    else
+        echo "Usage: with <history>"
+    fi
+
+}
+
+function endwith()
+{
+    local name="$1"
+
+    if [[ "x$name" == "xhistory" ]]
+    then
+        set -o history
+    else
+        echo "Usage: endwith <history>"
+    fi
+}
+
+function dco()
+{
+    local path="$HOME/.dco_path"
+
+    if [ -e "$path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
+
+function dotfiles()
+{
+    local path="$HOME/.dotfiles_path"
+
+    if [ -e "$path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
+
+function bc2bc()
+{
+    local ibase=${1:- "A"}
+    local obase=${2:- "A"}
+    echo "ibase=${ibase};obase=${obase};$3" | bc
+}
+
+function __bc2bc_usage()
+{
+    local name=${FUNCNAME[1]}
+    if [ "x$name" = "x" ]
+    then
+        echo "this is a private function and is not meant to be called directly"
+        return
+    fi
+    echo "usage: $name <NUMBER>"
+    echo "  NUMBER  the number to be converted, in $1"
+}
+
+function dec2hex()
+{
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "decimal format (example: 8192)"
+        return
+    fi
+
+    bc2bc "A" "16" "$1"
+}
+
+function hex2dec()
+{
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "hexadecimal format, without '0x' (example: 2000)"
+        return
+    fi
+
+    bc2bc "16" "A" "$1"
+}
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
 }
 
 if [ -d "${HOME}/.bash_functions.d" ]

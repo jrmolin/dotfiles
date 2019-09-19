@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+# we're using nix now, so bail
+return
+
+function enableGo()
+{
+    if [ "xfunction" = "x$(fnexists disableGo)" ]
+    then
+        return
+    fi
+
+    GOINSTALL="$HOME/local-installations/go"
+    if [ -d "$GOINSTALL" ]
+    then
+        if [ "x$(uname)" = "xLinux" ]
+        then
+            if [ ! -d $HOME/sandbox/go ]
+            then
+                mkdir -pv $HOME/sandbox/go
+            fi
+
+            # set the GOPATH so things work
+            export GOHOME=$HOME/sandbox/go
+            export GOPATH=$GOHOME
+            export PATH="$PATH:$GOINSTALL/bin:$GOPATH/bin"
+        elif [ "x$(uname)" = "xDarwin" ]
+        then
+            # set the GOPATH so things work
+            export GOHOME=$HOME/shared/golang
+            export GOPATH=$GOHOME
+            export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
+        fi
+
+    else
+        echo "go is not installed"
+        return 0
+    fi
+
+    # create a function which uses temperature
+    function temperature()
+    {
+        GO=`which go`
+
+        if [ "x${GO}x" != 'xx' ]
+        then
+            _temperature=`weather | gawk 'match($0, /The temperature is ([^,]+)/, ary) {print ary[1]}'`
+            echo $_temperature
+        else
+            echo "go environment not found"
+        fi
+    }
+
+    function disableGo()
+    {
+
+        GOINSTALL="$HOME/local-installations/go"
+        if [ -d "$GOINSTALL" ]
+        then
+            if [ "x$(uname)" = "xLinux" ]
+            then
+                # remove the go paths
+                PATH=$(stripFromPath "$GOPATH/bin")
+                PATH=$(stripFromPath "$GOINSTALL/bin")
+
+                unset GOHOME
+                unset GOPATH
+
+            elif [ "x$(uname)" = "xDarwin" ]
+            then
+                # remove the go paths
+                PATH=$(stripFromPath "$GOPATH/bin")
+                PATH=$(stripFromPath "/usr/local/go/bin")
+
+                unset GOHOME
+                unset GOPATH
+            fi
+        fi
+
+        unset temperature
+        unset disableGo
+    }
+}
+

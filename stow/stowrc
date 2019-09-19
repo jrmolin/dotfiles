@@ -1,0 +1,20 @@
+# what files should stow ignore?
+
+\.txt
+\.md
+\.rst
+\.TXT
+
+CVS
+\.\#.+
+\.cvsignore
+
+\.svn
+\.git
+\.gitignore
+
+.+~
+
+^/README.*
+^/LICENSE.*
+^/COPYING

@@ -1,0 +1,107 @@
+#!/bin/bash
+
+if [ "x$(uname)" != "xLinux" ]
+then
+    return
+fi
+
+function getVmName()
+{
+    VMNAME=$1
+
+    case "$VMNAME" in
+        linux|ubuntu-dev)
+            NAME="ubuntu-dev"
+            ;;
+
+        vyos|router)
+            NAME="vyos"
+            ;;
+
+        dragon)
+            NAME="dragon"
+            ;;
+
+        windows|win7-dev)
+            NAME="win7-dev"
+            ;;
+
+        *)
+            return
+    esac
+
+    echo "$NAME"
+
+}
+
+function runVmwareCommand()
+{
+    VMNAME=$1
+    VMCMD=
+    REST=
+
+    if [[ $# > 1 ]]
+    then
+        VMCMD=$2
+    fi
+
+    if [[ $# > 2 ]]
+    then
+        shift
+        shift
+        REST="$@"
+    fi
+
+    VMID=$(getVmName ${VMNAME})
+
+    if [ "x$VMID" = "x" ]
+    then
+        echo "cannot ${VMCMD} ${VMNAME}, because we could not find the vm name"
+        return -1
+    fi
+
+    CMD="vboxmanage $VMCMD '${VMID}' $REST"
+
+    eval "$CMD"
+}
+
+function vmlist()
+{
+    eval "vboxmanage list vms"
+}
+
+function up()
+{
+    VMNAME=$1
+    HEADLESS=
+
+    if [ "x$2" != "x" ]
+    then
+        HEADLESS="--type headless"
+    fi
+
+    runVmwareCommand $VMNAME "startvm" $HEADLESS
+}
+
+function pause()
+{
+    runVmwareCommand $1 "controlvm" "pause"
+}
+
+function unpause()
+{
+    runVmwareCommand $1 "controlvm" "resume"
+}
+
+function vmshow()
+{
+    DETAILED=
+
+    if [ "x$2" != "x" ]
+    then
+        DETAILED="--details"
+    fi
+
+    runVmwareCommand $1 "showvminfo" $DETAILED
+}
+

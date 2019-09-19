@@ -1,4 +1,4 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
+# $HOME/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
@@ -121,7 +121,7 @@ if [ -x /usr/bin/dircolors ]; then
     # set solarized color scheme
     export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    test -r $HOME/.dircolors && eval "$(dircolors -b $HOME/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
@@ -143,14 +143,60 @@ alias s='less'
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
+sourceIfExists()
+{
+    _PATH=$1
+
+    if [ -f "$_PATH" ]
+    then
+        source "$_PATH"
+    fi
+}
+
+addUnique()
+{
+    if [[ ":$PATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        if [ -d "$1" ]
+        then
+            PATH="$1:$PATH"
+        fi
+    fi
+}
+
+appendUnique()
+{
+    if [[ ":$PATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        if [ -d "$1" ]
+        then
+            PATH="$PATH:$1"
+        fi
+    fi
+}
+
+addUniqueToClasspath() {
+    if [[ ":$CLASSPATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        CLASSPATH="$CLASSPATH:$1"
+    fi
+}
+
+if [ -z "$CLASSPATH" ]
+then
+    CLASSPATH="."
+fi
+
+export CLASSPATH
+
 # Alias definitions.
 # You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
+# $HOME/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
+sourceIfExists $HOME/.bash_aliases
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -159,20 +205,17 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-# add ~/bin to PATH, if it exists
-if [ -d "$HOME/bin" ]; then
-    export PATH="$PATH:$HOME/bin"
-fi
-export EDITOR=vim
+# add $HOME/bin to PATH, if it exists
+addUnique "$HOME/bin"
 
-if [ -d "/usr/lib/jvm/jdk1.7.0_51" ];
+# add antlr to the classpath
+_ANTLR="$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
+if [ -e $_ANTLR ]
 then
-    export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_51
+    addUniqueToClasspath $_ANTLR
 fi
-if [ -d "/usr/lib/ant/apache-ant-1.9.3" ];
-then
-    export ANT_HOME=/usr/lib/ant/apache-ant-1.9.3
-fi
+
+export EDITOR=vim
 
 #export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
 
@@ -180,9 +223,9 @@ fi
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
 
-[[ -s "${HOME}/.bash_functions" ]] && source "${HOME}/.bash_functions"
+sourceIfExists $HOME/.bash_functions
 
-if [ "$(uname)" = "Darwin" ]; then
+if [ "x$(uname)" = "xDarwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 
     if [ -f $(brew --prefix)/etc/bash_completion ];
@@ -194,9 +237,20 @@ if [ "$(uname)" = "Darwin" ]; then
     alias vim=nvim
 fi
 
-if [ -e "${HOME}/.bash_completion" ] ;
+MANPATH=$MANPATH:$HOME/share/man
+
+_nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+[ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
+
+# add direnv support
+if [ "xfile" = "x$(fnexists direnv)" ]
 then
-    . ${HOME}/.bash_completion
+    eval "$(direnv hook bash)"
+fi
+
+if [ "x$LOCALE_ARCHIVE" = "x" ] && [ "xfile" = "x$(fnexists nix-env)" ]
+then
+    export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
 fi
 
 MANPATH=$MANPATH:$HOME/share/man
