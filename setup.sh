@@ -98,7 +98,7 @@ install_curl() {
 }
 
 _install() {
-    local _exe=$1
+    local _exe=${2:-$1}
 
     local _path=$(type -p $_exe)
 
@@ -106,7 +106,7 @@ _install() {
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
-        doit nix-env -i $_exe
+        doit nix-env -i $1
     fi
 }
 
@@ -167,7 +167,7 @@ dolinks() {
     link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
-    link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
+    #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
     link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
     link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
     link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
