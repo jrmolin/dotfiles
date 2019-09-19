@@ -1,59 +1,5 @@
 #!/usr/bin/env bash
 
-<<<<<<< HEAD
-DOCKER_USER_HOME_DIR=$HOME/.config/docker/home
-
-function nginxProxy()
-{
-    docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy:alpine
-}
-
-function webserve()
-{
-    PORT=80
-
-    if [ "x${1}x" != "xx" ]
-    then
-        PORT=$1
-    fi
-
-    docker run --rm --name webserve -v $(pwd):/usr/share/nginx/html:ro \
-    -p $PORT:80 nginx
-}
-
-function startNginx()
-{
-    docker run --rm --name webserver -v ~/.docker/nginx:/usr/share/nginx/html:ro \
-    -p 80:80 -d nginx
-}
-
-function python3()
-{
-    docker run -it --rm --name python-3-script -v "$PWD":/usr/src/myapp -w /usr/src/myapp moli/python3 python $*
-}
-
-function javacDocker()
-{
-    docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp openjdk:alpine javac $*
-}
-
-function javaDocker()
-{
-    docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp openjdk:alpine java $*
-}
-
-function dockerPsClean()
-{
-    HASHES=$(docker ps -a -q -f "status=exited" | awk '{ print $1 }' )
-
-    if test "x${HASHES}x" != "xx"
-    then
-        for h in "$HASHES"
-        do
-            docker stop $h
-            docker rm $h
-=======
-
 # npm ()
 # {
 #     docker run \
@@ -199,74 +145,21 @@ dockerImagesClean()
         for h in "${HASHES}"
         do
             docker rmi $h
->>>>>>> 0743ffa6c383fda8e3ac123864254c9b01ab3d2b
         done
     fi
 }
 
-<<<<<<< HEAD
-function dockerImagesClean()
-{
-    HASHES=$(docker images | grep '<none>' | awk '{ print $3 }')
-
-=======
 dockerPsClean()
 {
     HASHES=$(docker ps -a -q -f "status=exited" | awk '{print $1}')
->>>>>>> 0743ffa6c383fda8e3ac123864254c9b01ab3d2b
     if test "x${HASHES}x" != "xx"
     then
         for h in "${HASHES}"
         do
-<<<<<<< HEAD
-            echo "docker rmi $h"
-            docker rmi $h
-=======
             docker stop $h
             docker rm $h
->>>>>>> 0743ffa6c383fda8e3ac123864254c9b01ab3d2b
         done
     fi
-}
-
-<<<<<<< HEAD
-function formatter()
-{
-    docker run -it --rm \
-        -u $UID:$GID \
-        -v `pwd`:/source formatter $*
-}
-
-function buildDeps()
-{
-    docker run -it --rm -v $(pwd):/source -w "/source/Dependencies_posix" \
-        --entrypoint "./Rebuild-Linux.sh" \
-        -u $UID:$GID \
-        linux-builder
-}
-
-function buildLinux()
-{
-    docker run -it --rm -v $(pwd):/source -w "/source" \
-        --entrypoint "./Tools/BuildScripts/Rebuild.py" \
-        -u $UID:$GID \
-        -e HOME=/usr/src/home \
-        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-        linux-builder "$*"
-}
-
-function nmap()
-{
-    docker run -it --rm --entrypoint nmap moli/nmap "$*"
-}
-
-function lua()
-{
-    docker run -it --rm \
-        -v $(pwd):/usr/src/app \
-        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-        -e HOME=/usr/src/home \
-        -w /usr/src/app moli/node $*
 }
 
 function solc()
@@ -278,63 +171,6 @@ function solc()
         ethereum/solc:stable $*
 }
 
-#function node()
-#{
-#    docker run -it --rm \
-#        -v $(pwd):/usr/src/app \
-#        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-#        -e HOME=/usr/src/home \
-#        -u $UID:$GID --entrypoint node moli/alpine $*
-#}
-
-#function npm()
-#{
-#    docker run -it --rm \
-#        -v $(pwd):/usr/src/app \
-#        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-#        -e HOME=/usr/src/home \
-#        -u $UID:$GID --entrypoint npm moli/alpine $*
-#}
-
-#function gatsby()
-#{
-#    docker run -it --rm \
-#        -v $(pwd):/usr/src/app \
-#        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-#        -e HOME=/usr/src/home \
-#        -p 8000:8000 \
-#        -u $UID:$GID --entrypoint=gatsby moli/alpine $*
-#}
-
-function truffle()
-{
-    docker run -it --rm \
-        -v $(pwd):/usr/src/app \
-        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-        -e HOME=/usr/src/home \
-        -u $UID:$GID --entrypoint truffle moli/alpine $*
-}
-
-function wget()
-{
-    docker run -it --rm \
-        -v $(pwd):/usr/src/app \
-        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
-        -e HOME=/usr/src/home \
-        -u $UID:$GID --entrypoint wget moli/alpine $*
-}
-
-function keepass()
-{
-    docker run -d \
-        -v /tmp/.X11-unix:/tmp/.X11-unix \
-        -v /etc/machine-id:/etc/machine-id:ro \
-        -v /usr/share/X11/xkb:/usr/share/X11/xkb/:ro \
-        -v $HOME/.config/keepassxc:/root/.config/keepassxc \
-        -e DISPLAY=unix$DISPLAY \
-        keepassxc
-}
-=======
 #dockerpython()
 #{
 #    docker run -it --rm \
@@ -411,4 +247,3 @@ startJenkins()
         jenkinsci/blueocean
 }
 
->>>>>>> 0743ffa6c383fda8e3ac123864254c9b01ab3d2b

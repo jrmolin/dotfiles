@@ -237,9 +237,7 @@ if [ "x$(uname)" = "xDarwin" ]; then
     alias vim=nvim
 fi
 
-MANPATH=$MANPATH:$HOME/share/man
-
-_nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+__nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
 [ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
 
 # add direnv support
@@ -254,4 +252,3 @@ then
 fi
 
 MANPATH=$MANPATH:$HOME/share/man
-NINTU_UUID="82951EAB-69C6-41CB-B93D-D83AA45E25AE"
