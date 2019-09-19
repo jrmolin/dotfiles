@@ -5,17 +5,6 @@ then
     return
 fi
 
-function deleteSnapshots()
-{
-    if [ "x$(uname)" == "xDarwin" ] ;
-    then
-        for i in $(sudo tmutil listlocalsnapshotdates | grep 2018)
-        do
-            sudo tmutil deletelocalsnapshots $i
-        done
-    fi
-}
-
 function getVmx()
 {
     VMDIR="${HOME}/Documents/Virtual Machines"
@@ -106,7 +95,7 @@ function unpause()
     runVmwareCommand $1 "unpause"
 }
 
-function suspend()
+function vmsuspend()
 {
     HARD_SOFT=${2:-"soft"}
     runVmwareCommand $1 "suspend" $HARD_SOFT

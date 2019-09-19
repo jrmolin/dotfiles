@@ -53,6 +53,8 @@
     "Plugin 'vim-airline/vim-airline'
 
     Plugin 'altercation/vim-colors-solarized'
+
+    Plugin 'groovy.vim'
     call vundle#end()
 " }}}
 
@@ -62,7 +64,9 @@
         set background=dark                     " Assume a dark background
 
         if !has('gui')
-            set term=$TERM                      " Make arrow and other keys work
+            if -1 == match($VIM, "nvim")
+                set term=$TERM                      " Make arrow and other keys work
+            endif
         endif
 
 
