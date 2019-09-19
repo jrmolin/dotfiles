@@ -284,6 +284,10 @@
 
         nnoremap <leader>t :set expandtab<CR>:retab<CR>
 
+        " copy the current line and underline it
+        nnoremap <leader>- YpVr-
+        nnoremap <leader>= YpVr=
+
         " Toggle search highlighting
         nmap <silent> <leader>/ :set invhlsearch<CR>
 

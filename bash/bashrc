@@ -231,7 +231,7 @@ fi
 
 MANPATH=$MANPATH:$HOME/share/man
 
-_nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+__nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
 [ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
 
 # add direnv support
@@ -240,8 +240,11 @@ then
     eval "$(direnv hook bash)"
 fi
 
-if [ "x$LOCALE_ARCHIVE" = "x" ] && [ "xfile" = "x$(fnexists nix-env)" ]
+if [ "x$LOCALE_ARCHIVE" = "x" ]
 then
-    export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
+    if [ "xfile" = "x$(fnexists nix-env)" ]
+    then
+        export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
+    fi
 fi
 
