@@ -4,4 +4,9 @@
 export TMUX=`which tmux`
 alias tmux='${TMUX} -2 -S ~/.tmux.sock'
 
-alias ls="`which ls` -F --color=auto"
+if [ "Darwin" = $(uname) ]
+then
+    alias ls="$(which ls) -F -G"
+else
+    alias ls="`which ls` -F --color=auto"
+fi
