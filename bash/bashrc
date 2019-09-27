@@ -58,6 +58,35 @@ function parse_git_branch {
   echo "(${txttea}"${ref#refs/heads/}"${txtrst})"
 }
 
+# setup colors
+# Text color variables
+txtred=$(tput setaf 1)          # red
+txtgrn=$(tput setaf 2)          # green
+txtyel=$(tput setaf 3)          # yellow
+txtblu=$(tput setaf 4)          # blue
+txtpur=$(tput setaf 5)          # purple
+txttea=$(tput setaf 6)          # teal
+txtwht=$(tput setaf 7)          # white
+txtund=$(tput sgr 0 1)          # Underline
+txtbld=$(tput bold)             # Bold
+bldred=${txtbld}${txtred}       #  red
+bldgrn=${txtbld}${txtgrn}       #  green
+bldyel=${txtbld}${txtyel}       #  yellow
+bldblu=${txtbld}${txtblu}       #  blue
+bldpur=${txtbld}${txtpur}       #  purple
+bldtea=${txtbld}${txttea}       #  teal
+bldwht=${txtbld}${txtwht}       #  white
+txtrst=$(tput sgr0)             # Reset
+gitdiff=${bldred}*${txtrst}
+gitadd=${bldtea}*${txtrst}
+info=${bldwht}*${txtrst}        # Feedback
+pass=${bldblu}*${txtrst}
+warn=${bldred}*${txtrst}
+ques=${bldblu}?${txtrst}
+
+
+export checkmark="${txtgrn}$(echo -e '\xE2\x9C\x94')${txtrst}"
+
 function _prompt_status {
     if [ -n "$prompt_status" ] ; then
       echo "${bldred}$prompt_status${txtrst}"
@@ -66,32 +95,6 @@ function _prompt_status {
 
 
 if [ "$color_prompt" = yes ]; then
-    # setup colors
-    # Text color variables
-    txtred=$(tput setaf 1)          # red
-    txtgrn=$(tput setaf 2)          # green
-    txtyel=$(tput setaf 3)          # yellow
-    txtblu=$(tput setaf 4)          # blue
-    txtpur=$(tput setaf 5)          # purple
-    txttea=$(tput setaf 6)          # teal
-    txtwht=$(tput setaf 7)          # white
-    txtund=$(tput sgr 0 1)          # Underline
-    txtbld=$(tput bold)             # Bold
-    bldred=${txtbld}${txtred}       #  red
-    bldgrn=${txtbld}${txtgrn}       #  green
-    bldyel=${txtbld}${txtyel}       #  yellow
-    bldblu=${txtbld}${txtblu}       #  blue
-    bldpur=${txtbld}${txtpur}       #  purple
-    bldtea=${txtbld}${txttea}       #  teal
-    bldwht=${txtbld}${txtwht}       #  white
-    txtrst=$(tput sgr0)             # Reset
-    gitdiff=${bldred}*${txtrst}
-    gitadd=${bldtea}*${txtrst}
-    info=${bldwht}*${txtrst}        # Feedback
-    pass=${bldblu}*${txtrst}
-    warn=${bldred}*${txtrst}
-    ques=${bldblu}?${txtrst}
-
 #    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\012\$ '
     PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
     PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u at \h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u at \h\[\033[00m\]\012\$ '
@@ -133,6 +136,8 @@ alias ll='ls -trhalF'
 alias l='ls -A'
 alias c='clear'
 alias s='less'
+
+
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -200,25 +205,8 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-sourceIfExists "$HOME/functions.sh"
-
-# add $HOME/.local/bin to PATH, if it exists
-addUnique "$HOME/.local/bin"
-
-# add $HOME/.local/builds/bin to PATH, if it exists
-addUnique "$HOME/local/builds/bin"
-
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
-
-# add $HOME/.local/npm/bin to PATH, if it exists
-appendUnique "$HOME/.local/npm/bin"
-
-# add /opt/eclipse to PATH, if it exists
-appendUnique "/opt/eclipse"
-
-# add /opt/java/clojure-1.9.0.397/bin to PATH, if it exists
-appendUnique "/opt/java/clojure-1.9.0.397/bin"
 
 # add antlr to the classpath
 _ANTLR="$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
@@ -228,43 +216,6 @@ then
 fi
 
 export EDITOR=vim
-
-function enableJava()
-{
-    # add /opt/java/jdk1.8.0_192/bin to PATH, if it exists
-    appendUnique "/opt/java/jdk1.8.0_192/bin"
-
-    JAVAC=$(which javac)
-
-    if [ -n "${JAVAC}" ]
-    then
-        JAVAC=$(readlink -f $JAVAC)
-        JAVA_BIN=$(dirname "${JAVAC}")
-        JAVA_HOME=$(dirname "${JAVA_BIN}")
-    fi
-
-    if [ -n "${JAVA_HOME}" ]
-    then
-        export JAVA_HOME
-    fi
-}
-
-function enableGrails()
-{
-    GRAILS=$(which grails)
-
-    if [ -n "${GRAILS}" ]
-    then
-        GRAILS=$(readlink -f $GRAILS)
-        GRAILS_BIN=$(dirname "${GRAILS}")
-        GRAILS_HOME=$(dirname "${GRAILS_BIN}")
-    fi
-
-    if [ -n "${GRAILS_HOME}" ]
-    then
-        export GRAILS_HOME
-    fi
-}
 
 #export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
 
@@ -281,28 +232,26 @@ if [ "x$(uname)" = "xDarwin" ]; then
     then
       . $(brew --prefix)/etc/bash_completion
     fi
+
+    alias vi=nvim
+    alias vim=nvim
 fi
 
-export PROJECT_ROOT_DIR
+__nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+[ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
 
-#
-# MO_POWERLINE_REPOSITORY_ROOT=`pip show powerline-status | grep Location | cut -d' ' -f2`
-# MO_POWERLINE_SH="${MO_POWERLINE_REPOSITORY_ROOT}/powerline/bindings/bash/powerline.sh"
+# add direnv support
+if [ "xfile" = "x$(fnexists direnv)" ]
+then
+    eval "$(direnv hook bash)"
+fi
 
-# if [ -f ${MO_POWERLINE_SH} ]
-# then
-#     powerline-daemon -q
-#     POWERLINE_BASH_CONTINUATION=1
-#     POWERLINE_BASH_SELECT=1
-#     . "${MO_POWERLINE_SH}"
-# fi
+if [ "x$LOCALE_ARCHIVE" = "x" ]
+then
+    if [ "xfile" = "x$(fnexists nix-env)" ]
+    then
+        export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
+    fi
+fi
 
 MANPATH=$MANPATH:$HOME/share/man
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/mo/.sdkman"
-[[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

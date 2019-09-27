@@ -1,5 +1,17 @@
 #!/bin/bash
 
+function isInPath()
+{
+    local name=$1
+    path_to_executable=$(which $name)
+    if [ -x "$path_to_executable" ] ; then
+        echo "It's here: $path_to_executable"
+        echo "1"
+    else
+        echo ""
+    fi
+}
+
 function enableVirtualenv()
 {
     venvwr="/usr/local/bin/virtualenvwrapper.sh"
@@ -28,12 +40,12 @@ function enableSdkman()
 {
     #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
     SDKMAN_DIR="${HOME}/.sdkman"
-    INIT="{SDKMAN_DIR}/bin/sdkman-init.sh"
-    if [ -s "${SDKMAN_INIT}" ] ;
+    SDKMAN_INIT="${SDKMAN_DIR}/bin/sdkman-init.sh"
+    if [ -s "${SDKMAN_INIT}" ]
     then
-        export SDKMAN_DIR
-        source "${SDKMAN_INIT}"
+        . "${SDKMAN_INIT}"
 
+        export SDKMAN_DIR
     fi
 }
 
@@ -93,7 +105,7 @@ projectRoot() {
     then
         echo "${cur}"
     else
-        echo ""
+        echo "."
     fi
 }
 
@@ -140,33 +152,6 @@ function enablePyenv()
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
-}
-
-function enableGo()
-{
-    GOINSTALL="$HOME/local-installations/go"
-    if [ -d "$GOINSTALL" ]
-    then
-        if [ "x$(uname)" = "xLinux" ]
-        then
-            if [ ! -d $HOME/sandbox/go ]
-            then
-                mkdir -pv $HOME/sandbox/go
-            fi
-
-            # set the GOPATH so things work
-            export GOHOME=$HOME/sandbox/go
-            export GOPATH=$GOHOME
-            export PATH="$PATH:$GOINSTALL/bin:$GOPATH/bin"
-        elif [ "x$(uname)" = "xDarwin" ]
-        then
-            # set the GOPATH so things work
-            export GOHOME=$HOME/shared/golang
-            export GOPATH=$GOHOME
-            export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
-        fi
-
-    fi
 }
 
 function enableYara()
@@ -265,6 +250,30 @@ function killhipchat()
 
 }
 
+function enableConds()
+{
+    local isHere=$(isOnPath conda)
+    if [ "x$isHere" == "x" ]
+    then
+        # added by Anaconda2 2019.03 installer
+        # >>> conda init >>>
+        # !! Contents within this block are managed by 'conda init' !!
+        __conda_setup="$(CONDA_REPORT_ERRORS=false '/anaconda2/bin/conda' shell.bash hook 2> /dev/null)"
+        if [ $? -eq 0 ]; then
+            \eval "$__conda_setup"
+        else
+            if [ -f "/anaconda2/etc/profile.d/conda.sh" ]; then
+                . "/anaconda2/etc/profile.d/conda.sh"
+                CONDA_CHANGEPS1=false conda activate base
+            else
+                \export PATH="/anaconda2/bin:$PATH"
+            fi
+        fi
+        unset __conda_setup
+        # <<< conda init <<<
+    fi
+}
+
 function enableBackups()
 {
     export BACKUPS=$HOME/.config/backups/files.db
@@ -303,27 +312,21 @@ function enableToolchain()
     fi
 }
 
+function stripFromPath()
+{
+    local _path=$1
+    PATH=${PATH//":$_path:"/":"}
+    PATH=${PATH/#"$_path:"/}
+    PATH=${PATH/%":$_path"/}
+
+    echo $PATH
+}
+
 function disableToolchain ()
 {
     TOOLCHAIN=/opt/dco/dev/toolchain/bin
 
-    PATH=${PATH//":$TOOLCHAIN:"/":"}
-    PATH=${PATH/#"$TOOLCHAIN:"/}
-    PATH=${PATH/%":$TOOLCHAIN"/}
-    echo $PATH
-}
-
-function temperature()
-{
-    GO=`which go`
-
-    if [ "x${GO}x" != 'xx' ]
-    then
-        _temperature=`weather | gawk 'match($0, /The temperature is ([^,]+)/, ary) {print ary[1]}'`
-        echo $_temperature
-    else
-        echo "go environment not found"
-    fi
+    PATH=$(stripFromPath $TOOLCHAIN)
 }
 
 function with()
@@ -355,7 +358,7 @@ function dco()
 {
     local path="$HOME/.dco_path"
 
-    if [ -e "$HOME/.dco_path" ]
+    if [ -e "$path" ]
     then
         cd $(< $path)
     else
@@ -363,19 +366,17 @@ function dco()
     fi
 }
 
-#export PROJECT_ROOT_DIR
-#function cd()
-#{
-#    builtin cd "$*"
-#
-#    local meh=$(projectRoot .git 1)
-#    if [ -n "$meh" ]
-#    then
-#        PROJECT_ROOT_DIR=$meh
-#    else
-#        PROJECT_ROOT_DIR=
-#    fi
-#}
+function dotfiles()
+{
+    local path="$HOME/.dotfiles_path"
+
+    if [ -e "$path" ]
+    then
+        cd $(< $path)
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
+}
 
 function bc2bc()
 {
@@ -384,14 +385,44 @@ function bc2bc()
     echo "ibase=${ibase};obase=${obase};$3" | bc
 }
 
+function __bc2bc_usage()
+{
+    local name=${FUNCNAME[1]}
+    if [ "x$name" = "x" ]
+    then
+        echo "this is a private function and is not meant to be called directly"
+        return
+    fi
+    echo "usage: $name <NUMBER>"
+    echo "  NUMBER  the number to be converted, in $1"
+}
+
 function dec2hex()
 {
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "decimal format (example: 8192)"
+        return
+    fi
+
     bc2bc "A" "16" "$1"
 }
 
 function hex2dec()
 {
+    if [ "x$1" = "x" ]
+    then
+        __bc2bc_usage "hexadecimal format, without '0x' (example: 2000)"
+        return
+    fi
+
     bc2bc "16" "A" "$1"
+}
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
 }
 
 if [ -d "${HOME}/.bash_functions.d" ]

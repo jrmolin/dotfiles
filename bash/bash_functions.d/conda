@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# we're using nix, so bail
+return
+
 # added by Anaconda2 2018.12 installer
 function enableConda()
 {

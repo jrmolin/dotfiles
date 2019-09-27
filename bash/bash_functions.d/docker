@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # npm ()
 # {
 #     docker run \
@@ -58,30 +57,30 @@
 # }
 
 
-formatter()
-{
-    docker run --rm -it \
-        -v $(pwd):/source \
-        -u $UID:$GID \
-        clang-format $*
-}
+#formatter()
+#{
+#    docker run --rm -it \
+#        -v $(pwd):/source \
+#        -u $UID:$GID \
+#        clang-format $*
+#}
 
-bazel()
-{
-    docker run --rm \
-        -v $(pwd):/usr/src/app \
-        -it bazel2 bazel $*
-}
+#bazel()
+#{
+#    docker run --rm \
+#        -v $(pwd):/usr/src/app \
+#        -it bazel2 bazel $*
+#}
 
-rebuild()
-{
-    docker run --rm \
-        -it -v "$(pwd)":/usr/src/app \
-        -e _UID=$UID \
-        -e _GID=$GID \
-        toolchain \
-        $*
-}
+#rebuild()
+#{
+#    docker run --rm \
+#        -it -v "$(pwd)":/usr/src/app \
+#        -e _UID=$UID \
+#        -e _GID=$GID \
+#        toolchain \
+#        $*
+#}
 
 dockerpython3()
 {
@@ -89,17 +88,17 @@ dockerpython3()
         -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim python $*
 }
 
-pip3()
-{
-    docker run -it --rm --name python-3-script \
-        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim pip3 $*
-}
+#pip3()
+#{
+#    docker run -it --rm --name python-3-script \
+#        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim pip3 $*
+#}
 
-virtualenv3()
-{
-    docker run -it --rm --name python-3-script \
-        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim python -m venv $*
-}
+#virtualenv3()
+#{
+#    docker run -it --rm --name python-3-script \
+#        -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp python:3.7-rc-slim python -m venv $*
+#}
 
 graphviz()
 {
@@ -114,15 +113,15 @@ drill()
         moli/alpine drill $*
 }
 
-keepassxc()
-{
-    docker run -d -v /tmp/.X11-unix:/tmp/.X11-unix \
-        -v /etc/machine-id:/etc/machine-id:ro \
-        -v /usr/share/X11/xkb:/usr/share/X11/xkb/:ro \
-        -v $HOME/.config/keepassxc:/root/.config/keepassxc \
-        -e DISPLAY=unix$DISPLAY \
-        keepassxc
-}
+#keepassxc()
+#{
+#    docker run -d -v /tmp/.X11-unix:/tmp/.X11-unix \
+#        -v /etc/machine-id:/etc/machine-id:ro \
+#        -v /usr/share/X11/xkb:/usr/share/X11/xkb/:ro \
+#        -v $HOME/.config/keepassxc:/root/.config/keepassxc \
+#        -e DISPLAY=unix$DISPLAY \
+#        keepassxc
+#}
 
 dockercmake()
 {
@@ -163,36 +162,45 @@ dockerPsClean()
     fi
 }
 
-dockerpython()
+function solc()
 {
     docker run -it --rm \
-        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
-        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
+        -v $(pwd):/solidity \
+        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
+        -e HOME=/usr/src/home \
+        ethereum/solc:stable $*
 }
 
-dockerbpython()
-{
-    docker run -it --rm \
-        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
-        --entrypoint bpython moli/python
-}
+#dockerpython()
+#{
+#    docker run -it --rm \
+#        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
+#        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
+#}
 
-R()
-{
-    docker run -it --rm \
-        -v ~/.docker/home:/home/anon -e _UID=$UID -e _GID=$UID \
-        -e R_HISTFILE=/home/anon/.RHistory \
-        rproject $*
-}
+#dockerbpython()
+#{
+#    docker run -it --rm \
+#        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
+#        --entrypoint bpython moli/python
+#}
 
-nodered()
-{
-    docker run -it --rm --name mynodered \
-        -p 1880:1880 \
-        -e FLOWS=/data/flows/flows.json \
-        -v ~/.docker/home/node-red:/data/flows \
-        moli/nodered
-}
+#R()
+#{
+#    docker run -it --rm \
+#        -v ~/.docker/home:/home/anon -e _UID=$UID -e _GID=$UID \
+#        -e R_HISTFILE=/home/anon/.RHistory \
+#        rproject $*
+#}
+
+#nodered()
+#{
+#    docker run -it --rm --name mynodered \
+#        -p 1880:1880 \
+#        -e FLOWS=/data/flows/flows.json \
+#        -v ~/.docker/home/node-red:/data/flows \
+#        moli/nodered
+#}
 
 dockerState()
 {
