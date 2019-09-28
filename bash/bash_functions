@@ -1,5 +1,17 @@
 #!/bin/bash
 
+function isInPath()
+{
+    local name=$1
+    path_to_executable=$(which $name)
+    if [ -x "$path_to_executable" ] ; then
+        echo "It's here: $path_to_executable"
+        echo "1"
+    else
+        echo ""
+    fi
+}
+
 function enableVirtualenv()
 {
     venvwr="/usr/local/bin/virtualenvwrapper.sh"
@@ -28,12 +40,12 @@ function enableSdkman()
 {
     #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
     SDKMAN_DIR="${HOME}/.sdkman"
-    INIT="{SDKMAN_DIR}/bin/sdkman-init.sh"
-    if [ -s "${SDKMAN_INIT}" ] ;
+    SDKMAN_INIT="${SDKMAN_DIR}/bin/sdkman-init.sh"
+    if [ -s "${SDKMAN_INIT}" ]
     then
-        export SDKMAN_DIR
-        source "${SDKMAN_INIT}"
+        . "${SDKMAN_INIT}"
 
+        export SDKMAN_DIR
     fi
 }
 
@@ -227,6 +239,38 @@ SELECT value,id FROM map WHERE key="$1" ORDER BY id DESC LIMIT 1;
 EOF
 ) )
         echo $(echo "${value[0]}" | base64 -d -)
+    fi
+}
+
+function killhipchat()
+{
+    pid=$(ps aux | grep hipchat | grep -v grep | awk '{ print $2 }')
+    echo "killing ${pid}"
+    kill $pid
+
+}
+
+function enableConds()
+{
+    local isHere=$(isOnPath conda)
+    if [ "x$isHere" == "x" ]
+    then
+        # added by Anaconda2 2019.03 installer
+        # >>> conda init >>>
+        # !! Contents within this block are managed by 'conda init' !!
+        __conda_setup="$(CONDA_REPORT_ERRORS=false '/anaconda2/bin/conda' shell.bash hook 2> /dev/null)"
+        if [ $? -eq 0 ]; then
+            \eval "$__conda_setup"
+        else
+            if [ -f "/anaconda2/etc/profile.d/conda.sh" ]; then
+                . "/anaconda2/etc/profile.d/conda.sh"
+                CONDA_CHANGEPS1=false conda activate base
+            else
+                \export PATH="/anaconda2/bin:$PATH"
+            fi
+        fi
+        unset __conda_setup
+        # <<< conda init <<<
     fi
 }
 

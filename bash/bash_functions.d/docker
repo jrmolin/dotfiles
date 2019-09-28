@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # npm ()
 # {
 #     docker run \
@@ -161,6 +160,15 @@ dockerPsClean()
             docker rm $h
         done
     fi
+}
+
+function solc()
+{
+    docker run -it --rm \
+        -v $(pwd):/solidity \
+        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
+        -e HOME=/usr/src/home \
+        ethereum/solc:stable $*
 }
 
 #dockerpython()

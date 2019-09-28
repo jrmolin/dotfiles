@@ -53,6 +53,8 @@
     "Plugin 'vim-airline/vim-airline'
 
     Plugin 'altercation/vim-colors-solarized'
+
+    Plugin 'groovy.vim'
     call vundle#end()
 " }}}
 
@@ -61,8 +63,10 @@
                                                 " tags file
         set background=dark                     " Assume a dark background
 
-        if !has('gui') && !has('nvim')
-            set term=$TERM                      " Make arrow and other keys work
+        if !has('gui')
+            if -1 == match($VIM, "nvim")
+                set term=$TERM                      " Make arrow and other keys work
+            endif
         endif
 
 
@@ -283,6 +287,10 @@
         nnoremap k gk
 
         nnoremap <leader>t :set expandtab<CR>:retab<CR>
+
+        " copy the current line and underline it
+        nnoremap <leader>- YpVr-
+        nnoremap <leader>= YpVr=
 
         " Toggle search highlighting
         nmap <silent> <leader>/ :set invhlsearch<CR>

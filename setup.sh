@@ -102,7 +102,7 @@ _install() {
 
     local _path=$(type -p $_exe)
 
-    if [ -e "$_path" ]
+    if [ -f $_path ]
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
@@ -163,16 +163,8 @@ submodule() {
 }
 
 
-runrun() {
-    install_curl
-    install_nix
-    _install stow
-
-    _install sqlite sqlite3
-    _install vim
-    _install tmux
-
-    #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+dolinks() {
+    link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
     #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
@@ -188,9 +180,27 @@ runrun() {
 #    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
 }
 
+runrun() {
+    install_curl
+    install_nix
+    _install stow
+
+    _install sqlite3
+    _install vim
+    _install tmux
+
+    dolinks
+}
+
 if [ "x$1" = "x" ]
 then
-    echo "Usage: $0 install"
+    echo "Usage: $0 <install|links>"
+elif [ "x$1" = "xlinks" ]
+then
+    submodule
+    echo "found install to be [$INSTALL]"
+    dolinks
+    echo "finished!"
 elif [ "x$1" = "xinstall" ]
 then
     submodule

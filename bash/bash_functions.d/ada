@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ "x$(uname)" != "xDarwin" ]
+then
+    return
+fi
+
+function enableAda()
+{
+    export ADA_BASE=$HOME/sandbox/ada/gnat/gnat-gpl-2017-x86_64-darwin-bin
+    export ADA_BIN=$ADA_BASE/bin
+    export ADA_GCC=$ADA_BIN/gcc
+    export ADA_MAKE=$ADA_BIN/gnatmake
+}
+
+

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#set -e
+
+if [ "x$(uname)" != "xDarwin" ]
+then
+    return
+fi
+
+
+function listSnapshots()
+{
+    out=$(sudo tmutil listlocalsnapshotdates)
+    echo "$out"
+}
+
+
+function deleteSnapshots()
+{
+    year=${1:-2018}
+    for i in $(sudo tmutil listlocalsnapshotdates | grep $year)
+    do
+        sudo tmutil deletelocalsnapshots $i
+    done
+}
+
