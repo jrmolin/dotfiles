@@ -314,11 +314,39 @@ function dco()
 {
     local path="$HOME/.dco_path"
 
+    local index=${1:-0}
+    local pathy=
+
     if [ -e "$path" ]
     then
-        cd $(< $path)
+        local ITER=0
+        while IFS= read -r pathy
+        do
+            if [[ $ITER == $index ]]
+            then
+                break
+            fi
+            ITER=$(expr $ITER + 1)
+        done < $path
+
+        if [[ $ITER == $index ]]
+        then
+            if [ -d $pathy ]
+            then
+                cd $pathy
+            else
+                echo "[$pathy] is not a directory; bailing"
+            fi
+        else
+            echo "you provided an index outside the range of possibilities"
+        fi
     else
-        echo "You need to create a file at [$path] with only the path to the repo in it"
+        echo " you need to create a file at [$path] with paths to repos in it"
+        echo <<EOF
+/path/to/user's/git/sensor
+/path/to/user's/git/playgate
+/path/to/user's/git/shits-n-giggles
+EOF
     fi
 }
 
