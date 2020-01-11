@@ -5,7 +5,6 @@ function isInPath()
     local name=$1
     path_to_executable=$(which $name)
     if [ -x "$path_to_executable" ] ; then
-        echo "It's here: $path_to_executable"
         echo "1"
     else
         echo ""
@@ -248,30 +247,6 @@ function killhipchat()
     echo "killing ${pid}"
     kill $pid
 
-}
-
-function enableConds()
-{
-    local isHere=$(isOnPath conda)
-    if [ "x$isHere" == "x" ]
-    then
-        # added by Anaconda2 2019.03 installer
-        # >>> conda init >>>
-        # !! Contents within this block are managed by 'conda init' !!
-        __conda_setup="$(CONDA_REPORT_ERRORS=false '/anaconda2/bin/conda' shell.bash hook 2> /dev/null)"
-        if [ $? -eq 0 ]; then
-            \eval "$__conda_setup"
-        else
-            if [ -f "/anaconda2/etc/profile.d/conda.sh" ]; then
-                . "/anaconda2/etc/profile.d/conda.sh"
-                CONDA_CHANGEPS1=false conda activate base
-            else
-                \export PATH="/anaconda2/bin:$PATH"
-            fi
-        fi
-        unset __conda_setup
-        # <<< conda init <<<
-    fi
 }
 
 function enableBackups()

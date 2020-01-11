@@ -258,3 +258,5 @@ fi
 sourceIfExists $HOME/.bash_aliases
 
 MANPATH=$MANPATH:$HOME/share/man
+
+

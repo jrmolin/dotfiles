@@ -36,6 +36,15 @@ floating_modifier $mod
 #bindsym $mod+Return exec urxvt #xterm
 bindsym $mod+Return exec xterm
 
+# set the window name
+#bindsym --release $mod+o exec set-window-title.sh
+
+# dynamic renaming of parent container
+bindsym $mod+slash exec "answer=$(zenity --title=\\"i3-msg title_format\\" --text \\"Change %TITLE for parent container\\" --entry); if [ -n \\"$answer\\" ]; then i3-msg focus parent, title_format \\"<span foreground='pink'><b> $answer</b></span>\\", focus child; else i3-msg focus parent, title_format \\"<span foreground='pink'><b> %title</b></span>\\", focus child; fi"
+bindsym $mod+$alt+slash focus parent, title_format "<span foreground='#FEC196'><b> 📦 %title</b></span>", focus child
+bindsym $mod+$ctl+w exec "WINDOWS=$(xdotool search --all --onlyvisible --desktop $(xprop -notype -root _NET_CURRENT_DESKTOP | cut -c 24-) \\"\\" 2>/dev/null); for window in $WINDOWS; do xdotool windowactivate $window; i3-msg \\"split h; layout tabbed\\"; $con_title; done"
+bindsym $mod+$alt+$ctl+w exec "WINDOWS=$(xdotool search --all --onlyvisible --desktop $(xprop -notype -root _NET_CURRENT_DESKTOP | cut -c 24-) \\"\\" 2>/dev/null); for window in $WINDOWS; do xdotool windowactivate $window; i3-msg \\"move left\\"; $con_title; done"
+
 # kill focused window
 bindsym $mod+Shift+q kill
 
@@ -69,9 +78,6 @@ bindsym $mod+Shift+l move right
 
 # take a screenshot
 bindsym --release $mod+Shift+p exec import ~/Pictures/Screenshots/Screenshot-$(date "+%Y.%m.%d-%H.%M.%S").png
-
-# set the window name
-bindsym --release $mod+o exec set-window-title.sh
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Shift+Left move left

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ "xLinux" = "x$(uname)" ]
+then
+    alias web='x-www-browser'
+
+fi
