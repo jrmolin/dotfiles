@@ -270,6 +270,9 @@
         " echo the current pwd
         nnoremap <Leader>p :pwd<CR>
 
+        " list the buffers
+        nnoremap <Leader>l :ls<CR>
+
         " echo the full path to the file being viewed/edited
         nnoremap <Leader>; :echo expand('%:p')<CR>
 

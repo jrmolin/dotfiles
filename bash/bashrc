@@ -229,9 +229,6 @@ if [ "x$(uname)" = "xDarwin" ]; then
     then
       . $(brew --prefix)/etc/bash_completion
     fi
-
-    alias vi=nvim
-    alias vim=nvim
 fi
 
 __nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
@@ -258,5 +255,4 @@ fi
 sourceIfExists $HOME/.bash_aliases
 
 MANPATH=$MANPATH:$HOME/share/man
-
 
