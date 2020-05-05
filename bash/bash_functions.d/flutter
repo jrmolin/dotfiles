@@ -1,0 +1,24 @@
+#!/bin/bash
+
+function enableFlutter()
+{
+    if [ "x$(isInPath flutter)" = "x1" ]
+    then
+        return
+    fi
+
+    export PATH="${HOME}/sandbox/flutter/flutter/bin:/opt/android-studio/bin:$PATH"
+}
+
+function disableFlutter()
+{
+
+    if [ "x$(isInPath flutter)" = "x" ]
+    then
+        return
+    fi
+
+    PATH=$(stripFromPath "${HOME}/sandbox/flutter/flutter/bin")
+    PATH=$(stripFromPath "/opt/android-studio/bin")
+}
+
