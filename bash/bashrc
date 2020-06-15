@@ -5,6 +5,9 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+# if in nix shell, don't load anything
+#[[ -n $IN_NIX_SHELL ]] && return
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -192,12 +195,6 @@ fi
 
 export CLASSPATH
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# $HOME/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-sourceIfExists $HOME/.bash_aliases
-
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
@@ -255,4 +252,11 @@ then
 #    fi
 fi
 
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# $HOME/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+sourceIfExists $HOME/.bash_aliases
+
 MANPATH=$MANPATH:$HOME/share/man
+

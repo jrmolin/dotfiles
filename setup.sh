@@ -102,7 +102,7 @@ _install() {
 
     local _path=$(type -p $_exe)
 
-    if [ -e "$_path" ]
+    if [ -f $_path ]
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
@@ -206,6 +206,11 @@ then
     submodule
     echo "found install to be [$INSTALL]"
     dolinks
+    echo "finished!"
+elif [ "x$1" = "xnix" ]
+then
+    echo "installing nix"
+    install_nix
     echo "finished!"
 elif [ "x$1" = "xinstall" ]
 then

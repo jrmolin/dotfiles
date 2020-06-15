@@ -5,7 +5,6 @@ function isInPath()
     local name=$1
     path_to_executable=$(which $name)
     if [ -x "$path_to_executable" ] ; then
-        echo "It's here: $path_to_executable"
         echo "1"
     else
         echo ""
@@ -250,30 +249,6 @@ function killhipchat()
 
 }
 
-function enableConds()
-{
-    local isHere=$(isOnPath conda)
-    if [ "x$isHere" == "x" ]
-    then
-        # added by Anaconda2 2019.03 installer
-        # >>> conda init >>>
-        # !! Contents within this block are managed by 'conda init' !!
-        __conda_setup="$(CONDA_REPORT_ERRORS=false '/anaconda2/bin/conda' shell.bash hook 2> /dev/null)"
-        if [ $? -eq 0 ]; then
-            \eval "$__conda_setup"
-        else
-            if [ -f "/anaconda2/etc/profile.d/conda.sh" ]; then
-                . "/anaconda2/etc/profile.d/conda.sh"
-                CONDA_CHANGEPS1=false conda activate base
-            else
-                \export PATH="/anaconda2/bin:$PATH"
-            fi
-        fi
-        unset __conda_setup
-        # <<< conda init <<<
-    fi
-}
-
 function enableBackups()
 {
     export BACKUPS=$HOME/.config/backups/files.db
@@ -358,11 +333,39 @@ function dco()
 {
     local path="$HOME/.dco_path"
 
+    local index=${1:-0}
+    local pathy=
+
     if [ -e "$path" ]
     then
-        cd $(< $path)
+        local ITER=0
+        while IFS= read -r pathy
+        do
+            if [[ $ITER == $index ]]
+            then
+                break
+            fi
+            ITER=$(expr $ITER + 1)
+        done < $path
+
+        if [[ $ITER == $index ]]
+        then
+            if [ -d $pathy ]
+            then
+                cd $pathy
+            else
+                echo "[$pathy] is not a directory; bailing"
+            fi
+        else
+            echo "you provided an index outside the range of possibilities"
+        fi
     else
-        echo "You need to create a file at [$path] with only the path to the repo in it"
+        echo " you need to create a file at [$path] with paths to repos in it"
+        echo <<EOF
+/path/to/user's/git/sensor
+/path/to/user's/git/playgate
+/path/to/user's/git/shits-n-giggles
+EOF
     fi
 }
 
