@@ -195,12 +195,23 @@ runrun() {
 
 if [ "x$1" = "x" ]
 then
-    echo "Usage: $0 <install|links>"
+    echo "Usage: $0 <install|links|nix>"
+elif [ "x$1" = "xnix" ]
+then
+    submodule
+    echo "found install to be [$INSTALL]"
+    install_nix
+    echo "finished!"
 elif [ "x$1" = "xlinks" ]
 then
     submodule
     echo "found install to be [$INSTALL]"
     dolinks
+    echo "finished!"
+elif [ "x$1" = "xnix" ]
+then
+    echo "installing nix"
+    install_nix
     echo "finished!"
 elif [ "x$1" = "xinstall" ]
 then
