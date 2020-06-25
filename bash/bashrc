@@ -202,6 +202,9 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+# add $HOME/local/bin to PATH, if it exists
+addUnique "$HOME/local/bin"
+
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
 
@@ -258,5 +261,4 @@ fi
 sourceIfExists $HOME/.bash_aliases
 
 MANPATH=$MANPATH:$HOME/share/man
-
 

@@ -183,6 +183,7 @@ dolinks() {
 runrun() {
     install_curl
     install_nix
+    _install glibc-locales
     _install stow
 
     _install sqlite3
