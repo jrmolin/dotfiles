@@ -235,7 +235,7 @@ if [ "x$(uname)" = "xDarwin" ]; then
 fi
 
 __nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
-[ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
+[ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 
 # add direnv support
 if [ "xfile" = "x$(fnexists direnv)" ]
@@ -258,5 +258,4 @@ fi
 sourceIfExists $HOME/.bash_aliases
 
 MANPATH=$MANPATH:$HOME/share/man
-
 

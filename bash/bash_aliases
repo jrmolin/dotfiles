@@ -10,3 +10,9 @@ then
 else
     alias ls="`which ls` -F --color=auto"
 fi
+
+if [ "Linux" = "$(uname)" ]
+then
+    alias setclip="xclip -selection c"
+    alias getclip="xclip -selection c -o"
+fi

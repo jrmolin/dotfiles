@@ -428,6 +428,12 @@ function fnexists()
     echo $result
 }
 
+function whatsmyip()
+{
+    local result=$(curl -L ip.b17.dev 2> /dev/null | jq -r '.address')
+    echo "$result"
+}
+
 if [ -d "${HOME}/.bash_functions.d" ]
 then
     for f in $(ls -1 ${HOME}/.bash_functions.d/*)
