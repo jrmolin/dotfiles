@@ -202,6 +202,9 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+# add $HOME/local/bin to PATH, if it exists
+addUnique "$HOME/local/bin"
+
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
 
@@ -230,8 +233,8 @@ if [ "x$(uname)" = "xDarwin" ]; then
       . $(brew --prefix)/etc/bash_completion
     fi
 
-    alias vi=nvim
-    alias vim=nvim
+    #alias vi=nvim
+    #alias vim=nvim
 fi
 
 __nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
@@ -245,10 +248,11 @@ fi
 
 if [ "x$LOCALE_ARCHIVE" = "x" ]
 then
-    if [ "xfile" = "x$(fnexists nix-env)" ]
-    then
-        export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
-    fi
+    export LC_ALL=C
+#    if [ "xfile" = "x$(fnexists nix-env)" ]
+#    then
+#        export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
+#    fi
 fi
 
 # Alias definitions.

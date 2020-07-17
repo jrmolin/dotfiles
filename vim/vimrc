@@ -33,6 +33,14 @@
             return !empty(globpath(&rtp, pat))
         endfunction
 
+    if has('unix')
+        let g:dir_sep = '/'
+        let g:top_dir = g:dir_sep
+    else
+        let g:dir_sep = '\\'
+        let g:top_dir = 'c:\\'
+    endif
+
     set rtp+=~/.vim/bundle/Vundle.vim
     call vundle#begin()
 
@@ -41,11 +49,8 @@
     " Sensible defaults
     Plugin 'tpope/vim-sensible'
 
-" System {
-        silent !mkdir ~/.vimlocal > /dev/null 2>&1
-        silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
-        silent !mkdir ~/.vimlocal/swapdir > /dev/null 2>&1
-" }
+    Plugin 'bkad/CamelCaseMotion'
+
     " git
     Plugin 'tpope/vim-fugitive'
 
@@ -53,20 +58,22 @@
     "Plugin 'vim-airline/vim-airline'
 
     Plugin 'altercation/vim-colors-solarized'
-
-    Plugin 'groovy.vim'
     call vundle#end()
 " }}}
+
+" System {
+        silent !mkdir ~/.vimlocal > /dev/null 2>&1
+        silent !mkdir ~/.vimlocal/undodir > /dev/null 2>&1
+        silent !mkdir ~/.vimlocal/swapdir > /dev/null 2>&1
+" }
 
 " General {{{
 "       set tags=./tags;                        " recursively search for a
                                                 " tags file
         set background=dark                     " Assume a dark background
 
-        if !has('gui')
-            if -1 == match($VIM, "nvim")
-                set term=$TERM                      " Make arrow and other keys work
-            endif
+        if has('unix') && !has('gui') && !has('nvim')
+            set term=$TERM                      " Make arrow and other keys work
         endif
 
 
@@ -237,6 +244,64 @@
         set ff=unix                         " Set the default file format to UNIX
 " }}}
 
+" silly functions {
+function! SpaceOutSelection()
+    let l:lnum1 = getpos("'<")[1]
+    let l:lnum2 = getpos("'>")[1]
+    echom l:lnum1 . "::" . l:lnum2
+    echom "normal! :" . l:lnum2 . "<CR>"
+    echom "normal! joD"
+    echom "normal! :" . l:lnum1 . "<CR>"
+    echom "normal! OD"
+    echom l:lnum2
+endfunction
+
+function! FindDirInAncestry(...)
+    let l:dirname = a:0 ? a:1 : '.git'
+
+    " store off our current directory
+    let l:cur = expand('%:p')
+    let l:prev = l:cur
+
+    while 1
+        let l:prev = l:cur
+        let l:cur = fnamemodify(l:cur, ':h')
+        if l:cur == g:top_dir
+            let l:fn = l:cur.''.l:dirname
+        else
+            let l:fn = l:cur.g:dir_sep.l:dirname
+        endif
+
+        if filereadable(l:fn) || isdirectory(l:fn)
+            return ':e ' . l:cur . g:dir_sep
+        endif
+
+        if l:cur == l:prev
+            break
+        endif
+    endwhile
+
+    return ':e ' . expand('%:p:h')
+endfunction
+
+function! SpaceItOut()
+    let cnum = virtcol('.')
+    let lnum = line('.')
+    let cend = 100
+    let numSpaces = cend - cnum - 1
+    execute ':normal! ' . numSpaces . 'a '
+    echom "need to add " . numSpaces . " spaces"
+endfunction
+
+function! StripTrailingWhitespace()
+    " remember where we were
+    let l:save = winsaveview()
+
+    %s/\s\+$//e
+    call winrestview(l:save)
+    echo "stripped trailing whitespace"
+endfunction
+
 
 " Key (re)Mappings {{{
         " The default leader is '\', but many people prefer ',' as it's in a
@@ -270,6 +335,9 @@
         " echo the current pwd
         nnoremap <Leader>p :pwd<CR>
 
+        " list the buffers
+        nnoremap <Leader>l :ls<CR>
+
         " echo the full path to the file being viewed/edited
         nnoremap <Leader>; :echo expand('%:p')<CR>
 
@@ -288,10 +356,6 @@
 
         nnoremap <leader>t :set expandtab<CR>:retab<CR>
 
-        " copy the current line and underline it
-        nnoremap <leader>- YpVr-
-        nnoremap <leader>= YpVr=
-
         " Toggle search highlighting
         nmap <silent> <leader>/ :set invhlsearch<CR>
 
@@ -299,7 +363,14 @@
         nmap <expr>  M  ':%s/' . @/ . '//g<LEFT><LEFT>'
 
         " start editing from this project's root directory
-        nmap <expr>  <leader>e  ':e ' . FindDirInAncestry('.git') . '/'
+        "nmap <expr> <Leader>e  FindDirInAncestry('.git')
+        nmap <expr> <C-e>  FindDirInAncestry('.git')
+
+        " list the buffers
+        nnoremap <Leader>l :ls<CR>
+
+        " list the registers
+        nnoremap <Leader>r :reg<CR>
 
         " space it out
         nmap <silent> ;s :call SpaceItOut()<CR>
@@ -383,11 +454,6 @@
             augroup END
         " }
 
-        " yaml {
-            autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
-            au! BufReadPost,BufRead,BufNewFile *.{yaml,yml} setlocal filetype=yaml
-        " }}}
-        "
 " }}}
 
 
@@ -406,14 +472,14 @@
                 silent! set guifont=Monaco:h12
                 set transparency=5              " Make the window slightly transparent
             else
-                set guifont=Monospace\ 9
+                set guifont=Fixedsys:h9
             endif
 
 
             set guioptions-=T                   " Remove the toolbar
             "set lines=40                        " 40 lines of text instead of 24,
         else
-            if &term == 'xterm' || &term == 'screen' || &term == 'rxvt-unicode'
+            if &term == 'xterm' || &term == 'screen'
                 set t_Co=256                    " Enable 256 colors to stop the
                                             " CSApprox warning and make xterm vim
                                             " shine
@@ -424,62 +490,16 @@
 "
 " airline {{{
     let g:airline#extensions#tabline#enabled = 1
-    " let g:airline#extensions#tabline#show_tabs = 1
+    let g:airline#extensions#tabline#show_tabs = 1
+" }}}
+
+" camelcasemotion {{{
+    call camelcasemotion#CreateMotionMappings('<leader>')
+    map ;w <Plug>CamelCaseMotion_w
+    map ;b <Plug>CamelCaseMotion_b
+    map ;e <Plug>CamelCaseMotion_e
 " }}}
 
 " }
-
-" silly functions {
-function! SpaceOutSelection()
-    let l:lnum1 = getpos("'<")[1]
-    let l:lnum2 = getpos("'>")[1]
-    echom l:lnum1 . "::" . l:lnum2
-    echom "normal! :" . l:lnum2 . "<CR>"
-    echom "normal! joD"
-    echom "normal! :" . l:lnum1 . "<CR>"
-    echom "normal! OD"
-    echom l:lnum2
-endfunction
-
-function! FindDirInAncestry(...)
-    let dirname = a:0 ? a:1 : '.git'
-    " store off our current directory
-    let l:cur = expand('%:p:h')
-    let l:prev = "/"
-    let l:found = 1
-
-    while 1
-        let l:prev = l:cur
-        let l:cur = fnamemodify(l:cur, ':h')
-        let fn = l:cur.(l:cur == '/' ? '' : '/').dirname
-        if filereadable(fn) || isdirectory(fn)
-            return l:cur
-        endif
-
-        if l:cur == l:prev
-            break
-        endif
-    endwhile
-
-    return expand('%:p:h')
-endfunction
-
-function! SpaceItOut()
-    let cnum = virtcol('.')
-    let lnum = line('.')
-    let cend = 100
-    let numSpaces = cend - cnum - 1
-    execute ':normal! ' . numSpaces . 'a '
-    echom "need to add " . numSpaces . " spaces"
-endfunction
-
-function! StripTrailingWhitespace()
-    " remember where we were
-    let l:save = winsaveview()
-
-    %s/\s\+$//e
-    call winrestview(l:save)
-    echo "stripped trailing whitespace"
-endfunction
 
 " }

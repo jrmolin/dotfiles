@@ -4,6 +4,15 @@ COMPLETION_DIR="${HOME}/.bash_completion.d"
 
 complete -d cd
 
+if [ "x$(fnexists _init_completion)x" = "xx" ]
+then
+    _init_completion()
+    {
+        COMPREPLY=()
+        _get_comp_words_by_ref cur prev words cword
+    }
+fi
+
 if [ -d "${COMPLETION_DIR}" ] ;
 then
     for f in $(ls -1 "${COMPLETION_DIR}/") ;
