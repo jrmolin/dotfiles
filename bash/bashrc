@@ -238,7 +238,11 @@ if [ "x$(uname)" = "xDarwin" ]; then
 fi
 
 __nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
-[ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
+# only source the nix file if we haven't already done that
+if [ "x" = "x$(fnexists nix-env)" ]
+then
+    [ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
+fi
 
 # add direnv support
 if [ "xfile" = "x$(fnexists direnv)" ]
