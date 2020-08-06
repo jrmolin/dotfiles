@@ -165,6 +165,7 @@ submodule() {
 
 dolinks() {
     link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+    link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
     #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"

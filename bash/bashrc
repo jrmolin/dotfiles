@@ -241,7 +241,7 @@ __nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
 # only source the nix file if we haven't already done that
 if [ "x" = "x$(fnexists nix-env)" ]
 then
-    [ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
+    [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 fi
 
 # add direnv support
@@ -267,3 +267,4 @@ sourceIfExists $HOME/.bash_aliases
 
 MANPATH=$MANPATH:$HOME/share/man
 
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
