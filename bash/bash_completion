@@ -4,6 +4,13 @@ COMPLETION_DIR="${HOME}/.bash_completion.d"
 
 complete -d cd
 
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
+
 if [ "x$(fnexists _init_completion)x" = "xx" ]
 then
     _init_completion()
