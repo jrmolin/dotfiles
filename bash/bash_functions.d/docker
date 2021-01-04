@@ -178,12 +178,12 @@ function solc()
 #        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
 #}
 
-#dockerbpython()
-#{
-#    docker run -it --rm \
-#        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
-#        --entrypoint bpython moli/python
-#}
+bpython()
+{
+    docker run -it --rm \
+        -e USER -e HOME -u $UID:$GID \
+        --entrypoint bpython python3
+}
 
 #R()
 #{
@@ -247,3 +247,24 @@ startJenkins()
         jenkinsci/blueocean
 }
 
+pavucontrol()
+{
+    local USER_UID=$(id -u)
+
+    docker run -ti \
+        -v=/run/user/${USER_UID}/pulse:/run/user/1000/pulse \
+        --mount type=bind,source=/dev/shm,target=/dev/shm \
+        -e DISPLAY \
+        -v=/tmp/.X11-unix:/tmp/.X11-unix \
+        -e NO_AT_BRIDGE=1 \
+        pulsey pavucontrol ${@}
+}
+cargo()
+{
+    echo "[$*]"
+    docker run -it --rm --name cargo \
+        --user "$(id -u)":"$(id -g)" \
+        -e USER \
+        -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
+        cargo:latest $*
+}
