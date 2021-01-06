@@ -245,10 +245,10 @@ then
 fi
 
 # add direnv support
-if [ "xfile" = "x$(fnexists direnv)" ]
-then
-    eval "$(direnv hook bash)"
-fi
+#if [ "xfile" = "x$(fnexists direnv)" ]
+#then
+#    eval "$(direnv hook bash)"
+#fi
 
 if [ "x$LOCALE_ARCHIVE" = "x" ]
 then

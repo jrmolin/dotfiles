@@ -176,7 +176,7 @@ dolinks() {
     link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
     link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
     link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
-    link_file $WORKDIR/bash/dircolors "$HOME/.dircolors"
+    link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
     link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
 #    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
 }

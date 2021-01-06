@@ -58,6 +58,10 @@
     "Plugin 'vim-airline/vim-airline'
 
     Plugin 'altercation/vim-colors-solarized'
+
+    " use nord instead of solarized
+    Plugin 'arcticicestudio/nord-vim'
+
     call vundle#end()
 " }}}
 
@@ -147,7 +151,9 @@
         " }}}
 
         " Color Scheme {
-            if s:has_colorscheme('solarized')
+            if s:has_colorscheme('nord')
+                colorscheme nord
+            elseif s:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
