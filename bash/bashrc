@@ -264,8 +264,6 @@ fi
 
 export EDITOR=vim
 
-#export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
-
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
@@ -290,25 +288,6 @@ if [ "x" = "x$(fnexists nix-env)" ]
 then
     [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 fi
-
-# add direnv support
-#if [ "xfile" = "x$(fnexists direnv)" ]
-#then
-#    eval "$(direnv hook bash)"
-#fi
-
-export LC_ALL="en_US.UTF-8"
-export LANG="en_US.UTF-8"
-export LANGUAGE="en_US.UTF-8"
-
-#if [ "x$LOCALE_ARCHIVE" = "x" ]
-#then
-#    export LC_ALL=C
-##    if [ "xfile" = "x$(fnexists nix-env)" ]
-##    then
-##        export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
-##    fi
-#fi
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
