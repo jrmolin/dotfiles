@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# we're using nix now, so bail
-return
-
 function enableGo()
 {
     if [ "xfunction" = "x$(fnexists disableGo)" ]
@@ -10,7 +7,7 @@ function enableGo()
         return
     fi
 
-    GOINSTALL="$HOME/local-installations/go"
+    GOINSTALL="$HOME/local/go"
     if [ -d "$GOINSTALL" ]
     then
         if [ "x$(uname)" = "xLinux" ]
