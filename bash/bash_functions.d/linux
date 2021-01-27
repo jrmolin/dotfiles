@@ -54,4 +54,16 @@ then
 
         unset enableEclipse
     }
+
+    function enableRtl()
+    {
+        PATH="$PATH:/opt/rtl-sdr/bin:/opt/rtl-433/bin"
+
+        function disableRtl()
+        {
+            PATH=$(stripFromPath "/opt/rtl-sdr/bin")
+            PATH=$(stripFromPath "/opt/rtl-433/bin")
+        }
+        unset enableRtl
+    }
 fi

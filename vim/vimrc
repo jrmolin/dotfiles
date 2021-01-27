@@ -3,7 +3,7 @@
 "
 " Recommended Plugins:
 " - Solarized (color)
-" - Vundle (plugin manager)
+" - plug.vim (plugin manager)
 "
 
 " Environment {{{
@@ -41,28 +41,26 @@
         let g:top_dir = 'c:\\'
     endif
 
-    set rtp+=~/.vim/bundle/Vundle.vim
-    call vundle#begin()
-
-    Plugin 'VundleVim/Vundle.vim'
+    call plug#begin('$HOME/.vim/plugged')
 
     " Sensible defaults
-    Plugin 'tpope/vim-sensible'
+    Plug 'tpope/vim-sensible'
 
-    Plugin 'bkad/CamelCaseMotion'
+    Plug 'bkad/CamelCaseMotion'
 
     " git
-    Plugin 'tpope/vim-fugitive'
+    Plug 'tpope/vim-fugitive'
 
     " Better status line
-    "Plugin 'vim-airline/vim-airline'
+    "Plun 'vim-airline/vim-airline'
 
-    Plugin 'altercation/vim-colors-solarized'
+    Plug 'altercation/vim-colors-solarized'
 
     " use nord instead of solarized
-    Plugin 'arcticicestudio/nord-vim'
+    Plug 'arcticicestudio/nord-vim'
 
-    call vundle#end()
+    " initialize plugin system
+    call plug#end()
 " }}}
 
 " System {

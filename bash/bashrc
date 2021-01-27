@@ -262,6 +262,12 @@ then
     addUniqueToClasspath $_ANTLR
 fi
 
+_JAVAFBP="$HOME/local/fbp/javafbp-4.1.11.jar"
+if [ -e $_JAVAFBP ]
+then
+    addUniqueToClasspath $_JAVAFBP
+fi
+
 export EDITOR=vim
 
 # prompt command testing

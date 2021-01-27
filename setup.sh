@@ -53,6 +53,16 @@ setup() {
 }
 
 
+setupvim() {
+    require_util curl "download things, like for installing nix"
+
+    if [ ! -e vim/vim/autoload/plug.vim ]
+    then
+        doit curl -fLo vim/vim/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    fi
+}
+
 doit() {
     if [ "x$DEBUG" = "x1" ]; then
         echo "$@"
@@ -145,7 +155,7 @@ install_nix() {
     fi
 
     require_util curl "download things, like for installing nix"
-    res=$(curl $url | sh)
+    res=$(curl -L $url | sh)
     echo $res
 
 }
@@ -157,11 +167,6 @@ WORKDIR=`pwd`
 
 _SYSTEM=$(getsystem)
 INSTALL=$(setup)
-
-submodule() {
-    doit git submodule update --init --recursive
-}
-
 
 dolinks() {
     link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
@@ -189,6 +194,7 @@ runrun() {
 
     _install sqlite3
     _install vim
+    setupvim
     _install tmux
 
     dolinks
@@ -197,26 +203,22 @@ runrun() {
 if [ "x$1" = "x" ]
 then
     echo "Usage: $0 <install|links|nix>"
+elif [ "x$1" = "xvim" ]
+then
+    setupvim
+    echo "finished!"
 elif [ "x$1" = "xnix" ]
 then
-    submodule
     echo "found install to be [$INSTALL]"
     install_nix
     echo "finished!"
 elif [ "x$1" = "xlinks" ]
 then
-    submodule
     echo "found install to be [$INSTALL]"
     dolinks
     echo "finished!"
-elif [ "x$1" = "xnix" ]
-then
-    echo "installing nix"
-    install_nix
-    echo "finished!"
 elif [ "x$1" = "xinstall" ]
 then
-    submodule
     echo "found install to be [$INSTALL]"
     runrun
     echo "finished!"
