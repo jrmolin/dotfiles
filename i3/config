@@ -202,7 +202,7 @@ bar {
         focused_workspace   $nord3  $nord8
         active_workspace    $nord3  $nord8
         inactive_workspace  $nord8  $nord3
-        urgent_workspace    $nord3 $nord15
+        urgent_workspace    $nord3 $nord11
     }
 }
 

@@ -247,6 +247,19 @@ startJenkins()
         jenkinsci/blueocean
 }
 
+sdr()
+{
+    docker run -ti \
+        --device=/dev/bus/usb \
+        sdr-base "$*"
+}
+rtl_433()
+{
+    docker run -ti \
+        --device=/dev/bus/usb \
+        --entrypoint=/usr/bin/rtl_433 \
+        sdr "$*"
+}
 pavucontrol()
 {
     local USER_UID=$(id -u)
