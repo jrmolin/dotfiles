@@ -148,21 +148,6 @@ root() {
     fi
 }
 
-function nvm()
-{
-    if [ -d "${HOME}/.nvm" ]
-    then
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-        # invoke the real nvm function
-        nvm "$@"
-    else
-        echo "nvm is not installed" >&2
-    fi
-}
-
 function enablePyenv()
 {
     export PYENV_ROOT="$HOME/.pyenv"
