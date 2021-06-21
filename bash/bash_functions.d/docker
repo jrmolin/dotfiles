@@ -178,12 +178,12 @@ function solc()
 #        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
 #}
 
-bpython()
-{
-    docker run -it --rm \
-        -e USER -e HOME -u $UID:$GID \
-        --entrypoint bpython python3
-}
+#bpython()
+#{
+#    docker run -it --rm \
+#        -e USER -e HOME -u $UID:$GID \
+#        --entrypoint bpython python3
+#}
 
 #R()
 #{
