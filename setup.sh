@@ -39,6 +39,9 @@ setup() {
     if [ "x$_SYSTEM" = "xfedora" ]
     then
         INSTALL="dnf install -y"
+    elif [ "x$_SYSTEM" = "xcentos" ]
+    then
+        INSTALL="yum install -y"
     elif [ "x$_SYSTEM" = "xredhat" ]
     then
         INSTALL="dnf install -y"
@@ -52,6 +55,16 @@ setup() {
     echo $INSTALL
 }
 
+
+setupvim() {
+    require_util curl "download things, like for installing nix"
+
+    if [ ! -e vim/vim/autoload/plug.vim ]
+    then
+        doit curl -fLo vim/vim/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    fi
+}
 
 doit() {
     if [ "x$DEBUG" = "x1" ]; then
@@ -145,7 +158,7 @@ install_nix() {
     fi
 
     require_util curl "download things, like for installing nix"
-    res=$(curl $url | sh)
+    res=$(curl -L $url | sh)
     echo $res
 
 }
@@ -158,18 +171,14 @@ WORKDIR=`pwd`
 _SYSTEM=$(getsystem)
 INSTALL=$(setup)
 
-submodule() {
-    doit git submodule update --init --recursive
-}
-
-
 dolinks() {
-    link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
-    link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+    #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+    #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
     #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
     link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
+    link_file $WORKDIR/tmux/tmux "$HOME/.tmux"
     link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
     link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
     link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
@@ -177,7 +186,7 @@ dolinks() {
     link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
     link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
     link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
-    link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
+    #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
 #    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
 }
 
@@ -189,6 +198,7 @@ runrun() {
 
     _install sqlite3
     _install vim
+    setupvim
     _install tmux
 
     dolinks
@@ -197,26 +207,22 @@ runrun() {
 if [ "x$1" = "x" ]
 then
     echo "Usage: $0 <install|links|nix>"
+elif [ "x$1" = "xvim" ]
+then
+    setupvim
+    echo "finished!"
 elif [ "x$1" = "xnix" ]
 then
-    submodule
     echo "found install to be [$INSTALL]"
     install_nix
     echo "finished!"
 elif [ "x$1" = "xlinks" ]
 then
-    submodule
     echo "found install to be [$INSTALL]"
     dolinks
     echo "finished!"
-elif [ "x$1" = "xnix" ]
-then
-    echo "installing nix"
-    install_nix
-    echo "finished!"
 elif [ "x$1" = "xinstall" ]
 then
-    submodule
     echo "found install to be [$INSTALL]"
     runrun
     echo "finished!"

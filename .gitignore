@@ -1,5 +1,7 @@
 vim/vim/autoload
+vim/vim/plugged
 .netrwhist
 /.blackbox/pubring.gpg~
 /.blackbox/pubring.kbx~
 /.blackbox/secring.gpg
+/tmux/tmux
