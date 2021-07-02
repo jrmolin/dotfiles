@@ -178,11 +178,53 @@ function solc()
 #        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
 #}
 
+find_venv()
+{
+    local exe=${1:-bpython}
+    local path=$(type -P $exe)
+
+    # look in the current path
+    if [ "x$path" = "x" ]
+    then
+
+        # look in the venv3 path
+        local venvpath="${HOME}/venv3/bin/${exe}"
+        path=$(type -P $venvpath)
+
+        if [ "x$path" = "x" ]
+        then
+
+            # look in the venv path
+            venvpath="${HOME}/venv/bin/${exe}"
+            path=$(type -P $venvpath)
+
+            if [ "x$path" = "x" ]
+            then
+                echo ""
+            else
+                echo $path
+            fi
+        else
+            echo $path
+        fi
+
+    else
+        echo $path
+    fi
+}
+
 bpython()
 {
-    docker run -it --rm \
-        -e USER -e HOME -u $UID:$GID \
-        --entrypoint bpython python3
+    local path=$(find_venv bpython)
+
+    if [ "x$path" = "x" ]
+    then
+        docker run -it --rm \
+            -e USER -e HOME -u $UID:$GID \
+            --entrypoint bpython python3
+    else
+        exec $path $*
+    fi
 }
 
 #R()

@@ -247,6 +247,8 @@ export CLASSPATH
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
+elif [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
 fi
 
 # add $HOME/local/bin to PATH, if it exists
@@ -300,6 +302,7 @@ fi
 # $HOME/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 sourceIfExists $HOME/.bash_aliases
+sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 

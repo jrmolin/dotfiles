@@ -51,6 +51,9 @@
     " git
     Plug 'tpope/vim-fugitive'
 
+    " jinja
+    Plug 'niftylettuce/vim-jinja'
+
     " Better status line
     "Plun 'vim-airline/vim-airline'
 
@@ -99,6 +102,7 @@
         set autochdir
 
         au BufRead,BufNewFile SConstruct,SConscript    setlocal filetype=python
+        au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm,*.jinja,*.tmpl set ft=jinja
 
         set lazyredraw                          " Don't redraw when executing macros
         set autowrite                           " Automatically write a file when

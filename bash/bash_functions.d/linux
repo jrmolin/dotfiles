@@ -66,4 +66,27 @@ then
         }
         unset enableRtl
     }
+
+    function enableToolchain()
+    {
+        local path="$HOME/.toolchain_path"
+
+        if [ -e "$path" ]
+        then
+            local TOOLCHAIN=$(< $path)
+            if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
+            then
+                echo "it's already there"
+            else
+                PATH=${TOOLCHAIN}:$PATH
+                echo "added ${TOOLCHAIN} to PATH"
+            fi
+        else
+            echo "You need to create a file at [$path] with only the path to the repo in it"
+        fi
+
+        enableJava 2>&1 /dev/null
+
+    }
+
 fi
