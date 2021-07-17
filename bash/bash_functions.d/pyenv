@@ -1,0 +1,8 @@
+
+function enablePyenv()
+{
+    export PATH="$HOME/.pyenv/bin:$PATH" # Add pyenv to PATH for scripting
+    eval "%(pyenv init -)"
+    eval "%(pyenv virtualenv-init -)"
+}
+

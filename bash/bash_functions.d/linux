@@ -4,4 +4,89 @@ if [ "xLinux" = "x$(uname)" ]
 then
     alias web='x-www-browser'
 
+
+    function enableJava()
+    {
+        JDK_VERSION="13.0.2"
+        GROOVY_VERSION="3.0.1"
+        JAVA_HOME="/usr/local/java/jdk-${JDK_VERSION}"
+        export GROOVY_HOME="/usr/local/java/groovy-${GROOVY_VERSION}"
+        PATH="${JAVA_HOME}/bin:${GROOVY_HOME}/bin:$PATH"
+
+        export JDK_VERSION
+        export JAVA_HOME
+
+        function disableJava()
+        {
+
+            unset GROOVY_VERSION
+            unset GROOVY_HOME
+            unset JDK_VERSION
+            unset JAVA_HOME
+            # remove the java paths
+            PATH=$(stripFromPath "${JAVA_HOME}/bin")
+            PATH=$(stripFromPath "${GROOVY_HOME}/bin")
+
+        }
+
+        unset enableJava
+    }
+
+    function enableEclipse()
+    {
+        enableJava
+        ECLIPSE_VERSION="java-2019-12"
+        ECLIPSE_HOME="${HOME}/eclipse/${ECLIPSE_VERSION}/eclipse/"
+        PATH="${ECLIPSE_HOME}:$PATH"
+
+        export ECLIPSE_VERSION
+        export ECLIPSE_HOME
+
+        function disableEclipse()
+        {
+
+            unset ECLIPSE_VERSION
+            unset ECLIPSE_HOME
+            # remove the java paths
+            PATH=$(stripFromPath "${ECLIPSE_HOME}")
+
+        }
+
+        unset enableEclipse
+    }
+
+    function enableRtl()
+    {
+        PATH="$PATH:/opt/rtl-sdr/bin:/opt/rtl-433/bin"
+
+        function disableRtl()
+        {
+            PATH=$(stripFromPath "/opt/rtl-sdr/bin")
+            PATH=$(stripFromPath "/opt/rtl-433/bin")
+        }
+        unset enableRtl
+    }
+
+    function enableToolchain()
+    {
+        local path="$HOME/.toolchain_path"
+
+        if [ -e "$path" ]
+        then
+            local TOOLCHAIN=$(< $path)
+            if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
+            then
+                echo "it's already there"
+            else
+                PATH=${TOOLCHAIN}:$PATH
+                echo "added ${TOOLCHAIN} to PATH"
+            fi
+        else
+            echo "You need to create a file at [$path] with only the path to the repo in it"
+        fi
+
+        enableJava 2>&1 /dev/null
+
+    }
+
 fi
