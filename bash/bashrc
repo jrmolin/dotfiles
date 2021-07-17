@@ -230,11 +230,14 @@ if [ "x$(uname)" = "xDarwin" ]; then
       . $(brew --prefix)/etc/bash_completion
     fi
 
+    export GOPATH="$HOME/go"
+    export GOBIN="$GOPATH/bin"
+    PATH="$GOPATH/bin:$PATH"
     #alias vi=nvim
     #alias vim=nvim
 fi
 
-__nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+__nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
 [ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
 
 # add direnv support
