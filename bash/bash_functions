@@ -29,6 +29,20 @@ function enableVirtualenv()
     fi
 }
 
+function nvm()
+{
+    if [ -d "${HOME}/.nvm" ]
+    then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+        # invoke the real nvm function
+        nvm "$@"
+    else
+        echo "nvm is not installed" >&2
+    fi
+}
 function enableRvm()
 {
     export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
@@ -132,18 +146,6 @@ root() {
     else
         echo "could not find [$_FILE] in the directory ancestry"
     fi
-}
-
-function enableRvm()
-{
-    export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
-}
-
-function enableNvm()
-{
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
 
 function enablePyenv()
@@ -273,26 +275,6 @@ function enableAntlr()
     export CLASSPATH=".:$ANTLR:$CLASSPATH"
     alias antlr4='java -Xmx500M -cp "$CLASSPATH" org.antlr.v4.Tool'
     alias grun='java org.antlr.v4.gui.TestRig'
-}
-
-function enableToolchain()
-{
-    local path="$HOME/.toolchain_path"
-
-    if [ -e "$path" ]
-    then
-        local TOOLCHAIN=$(< $path)
-        if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
-        then
-            echo "it's already there"
-        else
-            PATH=${TOOLCHAIN}:$PATH
-            echo "added ${TOOLCHAIN} to PATH"
-        fi
-    else
-        echo "You need to create a file at [$path] with only the path to the repo in it"
-    fi
-
 }
 
 function stripFromPath()
@@ -440,6 +422,18 @@ function hex2dec()
     fi
 
     bc2bc "16" "A" "$1"
+}
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
+function whatsmyip()
+{
+    local result=$(curl -L ip.b17.dev 2> /dev/null | jq -r '.address')
+    echo "$result"
 }
 
 if [ -d "${HOME}/.bash_functions.d" ]

@@ -3,7 +3,7 @@
 "
 " Recommended Plugins:
 " - Solarized (color)
-" - Vundle (plugin manager)
+" - plug.vim (plugin manager)
 "
 
 " Environment {{{
@@ -41,26 +41,31 @@
         let g:top_dir = 'c:\\'
     endif
 
-    set rtp+=~/.vim/bundle/Vundle.vim
-    call vundle#begin()
-
-    Plugin 'VundleVim/Vundle.vim'
+    call plug#begin('$HOME/.vim/plugged')
 
     " Sensible defaults
-    Plugin 'tpope/vim-sensible'
+    Plug 'tpope/vim-sensible'
 
-    " Plugin 'bkad/CamelCaseMotion'
+    " Plug 'bkad/CamelCaseMotion'
     Plugin 'pboettch/vim-cmake-syntax'
 
 
     " git
-    Plugin 'tpope/vim-fugitive'
+    Plug 'tpope/vim-fugitive'
+
+    " jinja
+    Plug 'niftylettuce/vim-jinja'
 
     " Better status line
-    "Plugin 'vim-airline/vim-airline'
+    "Plun 'vim-airline/vim-airline'
 
-    Plugin 'altercation/vim-colors-solarized'
-    call vundle#end()
+    Plug 'altercation/vim-colors-solarized'
+
+    " use nord instead of solarized
+    Plug 'arcticicestudio/nord-vim'
+
+    " initialize plugin system
+    call plug#end()
 " }}}
 
 " System {
@@ -86,6 +91,8 @@
         set mouse=a                             " Automatically enable mouse usage
         set mousehide                           " Hide the mouse cursor while typing
         scriptencoding utf-8
+        set encoding=utf-8
+        set fileencoding=utf-8
 
         if has('x') && has('gui')               " On Linux use '+' register copy/paste
             set clipboard=unnamedplus
@@ -97,6 +104,7 @@
         set autochdir
 
         au BufRead,BufNewFile SConstruct,SConscript    setlocal filetype=python
+        au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm,*.jinja,*.tmpl set ft=jinja
 
         set lazyredraw                          " Don't redraw when executing macros
         set autowrite                           " Automatically write a file when
@@ -149,7 +157,9 @@
         " }}}
 
         " Color Scheme {
-            if s:has_colorscheme('solarized')
+            if s:has_colorscheme('nord')
+                colorscheme nord
+            elseif s:has_colorscheme('solarized')
                 let g:solarized_termcolors=256
                 let g:solarized_termtrans=1
                 let g:solarized_contrast="high"
@@ -474,7 +484,7 @@ endfunction
                 silent! set guifont=Monaco:h12
                 set transparency=5              " Make the window slightly transparent
             else
-                set guifont=Fixedsys:h9
+                set guifont=DejaVu\ Sans:h9
             endif
 
 

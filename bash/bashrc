@@ -38,6 +38,7 @@ fi
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
     xterm-color) color_prompt=yes;;
+    xterm-256color) color_prompt=yes;;
 esac
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
@@ -68,6 +69,51 @@ function parse_git_branch {
 }
 
 # setup colors
+# from nord
+#set $nord0   #2E3440
+#set $nord1   #3B4252
+#set $nord2   #434C5E
+#set $nord3   #4C566A
+#set $nord4   #D8DEE9
+#set $nord5   #E5E9F0
+#set $nord6   #ECEFF4
+#set $nord7   #8FBCBB
+#set $nord8   #88C0D0
+#set $nord9   #81A1C1
+#set $nord10  #5E81AC
+#set $nord11  #BF616A
+#set $nord12  #D08770
+#set $nord13  #EBCB8B
+#set $nord14  #A3BE8C
+#set $nord15  #B48EAD
+fromhex(){
+    hex=${1#"#"}
+    bytes=($(sed 's/\(..\)/\1 /g' <<< $hex))
+    r=$((16#${bytes[0]}))
+    g=$((16#${bytes[1]}))
+    b=$((16#${bytes[2]}))
+
+    printf "\e[0;38;2;%03d;%03d;%03dm" $r $g $b
+}
+
+nord0=$(fromhex  "#2E3440")
+nord1=$(fromhex  "#3B4252")
+nord2=$(fromhex  "#434C5E")
+nord3=$(fromhex  "#4C566A")
+nord4=$(fromhex  "#D8DEE9")
+nord5=$(fromhex  "#E5E9F0")
+nord6=$(fromhex  "#ECEFF4")
+nord7=$(fromhex  "#8FBCBB")
+nord8=$(fromhex  "#88C0D0") # teal
+nord9=$(fromhex  "#81A1C1")
+nord10=$(fromhex "#5E81AC") # blue
+nord11=$(fromhex "#BF616A") # red
+nord12=$(fromhex "#D08770") # orange
+nord13=$(fromhex "#EBCB8B") # yellow
+nord14=$(fromhex "#A3BE8C") # green
+nord15=$(fromhex "#B48EAD") # purple
+
+
 # Text color variables
 txtred=$(tput setaf 1)          # red
 txtgrn=$(tput setaf 2)          # green
@@ -93,7 +139,7 @@ pass=${bldblu}*${txtrst}
 warn=${bldred}*${txtrst}
 ques=${bldblu}?${txtrst}
 
-
+export whiteCheck="$(echo -e '\xe2\x9c\x85')"
 export checkmark="${txtgrn}$(echo -e '\xE2\x9C\x94')${txtrst}"
 
 function _prompt_status {
@@ -102,17 +148,18 @@ function _prompt_status {
     fi
 }
 
-
-if [ "$color_prompt" = yes ]; then
-#    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\012\$ '
-    PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
-    PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u at \h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u at \h\[\033[00m\]\012\$ '
-    PS1="\[${txtpur}\]\u\[${txtrst}\] at \[${txtyel}\]\h\[${txtrst}\] in \[${txtgrn}\]\w\[${txtrst}\] \$(parse_git_branch) \$(_prompt_status)\012\$ "
-else
-#    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\012\$ '
-    PS1='[ \w ] ${prompt_status}\012\u@\h: \a${debian_chroot:+($debian_chroot)}\u@\h:\$ '
+export angry="$(echo -e '\xf0\x9f\x91\xbf\x0a')"
+export upleft="$(echo -e '\xe2\x94\x8c')"
+export longdash="$(echo -e '\xe2\x94\x80')"
+export downleft="$(echo -e '\xe2\x94\x94')"
+export downleft2="$(echo -e '\xd6\x82')"
+u="$USER"
+if [ $UID -eq 0 ]
+then
+    u="$angry"
 fi
-PS1="\[${txtpur}\]\u\[${txtrst}\] at \[${txtyel}\]\h\[${txtrst}\] in \[${txtgrn}\]\w\[${txtrst}\] \$(parse_git_branch) \$(_prompt_status)\012\$ "
+PS1='${upleft}${longdash}[\[${bldpur}\]$u\[${txtrst}\]] at [\[${bldyel}\]\h\[${txtrst}\]] in [\[${bldgrn}\]\w\[${txtrst}\]] $(parse_git_branch) $(_prompt_status)\012${downleft}${longdash}\$ '
+PS2='${downleft}${longdash}> '
 unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
@@ -128,7 +175,7 @@ esac
 if [ -x /usr/bin/dircolors ]; then
 
     # set solarized color scheme
-    export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+    #export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
     test -r $HOME/.dircolors && eval "$(dircolors -b $HOME/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
@@ -206,6 +253,8 @@ export CLASSPATH
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
+elif [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
 fi
 
 # add $HOME/local/bin to PATH, if it exists
@@ -221,9 +270,13 @@ then
     addUniqueToClasspath $_ANTLR
 fi
 
-export EDITOR=vim
+_JAVAFBP="$HOME/local/fbp/javafbp-4.1.11.jar"
+if [ -e $_JAVAFBP ]
+then
+    addUniqueToClasspath $_JAVAFBP
+fi
 
-#export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
+export EDITOR=vim
 
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
@@ -239,12 +292,14 @@ if [ "x$(uname)" = "xDarwin" ]; then
       . $(brew --prefix)/etc/bash_completion
     fi
 
+    export GOPATH="$HOME/go"
+    export GOBIN="$GOPATH/bin"
+    PATH="$GOPATH/bin:$PATH"
     #alias vi=nvim
     #alias vim=nvim
 fi
 
-__nix_sh_file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
-[ -e "$__nix_sh_file" ] && . "$__nix_sh_file"
+__nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
 
 # add direnv support
 if [ "xfile" = "x$(fnexists direnv)" ]
@@ -253,12 +308,10 @@ then
 fi
 
 if [ "x$LOCALE_ARCHIVE" = "x" ]
+# only source the nix file if we haven't already done that
+if [ "x" = "x$(fnexists nix-env)" ]
 then
-    export LC_ALL=C
-#    if [ "xfile" = "x$(fnexists nix-env)" ]
-#    then
-#        export LOCALE_ARCHIVE=$(nix-env --installed --no-name --out-path --query glibc-locales)/lib/locale/locale-archive
-#    fi
+    [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 fi
 
 # Alias definitions.
@@ -266,7 +319,9 @@ fi
 # $HOME/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 sourceIfExists $HOME/.bash_aliases
+sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
