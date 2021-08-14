@@ -56,6 +56,12 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
   echo "(${txttea}"${ref#refs/heads/}"${txtrst})"
@@ -263,3 +269,4 @@ sourceIfExists $HOME/.bash_aliases
 
 MANPATH=$MANPATH:$HOME/share/man
 
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc

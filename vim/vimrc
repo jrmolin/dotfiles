@@ -49,7 +49,9 @@
     " Sensible defaults
     Plugin 'tpope/vim-sensible'
 
-    Plugin 'bkad/CamelCaseMotion'
+    " Plugin 'bkad/CamelCaseMotion'
+    Plugin 'pboettch/vim-cmake-syntax'
+
 
     " git
     Plugin 'tpope/vim-fugitive'
