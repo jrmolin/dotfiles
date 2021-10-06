@@ -57,6 +57,12 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
   echo "(${txttea}"${ref#refs/heads/}"${txtrst})"
@@ -286,11 +292,22 @@ if [ "x$(uname)" = "xDarwin" ]; then
       . $(brew --prefix)/etc/bash_completion
     fi
 
+    export GOPATH="$HOME/go"
+    export GOBIN="$GOPATH/bin"
+    PATH="$GOPATH/bin:$PATH"
     #alias vi=nvim
     #alias vim=nvim
 fi
 
 __nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
+
+# add direnv support
+if [ "xfile" = "x$(fnexists direnv)" ]
+then
+    eval "$(direnv hook bash)"
+fi
+
+if [ "x$LOCALE_ARCHIVE" = "x" ]
 # only source the nix file if we haven't already done that
 if [ "x" = "x$(fnexists nix-env)" ]
 then
@@ -306,4 +323,5 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
