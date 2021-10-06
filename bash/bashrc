@@ -307,7 +307,6 @@ then
     eval "$(direnv hook bash)"
 fi
 
-if [ "x$LOCALE_ARCHIVE" = "x" ]
 # only source the nix file if we haven't already done that
 if [ "x" = "x$(fnexists nix-env)" ]
 then
