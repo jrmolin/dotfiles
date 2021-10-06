@@ -47,7 +47,7 @@
     Plug 'tpope/vim-sensible'
 
     " Plug 'bkad/CamelCaseMotion'
-    Plugin 'pboettch/vim-cmake-syntax'
+    Plug 'pboettch/vim-cmake-syntax'
 
 
     " git
