@@ -372,6 +372,7 @@ endfunction
         "nmap <expr> <Leader>e  FindDirInAncestry('.git')
         nmap <expr> <C-e>  FindDirInAncestry('.git')
 
+        nmap <expr> <C-i>  FindDirInAncestry('Lib')
         " list the buffers
         nnoremap <Leader>l :ls<CR>
 

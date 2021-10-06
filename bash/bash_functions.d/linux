@@ -89,4 +89,19 @@ then
 
     }
 
+function getEth()
+{
+    echo "$(ip a | awk -F":" '$2 ~ /ens/ { print $2 }')"
+}
+
+function showTc()
+{
+    echo "$(sudo tc -s -d filter show dev $(getEth) egress)"
+}
+
+function releaseTc()
+{
+    echo "$(sudo tc qdisc del dev $(getEth) clsact)"
+}
+
 fi
