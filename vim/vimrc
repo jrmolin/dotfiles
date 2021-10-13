@@ -110,6 +110,14 @@
         set autowrite                           " Automatically write a file when
                                                 " leaving a modified buffer
 
+        " use relative numbers for normal mode, but absolute for
+        " insert/command mode
+        au InsertEnter * set norelativenumber
+        au InsertLeave * set relativenumber
+
+        au CmdLineEnter * set norelativenumber | redraw
+        au CmdLineLeave * set relativenumber
+
         " folding
         set foldcolumn=3
 
