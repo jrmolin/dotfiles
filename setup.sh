@@ -171,6 +171,13 @@ WORKDIR=`pwd`
 _SYSTEM=$(getsystem)
 INSTALL=$(setup)
 
+ensure_dir_exists () {
+    if [ ! -d $1 ]
+    then
+        mkdir -pv $1
+    fi
+}
+
 dolinks() {
     #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
     #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
@@ -188,6 +195,8 @@ dolinks() {
     link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
     #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
 #    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
+    ensure_dir_exists "$HOME/.emacs.d/"
+    link_file $WORKDIR/emacs/Emacs.org "$HOME/.emacs.d/Emacs.org"
 }
 
 runrun() {

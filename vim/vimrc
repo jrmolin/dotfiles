@@ -46,7 +46,9 @@
     " Sensible defaults
     Plug 'tpope/vim-sensible'
 
-    Plug 'bkad/CamelCaseMotion'
+    " Plug 'bkad/CamelCaseMotion'
+    Plug 'pboettch/vim-cmake-syntax'
+
 
     " git
     Plug 'tpope/vim-fugitive'
@@ -107,6 +109,14 @@
         set lazyredraw                          " Don't redraw when executing macros
         set autowrite                           " Automatically write a file when
                                                 " leaving a modified buffer
+
+        " use relative numbers for normal mode, but absolute for
+        " insert/command mode
+        "au InsertEnter * set norelativenumber
+        "au InsertLeave * set relativenumber
+
+        " au CmdLineEnter * set norelativenumber | redraw
+        " au CmdLineLeave * set relativenumber
 
         " folding
         set foldcolumn=3
@@ -376,6 +386,7 @@ endfunction
         "nmap <expr> <Leader>e  FindDirInAncestry('.git')
         nmap <expr> <C-e>  FindDirInAncestry('.git')
 
+        nmap <expr> <C-i>  FindDirInAncestry('Lib')
         " list the buffers
         nnoremap <Leader>l :ls<CR>
 
@@ -504,10 +515,10 @@ endfunction
 " }}}
 
 " camelcasemotion {{{
-    call camelcasemotion#CreateMotionMappings('<leader>')
-    map ;w <Plug>CamelCaseMotion_w
-    map ;b <Plug>CamelCaseMotion_b
-    map ;e <Plug>CamelCaseMotion_e
+"    call camelcasemotion#CreateMotionMappings('<leader>')
+"    map ;w <Plug>CamelCaseMotion_w
+"    map ;b <Plug>CamelCaseMotion_b
+"    map ;e <Plug>CamelCaseMotion_e
 " }}}
 
 " }
