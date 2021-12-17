@@ -4,6 +4,7 @@ if [ "xLinux" = "x$(uname)" ]
 then
     alias web='x-www-browser'
 
+    export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 
     function enableJava()
     {

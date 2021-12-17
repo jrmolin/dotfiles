@@ -90,22 +90,22 @@ fromhex(){
     printf "\e[0;38;2;%03d;%03d;%03dm" $r $g $b
 }
 
-nord0=$(fromhex  "#2E3440")
-nord1=$(fromhex  "#3B4252")
-nord2=$(fromhex  "#434C5E")
-nord3=$(fromhex  "#4C566A")
-nord4=$(fromhex  "#D8DEE9")
-nord5=$(fromhex  "#E5E9F0")
-nord6=$(fromhex  "#ECEFF4")
-nord7=$(fromhex  "#8FBCBB")
-nord8=$(fromhex  "#88C0D0") # teal
-nord9=$(fromhex  "#81A1C1")
-nord10=$(fromhex "#5E81AC") # blue
-nord11=$(fromhex "#BF616A") # red
-nord12=$(fromhex "#D08770") # orange
-nord13=$(fromhex "#EBCB8B") # yellow
-nord14=$(fromhex "#A3BE8C") # green
-nord15=$(fromhex "#B48EAD") # purple
+export nord0=$(fromhex  "#2E3440")
+export nord1=$(fromhex  "#3B4252")
+export nord2=$(fromhex  "#434C5E")
+export nord3=$(fromhex  "#4C566A")
+export nord4=$(fromhex  "#D8DEE9")
+export nord5=$(fromhex  "#E5E9F0")
+export nord6=$(fromhex  "#ECEFF4")
+export nord7=$(fromhex  "#8FBCBB")
+export nord8=$(fromhex  "#88C0D0") # teal
+export nord9=$(fromhex  "#81A1C1")
+export nord10=$(fromhex "#5E81AC") # blue
+export nord11=$(fromhex "#BF616A") # red
+export nord12=$(fromhex "#D08770") # orange
+export nord13=$(fromhex "#EBCB8B") # yellow
+export nord14=$(fromhex "#A3BE8C") # green
+export nord15=$(fromhex "#B48EAD") # purple
 
 
 # Text color variables
