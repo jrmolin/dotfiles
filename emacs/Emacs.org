@@ -1,7 +1,6 @@
 -*- mode: org; fill-column: 80; -*-
 #+title: Emacs From Scratch Configuration
 #+date: <2021-12-09 Thu 15:08>
-#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 
 * Welcome!
 
@@ -20,25 +19,6 @@ The following variables are used to tweak some of the configuration pieces for u
   (defvar efs/frame-transparency '(90 . 90))
 
 #+end_src
-
-* Auto-tangling code
-
-#+BEGIN_SRC emacs-lisp
- ;; auto-tangle this file
-  (defvar user/init-org-file (concat user-emacs-directory "Emacs.org"))
-  (defvar user/init-el-file  (concat user-emacs-directory "init.el"))
-
-  (defun tangle-init ()
-   "If the current buffer is 'Emacs.org', the code blocks are tangled, and the tangled file is compiled"
-    (when (equal (buffer-file-name)
-                 (expand-file-name user/init-org-file))
-      ;; avoid running hooks when tangling
-      (let ((prog-mode-hook nil))
-        (org-babel-tangle)
-        (byte-compile-file user/init-el-file))))
-
-  (add-hook 'after-save-hook 'tangle-init)
-#+END_SRC
 
 * Package System Setup
 
@@ -107,9 +87,28 @@ We use the [[https://github.com/emacscollective/no-littering/blob/master/no-litt
       auto-save-interval 200            ; number of keystrokes between auto-saves (default: 300)
       )
 
-
-
 #+end_src
+
+
+* Auto-tangling code
+#+BEGIN_SRC emacs-lisp
+ ;; auto-tangle this file
+  (defvar user/init-org-file (concat user-emacs-directory "Emacs.org"))
+  (defvar user/init-el-file  (concat user-emacs-directory "init.el"))
+
+  (defun tangle-init ()
+   "If the current buffer is 'Emacs.org', the code blocks are tangled, and the tangled file is compiled"
+    (when (equal (buffer-file-name)
+                 (file-truename user/init-org-file))
+      ;; avoid running hooks when tangling
+      (let ((prog-mode-hook nil))
+        (org-babel-tangle user/init-el-file)
+        (byte-compile-file user/init-el-file))))
+
+  (add-hook 'after-save-hook 'tangle-init)
+#+END_SRC
+
+
 * Syntax modes
 
 #+BEGIN_SRC emacs-lisp
@@ -132,7 +131,17 @@ We use the [[https://github.com/emacscollective/no-littering/blob/master/no-litt
   (setq tab-width 4)
   (define-key text-mode-map (kbd "<tab>") 'tab-to-tab-stop)
 
-  
+  (setq c-default-style '((java-mode . "java")
+                        (awk-mode . "awk")
+                        (other . "linux"))
+      c-basic-offset 4)
+
+
+    (defun my-indent-setup ()
+      (c-set-offset 'arglist-intro '+))
+    (add-hook 'java-mode-hook 'my-indent-setup)
+    (add-hook 'c++-mode-hook 'my-indent-setup)
+    (add-hook 'c-mode-hook 'my-indent-setup)
 #+END_SRC
 
 * Functions
@@ -189,17 +198,33 @@ We use the [[https://github.com/emacscollective/no-littering/blob/master/no-litt
 (defun repo-open-file ()
   (interactive)
   (user/open-file ".git"))
-(global-set-key (kbd "C-e") 'repo-open-file)
+(global-set-key (kbd "C-x e") 'repo-open-file)
 
-(defun component-open-file ()
-  (interactive)
-  (user/open-file "Lib"))
-(global-set-key (kbd "C-x r") 'component-open-file)
+(global-set-key (kbd "C-x r") (lambda ()
+                      (interactive)
+                      (user/open-file "Lib")))
 
+(global-set-key (kbd "<f4>") (lambda ()
+                     (interactive)
+                     (load-file user/init-el-file)))
 
-(defun reload-config ()
-  (interactive)
-  (load-file user/init-el-file))
-(global-set-key (kbd "<f4>") 'reload-config)
+;; Insert new line below current line
+;; and move cursor to new line
+;; it will also indent newline
+(global-set-key (kbd "<C-return>") (lambda ()
+                   (interactive)
+                   (end-of-line)
+                   (newline-and-indent)))
+
+;; Insert new line above current line
+;; and move cursor to previous line (newly inserted line)
+;; it will also indent newline
+;; TODO: right now I am unable to goto previous line, FIXIT
+(global-set-key (kbd "<C-S-return>") (lambda ()
+                       (interactive)
+                       (beginning-of-line)
+                       (newline-and-indent)
+                       (previous-line)))
+
 #+END_SRC
 
