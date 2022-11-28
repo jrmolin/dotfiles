@@ -31,9 +31,19 @@ function enableVirtualenv()
 
 function nvm()
 {
-    if [ -d "${HOME}/.nvm" ]
+    local nvmdir="${HOME}/.config/nvm"
+    local nvmdir2="${HOME}/.nvm"
+    if [ -d "${nvmdir}" ]
     then
-        export NVM_DIR="$HOME/.nvm"
+        export NVM_DIR="${nvmdir}"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+        # invoke the real nvm function
+        nvm "$@"
+    elif [ -d "${nvmdir2}" ]
+    then
+        export NVM_DIR="${nvmdir}"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 

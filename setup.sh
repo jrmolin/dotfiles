@@ -57,7 +57,7 @@ setup() {
 
 
 setupvim() {
-    require_util curl "download things, like for installing nix"
+    require_util curl "download things, like for installing guix"
 
     if [ ! -e vim/vim/autoload/plug.vim ]
     then
@@ -119,7 +119,7 @@ _install() {
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
-        doit nix-env -i $1
+        doit sudo $INSTALL $1
     fi
 }
 
@@ -146,21 +146,6 @@ _stow() {
     else
         stow $_source --target $_target
     fi
-}
-
-install_nix() {
-    url="https://nixos.org/nix/install"
-
-    if [ "file" = $(type -t nix) ]
-    then
-        echo "[$(type -p nix)] already exists! skipping"
-        return
-    fi
-
-    require_util curl "download things, like for installing nix"
-    res=$(curl -L $url | sh)
-    echo $res
-
 }
 
 WORKDIR=`dirname $0`
@@ -201,9 +186,7 @@ dolinks() {
 
 runrun() {
     install_curl
-    install_nix
-    _install glibc-locales
-    _install stow
+    #_install stow
 
     _install sqlite3
     _install vim
@@ -215,15 +198,10 @@ runrun() {
 
 if [ "x$1" = "x" ]
 then
-    echo "Usage: $0 <install|links|nix>"
+    echo "Usage: $0 <install|links>"
 elif [ "x$1" = "xvim" ]
 then
     setupvim
-    echo "finished!"
-elif [ "x$1" = "xnix" ]
-then
-    echo "found install to be [$INSTALL]"
-    install_nix
     echo "finished!"
 elif [ "x$1" = "xlinks" ]
 then
