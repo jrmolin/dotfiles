@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # npm ()
 # {
 #     docker run \
@@ -163,6 +162,15 @@ dockerPsClean()
     fi
 }
 
+function solc()
+{
+    docker run -it --rm \
+        -v $(pwd):/solidity \
+        -v $DOCKER_USER_HOME_DIR:/usr/src/home \
+        -e HOME=/usr/src/home \
+        ethereum/solc:stable $*
+}
+
 #dockerpython()
 #{
 #    docker run -it --rm \
@@ -170,12 +178,54 @@ dockerPsClean()
 #        --entrypoint /bin/bash python:2.7.15-slim-stretch $*
 #}
 
-#dockerbpython()
-#{
-#    docker run -it --rm \
-#        -e USER=anon -e HOME=/home/anon -v ~/.docker/home:/home/anon -u $UID:$GID \
-#        --entrypoint bpython moli/python
-#}
+find_venv()
+{
+    local exe=${1:-bpython}
+    local path=$(type -P $exe)
+
+    # look in the current path
+    if [ "x$path" = "x" ]
+    then
+
+        # look in the venv3 path
+        local venvpath="${HOME}/venv3/bin/${exe}"
+        path=$(type -P $venvpath)
+
+        if [ "x$path" = "x" ]
+        then
+
+            # look in the venv path
+            venvpath="${HOME}/venv/bin/${exe}"
+            path=$(type -P $venvpath)
+
+            if [ "x$path" = "x" ]
+            then
+                echo ""
+            else
+                echo $path
+            fi
+        else
+            echo $path
+        fi
+
+    else
+        echo $path
+    fi
+}
+
+bpython()
+{
+    local path=$(find_venv bpython)
+
+    if [ "x$path" = "x" ]
+    then
+        docker run -it --rm \
+            -e USER -e HOME -u $UID:$GID \
+            --entrypoint bpython python3
+    else
+        exec $path $*
+    fi
+}
 
 #R()
 #{
@@ -239,3 +289,57 @@ startJenkins()
         jenkinsci/blueocean
 }
 
+startPihole()
+{
+    local IP=$(ifconfig en0 | grep 'inet\>' | awk '{ print $2 }')
+    local IP_ADDRESS=${1:-$IP}
+    local name=pihole
+    stopIfRunning $name
+
+    docker run -d --name $name \
+        -e ServerIP=$IP_ADDRESS \
+        -e TZ=New_York \
+        -e WEBPASSWORD='no ads' \
+        -e DNS1=1.1.1.1 -e DNS2=1.0.0.1 \
+        -p 80:80 -p 53:53/tcp -p 53:53/udp -p 443:443 \
+        -v ~/pihole/:/etc/pihole/ \
+        --dns=127.0.0.1 --dns=1.1.1.1 \
+        --cap-add=NET_ADMIN \
+        --restart=unless-stopped \
+        pihole/pihole:latest
+}
+
+sdr()
+{
+    docker run -ti \
+        --device=/dev/bus/usb \
+        sdr-base "$*"
+}
+rtl_433()
+{
+    docker run -ti \
+        --device=/dev/bus/usb \
+        --entrypoint=/usr/bin/rtl_433 \
+        sdr "$*"
+}
+pavucontrol()
+{
+    local USER_UID=$(id -u)
+
+    docker run -ti \
+        -v=/run/user/${USER_UID}/pulse:/run/user/1000/pulse \
+        --mount type=bind,source=/dev/shm,target=/dev/shm \
+        -e DISPLAY \
+        -v=/tmp/.X11-unix:/tmp/.X11-unix \
+        -e NO_AT_BRIDGE=1 \
+        pulsey pavucontrol ${@}
+}
+cargo()
+{
+    echo "[$*]"
+    docker run -it --rm --name cargo \
+        --user "$(id -u)":"$(id -g)" \
+        -e USER \
+        -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
+        cargo:latest $*
+}

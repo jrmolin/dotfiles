@@ -7,7 +7,7 @@ function enableGo()
         return
     fi
 
-    GOINSTALL="$HOME/local-installations/go"
+    GOINSTALL="$HOME/local/go"
     if [ -d "$GOINSTALL" ]
     then
         if [ "x$(uname)" = "xLinux" ]

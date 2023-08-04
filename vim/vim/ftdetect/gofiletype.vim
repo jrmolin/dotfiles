@@ -1,1 +1,2 @@
-/misc/vim/ftdetect/gofiletype.vim
+
+autocmd BufNewFile,BufRead *.go set filetype=go

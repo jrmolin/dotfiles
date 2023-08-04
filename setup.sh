@@ -1,5 +1,18 @@
 #!/bin/bash
+
+set -e
+
 DEBUG=1
+
+oops() {
+    echo "$0:" "$@" >&2
+    exit 1
+}
+
+require_util() {
+    type "$1" > /dev/null 2>&1 || command -v "$1" > /dev/null 2>&1 |
+        oops "don't have '$1' installed, which we need to $2"
+}
 
 getsystem() {
     local _system="debian"
@@ -26,6 +39,9 @@ setup() {
     if [ "x$_SYSTEM" = "xfedora" ]
     then
         INSTALL="dnf install -y"
+    elif [ "x$_SYSTEM" = "xcentos" ]
+    then
+        INSTALL="yum install -y"
     elif [ "x$_SYSTEM" = "xredhat" ]
     then
         INSTALL="dnf install -y"
@@ -39,6 +55,16 @@ setup() {
     echo $INSTALL
 }
 
+
+setupvim() {
+    require_util curl "download things, like for installing guix"
+
+    if [ ! -e vim/vim/autoload/plug.vim ]
+    then
+        doit curl -fLo vim/vim/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    fi
+}
 
 doit() {
     if [ "x$DEBUG" = "x1" ]; then
@@ -71,53 +97,29 @@ install_sqlite() {
     fi
 }
 
-# install vim stuff
-install_vim() {
-    local VIM=$(which vim)
-
-    if [ "x$VIM" = "x" ]; then
-        doit sudo $INSTALL vim
-    fi
-}
-
-# install tmux
-install_tmux() {
-    local TMUX=$(which tmux)
-
-    if [ "x$TMUX" = "x" ]; then
-        doit sudo $INSTALL tmux
-    fi
-}
-
 # install curl
 install_curl() {
-    local CURL=$(which curl)
+    local CURL=$(type -p curl)
 
-    if [ "x$CURL" = "x" ]; then
+    if [ -e "$CURL" ]
+    then
+        echo "[curl] exists at [$CURL] -- not installing!"
+    else
         doit sudo $INSTALL curl
     fi
 
 }
 
-# install stow
-install_stow() {
-    local _stow=$(which stow)
-
-    if [ "x$_stow" = "x" ]; then
-        doit sudo $INSTALL stow
-    fi
-}
-
 _install() {
-    local _exe=$1
+    local _exe=${2:-$1}
 
-    local _path=$(which $_exe)
+    local _path=$(type -p $_exe)
 
-    if [ -e $_path ]
+    if [ -f $_path ]
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
-        doit sudo $INSTALL $_exe
+        doit sudo $INSTALL $1
     fi
 }
 
@@ -154,27 +156,64 @@ WORKDIR=`pwd`
 _SYSTEM=$(getsystem)
 INSTALL=$(setup)
 
-doit git submodule update --init --recursive
+ensure_dir_exists () {
+    if [ ! -d $1 ]
+    then
+        mkdir -pv $1
+    fi
+}
 
-echo "found install to be [$INSTALL]"
+dolinks() {
+    #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+    #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+    link_file $WORKDIR/vim/vim "$HOME/.vim"
+    link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
+    #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
+    link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
+    link_file $WORKDIR/tmux/tmux "$HOME/.tmux"
+    link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
+    link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+    link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
+    link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
+    link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
+    link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
+    link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
+    #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
+#    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
+    ensure_dir_exists "$HOME/.emacs.d/"
+    link_file $WORKDIR/emacs/Emacs.org "$HOME/.emacs.d/Emacs.org"
+}
 
-_install "stow"
+runrun() {
+    install_curl
+    #_install stow
 
-install_sqlite
-_install curl
-_install vim
-_install tmux
+    _install sqlite3
+    _install vim
+    setupvim
+    _install tmux
 
-link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
-link_file $WORKDIR/vim/vim "$HOME/.vim"
-link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
-link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
-link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
-link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
-link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
-link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
-link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
-link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
-link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
-link_file $WORKDIR/bash/dircolors "$HOME/.dircolors"
-link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
+    dolinks
+}
+
+if [ "x$1" = "x" ]
+then
+    echo "Usage: $0 <install|links>"
+elif [ "x$1" = "xvim" ]
+then
+    setupvim
+    echo "finished!"
+elif [ "x$1" = "xlinks" ]
+then
+    echo "found install to be [$INSTALL]"
+    dolinks
+    echo "finished!"
+elif [ "x$1" = "xinstall" ]
+then
+    echo "found install to be [$INSTALL]"
+    runrun
+    echo "finished!"
+else
+    echo "trying to run whatever you passed. danger!!"
+    $1
+fi

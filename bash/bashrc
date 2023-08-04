@@ -6,6 +6,9 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+# if in nix shell, don't load anything
+#[[ -n $IN_NIX_SHELL ]] && return
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -36,6 +39,7 @@ fi
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
     xterm-color) color_prompt=yes;;
+    xterm-256color) color_prompt=yes;;
 esac
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
@@ -54,10 +58,90 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
   echo "(${txttea}"${ref#refs/heads/}"${txtrst})"
 }
+
+# setup colors
+# from nord
+#set $nord0   #2E3440
+#set $nord1   #3B4252
+#set $nord2   #434C5E
+#set $nord3   #4C566A
+#set $nord4   #D8DEE9
+#set $nord5   #E5E9F0
+#set $nord6   #ECEFF4
+#set $nord7   #8FBCBB
+#set $nord8   #88C0D0
+#set $nord9   #81A1C1
+#set $nord10  #5E81AC
+#set $nord11  #BF616A
+#set $nord12  #D08770
+#set $nord13  #EBCB8B
+#set $nord14  #A3BE8C
+#set $nord15  #B48EAD
+fromhex(){
+    hex=${1#"#"}
+    bytes=($(sed 's/\(..\)/\1 /g' <<< $hex))
+    r=$((16#${bytes[0]}))
+    g=$((16#${bytes[1]}))
+    b=$((16#${bytes[2]}))
+
+    printf "\e[0;38;2;%03d;%03d;%03dm" $r $g $b
+}
+
+export nord0=$(fromhex  "#2E3440")
+export nord1=$(fromhex  "#3B4252")
+export nord2=$(fromhex  "#434C5E")
+export nord3=$(fromhex  "#4C566A")
+export nord4=$(fromhex  "#D8DEE9")
+export nord5=$(fromhex  "#E5E9F0")
+export nord6=$(fromhex  "#ECEFF4")
+export nord7=$(fromhex  "#8FBCBB")
+export nord8=$(fromhex  "#88C0D0") # teal
+export nord9=$(fromhex  "#81A1C1")
+export nord10=$(fromhex "#5E81AC") # blue
+export nord11=$(fromhex "#BF616A") # red
+export nord12=$(fromhex "#D08770") # orange
+export nord13=$(fromhex "#EBCB8B") # yellow
+export nord14=$(fromhex "#A3BE8C") # green
+export nord15=$(fromhex "#B48EAD") # purple
+
+
+# Text color variables
+txtred=$(tput setaf 1)          # red
+txtgrn=$(tput setaf 2)          # green
+txtyel=$(tput setaf 3)          # yellow
+txtblu=$(tput setaf 4)          # blue
+txtpur=$(tput setaf 5)          # purple
+txttea=$(tput setaf 6)          # teal
+txtwht=$(tput setaf 7)          # white
+txtund=$(tput sgr 0 1)          # Underline
+txtbld=$(tput bold)             # Bold
+bldred=${txtbld}${txtred}       #  red
+bldgrn=${txtbld}${txtgrn}       #  green
+bldyel=${txtbld}${txtyel}       #  yellow
+bldblu=${txtbld}${txtblu}       #  blue
+bldpur=${txtbld}${txtpur}       #  purple
+bldtea=${txtbld}${txttea}       #  teal
+bldwht=${txtbld}${txtwht}       #  white
+txtrst=$(tput sgr0)             # Reset
+gitdiff=${bldred}*${txtrst}
+gitadd=${bldtea}*${txtrst}
+info=${bldwht}*${txtrst}        # Feedback
+pass=${bldblu}*${txtrst}
+warn=${bldred}*${txtrst}
+ques=${bldblu}?${txtrst}
+
+export whiteCheck="$(echo -e '\xe2\x9c\x85')"
+export checkmark="${txtgrn}$(echo -e '\xE2\x9C\x94')${txtrst}"
 
 function _prompt_status {
     if [ -n "$prompt_status" ] ; then
@@ -65,43 +149,18 @@ function _prompt_status {
     fi
 }
 
-
-if [ "$color_prompt" = yes ]; then
-    # setup colors
-    # Text color variables
-    txtred=$(tput setaf 1)          # red
-    txtgrn=$(tput setaf 2)          # green
-    txtyel=$(tput setaf 3)          # yellow
-    txtblu=$(tput setaf 4)          # blue
-    txtpur=$(tput setaf 5)          # purple
-    txttea=$(tput setaf 6)          # teal
-    txtwht=$(tput setaf 7)          # white
-    txtund=$(tput sgr 0 1)          # Underline
-    txtbld=$(tput bold)             # Bold
-    bldred=${txtbld}${txtred}       #  red
-    bldgrn=${txtbld}${txtgrn}       #  green
-    bldyel=${txtbld}${txtyel}       #  yellow
-    bldblu=${txtbld}${txtblu}       #  blue
-    bldpur=${txtbld}${txtpur}       #  purple
-    bldtea=${txtbld}${txttea}       #  teal
-    bldwht=${txtbld}${txtwht}       #  white
-    txtrst=$(tput sgr0)             # Reset
-    gitdiff=${bldred}*${txtrst}
-    gitadd=${bldtea}*${txtrst}
-    info=${bldwht}*${txtrst}        # Feedback
-    pass=${bldblu}*${txtrst}
-    warn=${bldred}*${txtrst}
-    ques=${bldblu}?${txtrst}
-
-#    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\012\$ '
-    PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
-    PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u at \h: \a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u at \h\[\033[00m\]\012\$ '
-    PS1="\[${txtpur}\]\u\[${txtrst}\] at \[${txtyel}\]\h\[${txtrst}\] in \[${txtgrn}\]\w\[${txtrst}\] \$(parse_git_branch) \$(_prompt_status)\012\$ "
-else
-#    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\012\$ '
-    PS1='[ \w ] ${prompt_status}\012\u@\h: \a${debian_chroot:+($debian_chroot)}\u@\h:\$ '
+export angry="$(echo -e '\xf0\x9f\x91\xbf\x0a')"
+export upleft="$(echo -e '\xe2\x94\x8c')"
+export longdash="$(echo -e '\xe2\x94\x80')"
+export downleft="$(echo -e '\xe2\x94\x94')"
+export downleft2="$(echo -e '\xd6\x82')"
+u="$USER"
+if [ $UID -eq 0 ]
+then
+    u="$angry"
 fi
-PS1="\[${txtpur}\]\u\[${txtrst}\] at \[${txtyel}\]\h\[${txtrst}\] in \[${txtgrn}\]\w\[${txtrst}\] \$(parse_git_branch) \$(_prompt_status)\012\$ "
+PS1='${upleft}${longdash}[\[${bldpur}\]$u\[${txtrst}\]] at [\[${bldyel}\]\h\[${txtrst}\]] in [\[${bldgrn}\]\w\[${txtrst}\]] $(parse_git_branch) $(_prompt_status)\012${downleft}${longdash}\$ '
+PS2='${downleft}${longdash}> '
 unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
@@ -117,7 +176,7 @@ esac
 if [ -x /usr/bin/dircolors ]; then
 
     # set solarized color scheme
-    export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+    #export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
     test -r $HOME/.dircolors && eval "$(dircolors -b $HOME/.dircolors)" || eval "$(dircolors -b)"
     #alias ls='ls --color=auto'
@@ -134,6 +193,8 @@ alias ll='ls -trhalF'
 alias l='ls -al'
 alias c='clear'
 alias s='less'
+
+
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -188,38 +249,20 @@ fi
 
 export CLASSPATH
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# $HOME/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-sourceIfExists $HOME/.bash_aliases
-
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
+elif [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
 fi
 
-sourceIfExists "$HOME/functions.sh"
-
-# add $HOME/.local/bin to PATH, if it exists
-addUnique "$HOME/.local/bin"
-
-# add $HOME/.local/builds/bin to PATH, if it exists
-addUnique "$HOME/local/builds/bin"
+# add $HOME/local/bin to PATH, if it exists
+addUnique "$HOME/local/bin"
 
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
-
-# add $HOME/.local/npm/bin to PATH, if it exists
-appendUnique "$HOME/.local/npm/bin"
-
-# add /opt/eclipse to PATH, if it exists
-appendUnique "/opt/eclipse"
-
-# add /opt/java/clojure-1.9.0.397/bin to PATH, if it exists
-appendUnique "/opt/java/clojure-1.9.0.397/bin"
 
 # add antlr to the classpath
 _ANTLR="$HOME/local-installations/antlr-4.7.1/antlr-4.7.1-complete.jar"
@@ -228,46 +271,13 @@ then
     addUniqueToClasspath $_ANTLR
 fi
 
+_JAVAFBP="$HOME/local/fbp/javafbp-4.1.11.jar"
+if [ -e $_JAVAFBP ]
+then
+    addUniqueToClasspath $_JAVAFBP
+fi
+
 export EDITOR=vim
-
-function enableJava()
-{
-    # add /opt/java/jdk1.8.0_192/bin to PATH, if it exists
-    appendUnique "/opt/java/jdk1.8.0_192/bin"
-
-    JAVAC=$(which javac)
-
-    if [ -n "${JAVAC}" ]
-    then
-        JAVAC=$(readlink -f $JAVAC)
-        JAVA_BIN=$(dirname "${JAVAC}")
-        JAVA_HOME=$(dirname "${JAVA_BIN}")
-    fi
-
-    if [ -n "${JAVA_HOME}" ]
-    then
-        export JAVA_HOME
-    fi
-}
-
-function enableGrails()
-{
-    GRAILS=$(which grails)
-
-    if [ -n "${GRAILS}" ]
-    then
-        GRAILS=$(readlink -f $GRAILS)
-        GRAILS_BIN=$(dirname "${GRAILS}")
-        GRAILS_HOME=$(dirname "${GRAILS_BIN}")
-    fi
-
-    if [ -n "${GRAILS_HOME}" ]
-    then
-        export GRAILS_HOME
-    fi
-}
-
-#export PEPPER_FLASH_VERSION=$(grep '"version":' /opt/google/chrome*/PepperFlash/manifest.json| grep -Po '(?<=version": ")(?:\d|\.)*')
 
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
@@ -283,21 +293,34 @@ if [ "x$(uname)" = "xDarwin" ]; then
     then
       . $(brew --prefix)/etc/bash_completion
     fi
+
+    export GOPATH="$HOME/go"
+    export GOBIN="$GOPATH/bin"
+    PATH="$GOPATH/bin:$PATH"
+    #alias vi=nvim
+    #alias vim=nvim
 fi
 
-export PROJECT_ROOT_DIR
+__nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
 
-#
-# MO_POWERLINE_REPOSITORY_ROOT=`pip show powerline-status | grep Location | cut -d' ' -f2`
-# MO_POWERLINE_SH="${MO_POWERLINE_REPOSITORY_ROOT}/powerline/bindings/bash/powerline.sh"
+# add direnv support
+if [ "xfile" = "x$(fnexists direnv)" ]
+then
+    eval "$(direnv hook bash)"
+fi
 
-# if [ -f ${MO_POWERLINE_SH} ]
-# then
-#     powerline-daemon -q
-#     POWERLINE_BASH_CONTINUATION=1
-#     POWERLINE_BASH_SELECT=1
-#     . "${MO_POWERLINE_SH}"
-# fi
+# only source the nix file if we haven't already done that
+if [ "x" = "x$(fnexists nix-env)" ]
+then
+    [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
+fi
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# $HOME/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+sourceIfExists $HOME/.bash_aliases
+sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
@@ -306,3 +329,5 @@ export SDKMAN_DIR="/home/mo/.sdkman"
 [[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
 
 sourceIfExists "$HOME/.cargo/env"
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')

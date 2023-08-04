@@ -1,5 +1,16 @@
 #!/bin/bash
 
+function isInPath()
+{
+    local name=$1
+    path_to_executable=$(which $name)
+    if [ -x "$path_to_executable" ] ; then
+        echo "1"
+    else
+        echo ""
+    fi
+}
+
 function enableVirtualenv()
 {
     venvwr="/usr/local/bin/virtualenvwrapper.sh"
@@ -18,6 +29,30 @@ function enableVirtualenv()
     fi
 }
 
+function nvm()
+{
+    local nvmdir="${HOME}/.config/nvm"
+    local nvmdir2="${HOME}/.nvm"
+    if [ -d "${nvmdir}" ]
+    then
+        export NVM_DIR="${nvmdir}"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+        # invoke the real nvm function
+        nvm "$@"
+    elif [ -d "${nvmdir2}" ]
+    then
+        export NVM_DIR="${nvmdir}"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+        # invoke the real nvm function
+        nvm "$@"
+    else
+        echo "nvm is not installed" >&2
+    fi
+}
 function enableRvm()
 {
     export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
@@ -28,12 +63,12 @@ function enableSdkman()
 {
     #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
     SDKMAN_DIR="${HOME}/.sdkman"
-    INIT="{SDKMAN_DIR}/bin/sdkman-init.sh"
-    if [ -s "${SDKMAN_INIT}" ] ;
+    SDKMAN_INIT="${SDKMAN_DIR}/bin/sdkman-init.sh"
+    if [ -s "${SDKMAN_INIT}" ]
     then
-        export SDKMAN_DIR
-        source "${SDKMAN_INIT}"
+        . "${SDKMAN_INIT}"
 
+        export SDKMAN_DIR
     fi
 }
 
@@ -121,18 +156,6 @@ root() {
     else
         echo "could not find [$_FILE] in the directory ancestry"
     fi
-}
-
-function enableRvm()
-{
-    export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
-}
-
-function enableNvm()
-{
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
 
 function enablePyenv()
@@ -230,6 +253,14 @@ EOF
     fi
 }
 
+function killhipchat()
+{
+    pid=$(ps aux | grep hipchat | grep -v grep | awk '{ print $2 }')
+    echo "killing ${pid}"
+    kill $pid
+
+}
+
 function enableBackups()
 {
     export BACKUPS=$HOME/.config/backups/files.db
@@ -250,22 +281,10 @@ function enableBackups()
 
 function enableAntlr()
 {
-    ANTLR=/usr/local/lib/antlr-4.7.1-complete.jar
+    ANTLR=/usr/local/lib/antlr-4.8-complete.jar
     export CLASSPATH=".:$ANTLR:$CLASSPATH"
     alias antlr4='java -Xmx500M -cp "$CLASSPATH" org.antlr.v4.Tool'
     alias grun='java org.antlr.v4.gui.TestRig'
-}
-
-function enableToolchain()
-{
-    TOOLCHAIN=/opt/dco/dev/toolchain/bin
-    if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
-    then
-        echo "it's already there"
-    else
-        PATH=${TOOLCHAIN}:$PATH
-        echo "added ${TOOLCHAIN} to PATH"
-    fi
 }
 
 function stripFromPath()
@@ -280,9 +299,21 @@ function stripFromPath()
 
 function disableToolchain ()
 {
-    TOOLCHAIN=/opt/dco/dev/toolchain/bin
+    local path="$HOME/.toolchain_path"
 
-    echo $(stripFromPath $TOOLCHAIN)
+    if [ -e "$path" ]
+    then
+        local TOOLCHAIN=$(< $path)
+        if [[ "${PATH}" = *"${TOOLCHAIN}"* ]]
+        then
+            PATH=$(stripFromPath $TOOLCHAIN)
+            echo "it has been removed"
+        else
+            echo "there is no spoon"
+        fi
+    else
+        echo "You need to create a file at [$path] with only the path to the repo in it"
+    fi
 }
 
 function with()
@@ -314,11 +345,39 @@ function dco()
 {
     local path="$HOME/.dco_path"
 
+    local index=${1:-0}
+    local pathy=
+
     if [ -e "$path" ]
     then
-        cd $(< $path)
+        local ITER=0
+        while IFS= read -r pathy
+        do
+            if [[ $ITER == $index ]]
+            then
+                break
+            fi
+            ITER=$(expr $ITER + 1)
+        done < $path
+
+        if [[ $ITER == $index ]]
+        then
+            if [ -d $pathy ]
+            then
+                cd $pathy
+            else
+                echo "[$pathy] is not a directory; bailing"
+            fi
+        else
+            echo "you provided an index outside the range of possibilities"
+        fi
     else
-        echo "You need to create a file at [$path] with only the path to the repo in it"
+        echo " you need to create a file at [$path] with paths to repos in it"
+        echo <<EOF
+/path/to/user's/git/sensor
+/path/to/user's/git/playgate
+/path/to/user's/git/shits-n-giggles
+EOF
     fi
 }
 
@@ -379,6 +438,12 @@ function fnexists()
 {
     local result=$(LC_ALL=C type -t "$1")
     echo $result
+}
+
+function whatsmyip()
+{
+    local result=$(curl -L ip.b17.dev 2> /dev/null | jq -r '.address')
+    echo "$result"
 }
 
 FUNCTIONS_DIR=$HOME/.bash_functions.d/

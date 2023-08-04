@@ -2,8 +2,24 @@
 
 #complete -d cd
 
-COMPLETION_DIR=$HOME/.bash_completion.d/
-if [ -d "${COMPLETION_DIR}" ]
+complete -d cd
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
+}
+
+if [ "x$(fnexists _init_completion)x" = "xx" ]
+then
+    _init_completion()
+    {
+        COMPREPLY=()
+        _get_comp_words_by_ref cur prev words cword
+    }
+fi
+
+if [ -d "${COMPLETION_DIR}" ] ;
 then
     for f in $(command ls -1 "${COMPLETION_DIR}")
     do

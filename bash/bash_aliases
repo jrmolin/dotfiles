@@ -4,4 +4,17 @@
 export TMUX=`which tmux`
 alias tmux='${TMUX} -2 -S ~/.tmux.sock'
 
-alias ls="`which ls` -F --color=auto"
+alias count="awk 'BEGIN{}{x += \$1}END{ print x }'"
+
+if [ "Darwin" = $(uname) ]
+then
+    alias ls="$(which ls) -F -G"
+else
+    alias ls="$(which ls) -F --color=auto"
+fi
+
+if [ "Linux" = "$(uname)" ]
+then
+    alias setclip="xclip -selection c"
+    alias getclip="xclip -selection c -o"
+fi
