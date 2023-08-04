@@ -2,6 +2,7 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
+#set -x
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
@@ -119,18 +120,18 @@ if [ -x /usr/bin/dircolors ]; then
     export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
     test -r $HOME/.dircolors && eval "$(dircolors -b $HOME/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
+    #alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
 
-    alias cgrep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+    #alias cgrep='grep --color=auto'
+    #alias fgrep='fgrep --color=auto'
+    #alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
 alias ll='ls -trhalF'
-alias l='ls -A'
+alias l='ls -al'
 alias c='clear'
 alias s='less'
 
@@ -140,7 +141,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 
 sourceIfExists()
 {
-    _PATH=$1
+    local _PATH=$1
 
     if [ -f "$_PATH" ]
     then
@@ -273,6 +274,7 @@ PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
 
 sourceIfExists $HOME/.bash_functions
+sourceIfExists $HOME/.bash_completion
 
 if [ "x$(uname)" = "xDarwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
@@ -303,6 +305,4 @@ MANPATH=$MANPATH:$HOME/share/man
 export SDKMAN_DIR="/home/mo/.sdkman"
 [[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+sourceIfExists "$HOME/.cargo/env"

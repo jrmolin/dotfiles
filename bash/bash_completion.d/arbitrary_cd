@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-__arbitrary_cd_cur=
-__arbitrary_cd_full=
-declare -a -g __arbitrary_cd_suggestions
-
 __arbitrary_cd_debug=
 
 if [ "x$__arbitrary_cd_debug" != "x" ]

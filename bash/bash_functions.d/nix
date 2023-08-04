@@ -2,7 +2,7 @@
 
 __enable_nix=0
 enableNix() {
-    local file="/home/mo/.nix-profile/etc/profile.d/nix.sh"
+    local file="$HOME/.nix-profile/etc/profile.d/nix.sh"
 
     if [ "x$__enable_nix" = "x0" ]
     then
