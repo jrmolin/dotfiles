@@ -5,9 +5,6 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-# if in nix shell, don't load anything
-#[[ -n $IN_NIX_SHELL ]] && return
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -23,10 +20,6 @@ HISTFILESIZE=2000
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
-
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
@@ -40,22 +33,6 @@ case "$TERM" in
     xterm-color) color_prompt=yes;;
     xterm-256color) color_prompt=yes;;
 esac
-
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-force_color_prompt=yes
-
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    # We have color support; assume it's compliant with Ecma-48
-    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    # a case would tend to support setf rather than setaf.)
-    color_prompt=yes
-    else
-    color_prompt=
-    fi
-fi
 
 function fnexists()
 {
@@ -325,8 +302,12 @@ MANPATH=$MANPATH:$HOME/share/man
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
 
-if [ "xfile" = "x$(fnexists vault)" ]
-then
-    export VAULT_ADDR="https://vault-ci-prod.elastic.dev"
-fi
+sourceIfExists $HOME/.env
 sourceIfExists $HOME/.cargo/env
+
+[[ -f $HOME/.cargo/bin/starship ]] && source <($HOME/.cargo/bin/starship init bash --print-full-init)
+
+export GOPATH=$HOME/gopath
+GoRoot=$HOME/local/go
+appendUnique $GoRoot/bin
+appendUnique $GOPATH/bin
