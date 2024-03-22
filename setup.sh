@@ -115,7 +115,7 @@ _install() {
 
     local _path=$(type -p $_exe)
 
-    if [ -f $_path ]
+    if [[ -n $_path && -f "$_path" ]]
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
