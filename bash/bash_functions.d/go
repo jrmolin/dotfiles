@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+function gvm_setup()
+{
+    local ver=${1:-1.21.0}
+
+    eval "$(${HOME}/bin/gvm ${ver})"
+}
+
 function enableGo()
 {
     if [ "xfunction" = "x$(fnexists disableGo)" ]
