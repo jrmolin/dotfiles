@@ -299,20 +299,45 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
-appendUnique $HOME/.cargo/bin
-eval "$(starship init bash)"
-
 appendUnique /opt/blender
 appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
 
+sourceIfExists "$HOME/.cargo/env"
+
+# add cmake to the path
+appendUnique /opt/cmake/bin
+
+# add go to the path
+export GOPATH=/opt/golang
+appendUnique $GOPATH/go/bin
+appendUnique $GOPATH/bin
+
+# add local binaries installed
+appendUnique $HOME/.local/bin
+
+# need a function to go to the root of a git project
+function root()
+{
+  local git_root=$(git -C . rev-parse --show-toplevel 2> /dev/null)
+  if [ "x${git_root}" = "x" ]
+  then
+      echo "no git root found"
+  else
+      if [ "$(pwd)" = "$git_root" ]
+      then
+	  # do nothing
+	  echo "already at root [$git_root]"
+      else
+	  cd "$git_root"
+      fi
+  fi
+}
+export EDITOR=nvim
+alias vim=nvim
+alias vi=nvim
 sourceIfExists $HOME/.env
-sourceIfExists $HOME/.cargo/env
 
 [[ -f $HOME/.cargo/bin/starship ]] && source <($HOME/.cargo/bin/starship init bash --print-full-init)
 
-export GOPATH=$HOME/gopath
-GoRoot=$HOME/local/go
-appendUnique $GoRoot/bin
-appendUnique $GOPATH/bin
