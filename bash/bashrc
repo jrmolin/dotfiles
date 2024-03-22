@@ -322,5 +322,10 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
+appendUnique $HOME/.cargo/bin
+eval "$(starship init bash)"
+
+appendUnique /opt/blender
+appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
