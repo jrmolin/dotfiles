@@ -339,5 +339,10 @@ alias vim=nvim
 alias vi=nvim
 sourceIfExists $HOME/.env
 
-[[ -f $HOME/.cargo/bin/starship ]] && source <($HOME/.cargo/bin/starship init bash --print-full-init)
+if [ "xfile" = "x$(fnexists starship)" ]
+then
+    eval "$(starship init bash)"
+fi
 
+appendUnique /opt/zig
+. "$HOME/.cargo/env"
