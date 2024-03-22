@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ "x" = "x$(type -t docker)" ]
+then
+    return
+fi
+
 # npm ()
 # {
 #     docker run \

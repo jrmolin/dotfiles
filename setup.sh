@@ -136,18 +136,6 @@ link_file() {
     fi
 }
 
-_stow() {
-    local _source=$1
-    local _target=${2:- $HOME}
-
-    if [ -e "$_target/$_source" ]
-    then
-        echo "[$_target/$_source] already exists! skipping"
-    else
-        stow $_source --target $_target
-    fi
-}
-
 WORKDIR=`dirname $0`
 CWD=`pwd`
 cd $WORKDIR
@@ -168,7 +156,6 @@ dolinks() {
     #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
-    #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
     link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
     link_file $WORKDIR/tmux/tmux "$HOME/.tmux"
     link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
@@ -186,7 +173,6 @@ dolinks() {
 
 runrun() {
     install_curl
-    #_install stow
 
     _install sqlite3
     _install vim
