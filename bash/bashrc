@@ -257,6 +257,9 @@ elif [ -f /etc/profile.d/bash_completion.sh ]; then
     . /etc/profile.d/bash_completion.sh
 fi
 
+# add /opt/bin to PATH, if it exists
+addUnique "/opt/bin"
+
 # add $HOME/local/bin to PATH, if it exists
 addUnique "$HOME/local/bin"
 
@@ -322,5 +325,13 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
+appendUnique /opt/st/stm32cubeide_1.9.0/
+
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
+export JEKYLL_VERSION=4.3
+
+sourceIfExists $HOME/.cargo/env
+appendUnique /opt/blender
+
+#eval "$(starship init bash)"
