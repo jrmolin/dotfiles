@@ -56,8 +56,35 @@ setup() {
 }
 
 
+setupzig() {
+    require_util curl "download things, like for installing zig"
+    local ver=0.11.0
+
+    if [ -d /opt/zig ]
+    then
+        sudo rm -rf /opt/zig
+    fi
+
+    sudo mkdir /opt/zig
+    sudo chown $USER:$USER /opt/zig
+
+    doit  curl -fLo /tmp/zig.tar.xz https://ziglang.org/download/$ver/zig-linux-x86_64-$ver.tar.xz
+
+    doit tar xf /tmp/zig.tar.xz -C /opt/zig --strip-components=1
+}
+
 setupvim() {
     require_util curl "download things, like for installing guix"
+
+    # if /opt/nvim exists, then don't install again
+    if [ ! -d /opt/nvim ]
+    then
+        doit curl -fLo /tmp/nvim.tar.gz https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
+        sudo mkdir /opt/nvim
+        sudo chown $USER:$USER /opt/nvim
+        tar xf /tmp/nvim.tar.gz -C /opt/nvim --strip-components=1
+        rm /tmp/nvim.tar.gz
+    fi
 
     if [ ! -e vim/vim/autoload/plug.vim ]
     then
@@ -168,6 +195,7 @@ dolinks() {
     #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
+    link_file $WORKDIR/nvim "$HOME/.config/nvim"
     #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
     link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
     link_file $WORKDIR/tmux/tmux "$HOME/.tmux"
@@ -198,11 +226,15 @@ runrun() {
 
 if [ "x$1" = "x" ]
 then
-    echo "Usage: $0 <install|links>"
+    echo "Usage: $0 <install|vim|links|zig>"
 elif [ "x$1" = "xvim" ]
 then
     setupvim
-    echo "finished!"
+    echo "finished with vim!"
+elif [ "x$1" = "xzig" ]
+then
+    setupzig
+    echo "finished with zig!"
 elif [ "x$1" = "xlinks" ]
 then
     echo "found install to be [$INSTALL]"

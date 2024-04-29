@@ -272,8 +272,8 @@ if [ "x$(uname)" = "xDarwin" ]; then
     export GOPATH="$HOME/go"
     export GOBIN="$GOPATH/bin"
     PATH="$GOPATH/bin:$PATH"
-    #alias vi=nvim
-    #alias vim=nvim
+    alias vi=nvim
+    alias vim=nvim
 fi
 
 __nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
@@ -311,3 +311,5 @@ export GOPATH=$HOME/gopath
 GoRoot=$HOME/local/go
 appendUnique $GoRoot/bin
 appendUnique $GOPATH/bin
+appendUnique /opt/nvim/bin
+appendUnique /opt/zig
