@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ "x" = "x$(type -t docker)" ]
+then
+    return
+fi
+
 # npm ()
 # {
 #     docker run \
@@ -379,6 +384,7 @@ arc()
 #        -e NO_AT_BRIDGE=1 \
 #        pulsey pavucontrol ${@}
 #}
+
 #cargo()
 #{
 #    echo "[$*]"

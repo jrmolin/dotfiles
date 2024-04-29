@@ -5,9 +5,6 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-# if in nix shell, don't load anything
-#[[ -n $IN_NIX_SHELL ]] && return
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -23,10 +20,6 @@ HISTFILESIZE=2000
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
-
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
@@ -40,22 +33,6 @@ case "$TERM" in
     xterm-color) color_prompt=yes;;
     xterm-256color) color_prompt=yes;;
 esac
-
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-force_color_prompt=yes
-
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    # We have color support; assume it's compliant with Ecma-48
-    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    # a case would tend to support setf rather than setaf.)
-    color_prompt=yes
-    else
-    color_prompt=
-    fi
-fi
 
 function fnexists()
 {
@@ -335,3 +312,50 @@ sourceIfExists $HOME/.cargo/env
 appendUnique /opt/blender
 
 #eval "$(starship init bash)"
+appendUnique /opt/blender
+appendUnique /opt/nvim/bin
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
+
+sourceIfExists "$HOME/.cargo/env"
+
+# add cmake to the path
+appendUnique /opt/cmake/bin
+
+# add go to the path
+export GOPATH=/opt/golang
+appendUnique $GOPATH/go/bin
+appendUnique $GOPATH/bin
+
+# add local binaries installed
+appendUnique $HOME/.local/bin
+
+# need a function to go to the root of a git project
+function root()
+{
+  local git_root=$(git -C . rev-parse --show-toplevel 2> /dev/null)
+  if [ "x${git_root}" = "x" ]
+  then
+      echo "no git root found"
+  else
+      if [ "$(pwd)" = "$git_root" ]
+      then
+	  # do nothing
+	  echo "already at root [$git_root]"
+      else
+	  cd "$git_root"
+      fi
+  fi
+}
+export EDITOR=nvim
+alias vim=nvim
+alias vi=nvim
+sourceIfExists $HOME/.env
+
+if [ "xfile" = "x$(fnexists starship)" ]
+then
+    eval "$(starship init bash)"
+fi
+
+appendUnique /opt/zig
+. "$HOME/.cargo/env"
