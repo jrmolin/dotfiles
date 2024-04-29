@@ -234,6 +234,9 @@ elif [ -f /etc/profile.d/bash_completion.sh ]; then
     . /etc/profile.d/bash_completion.sh
 fi
 
+# add /opt/bin to PATH, if it exists
+addUnique "/opt/bin"
+
 # add $HOME/local/bin to PATH, if it exists
 addUnique "$HOME/local/bin"
 
@@ -299,17 +302,61 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
+appendUnique /opt/st/stm32cubeide_1.9.0/
+
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
+export JEKYLL_VERSION=4.3
+
+sourceIfExists $HOME/.cargo/env
+appendUnique /opt/blender
+
+#eval "$(starship init bash)"
+appendUnique /opt/blender
+appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
 
-sourceIfExists $HOME/.env
-sourceIfExists $HOME/.cargo/env
+sourceIfExists "$HOME/.cargo/env"
 
-[[ -f $HOME/.cargo/bin/starship ]] && source <($HOME/.cargo/bin/starship init bash --print-full-init)
+# add cmake to the path
+appendUnique /opt/cmake/bin
 
-export GOPATH=$HOME/gopath
-GoRoot=$HOME/local/go
-appendUnique $GoRoot/bin
+# add go to the path
+export GOPATH=/opt/golang
+appendUnique $GOPATH/go/bin
 appendUnique $GOPATH/bin
 appendUnique /opt/nvim/bin
 appendUnique /opt/zig
+
+# add local binaries installed
+appendUnique $HOME/.local/bin
+
+# need a function to go to the root of a git project
+function root()
+{
+  local git_root=$(git -C . rev-parse --show-toplevel 2> /dev/null)
+  if [ "x${git_root}" = "x" ]
+  then
+      echo "no git root found"
+  else
+      if [ "$(pwd)" = "$git_root" ]
+      then
+	  # do nothing
+	  echo "already at root [$git_root]"
+      else
+	  cd "$git_root"
+      fi
+  fi
+}
+export EDITOR=nvim
+alias vim=nvim
+alias vi=nvim
+sourceIfExists $HOME/.env
+
+if [ "xfile" = "x$(fnexists starship)" ]
+then
+    eval "$(starship init bash)"
+fi
+
+. "$HOME/.cargo/env"

@@ -207,3 +207,6 @@ bar {
 }
 
 # custom bindings here
+
+# handle stupid zoom notifications
+for_window [title="^zoom$" class="[zoom]*"] floating enable

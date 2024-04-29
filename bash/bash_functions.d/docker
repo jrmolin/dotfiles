@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ "x" = "x$(type -t docker)" ]
+then
+    return
+fi
+
 # npm ()
 # {
 #     docker run \
@@ -322,18 +327,64 @@ rtl_433()
         --entrypoint=/usr/bin/rtl_433 \
         sdr "$*"
 }
-pavucontrol()
+
+_jekky()
 {
     local USER_UID=$(id -u)
-
-    docker run -ti \
-        -v=/run/user/${USER_UID}/pulse:/run/user/1000/pulse \
-        --mount type=bind,source=/dev/shm,target=/dev/shm \
-        -e DISPLAY \
-        -v=/tmp/.X11-unix:/tmp/.X11-unix \
-        -e NO_AT_BRIDGE=1 \
-        pulsey pavucontrol ${@}
+    docker run --rm \
+           --user "$(id -u)":"$(id -g)" \
+           -p 4000:4000 \
+           -e USER \
+           -e GEM_HOME=/srv/jekyll/.gem \
+           --volume="$PWD:/srv/jekyll" -it \
+           jekky "$@"
 }
+
+bundle()
+{
+    _jekky bundle "$@"
+}
+
+jekyll()
+{
+    _jekky "jekyll $@"
+}
+
+php()
+{
+    local USER_UID=$(id -u)
+    docker run --rm \
+           --user "$(id -u)":"$(id -g)" \
+           -p 4000:4000 \
+           -e USER \
+           --volume="$PWD:/app" -it \
+           phpcli php "$@"
+}
+
+arc()
+{
+    local USER_UID=$(id -u)
+    docker run --rm \
+           --user "$(id -u)":"$(id -g)" \
+           -p 4000:4000 \
+           -e USER \
+           --volume="$HOME/git/arcanist/bin:/app" -it \
+           arcanist "$@"
+}
+
+#pavucontrol()
+#{
+#    local USER_UID=$(id -u)
+#
+#    docker run -ti \
+#        -v=/run/user/${USER_UID}/pulse:/run/user/1000/pulse \
+#        --mount type=bind,source=/dev/shm,target=/dev/shm \
+#        -e DISPLAY \
+#        -v=/tmp/.X11-unix:/tmp/.X11-unix \
+#        -e NO_AT_BRIDGE=1 \
+#        pulsey pavucontrol ${@}
+#}
+
 #cargo()
 #{
 #    echo "[$*]"
