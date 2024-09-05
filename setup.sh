@@ -111,7 +111,7 @@ install_font() {
 
 }
 
-setupvim() {
+installvim() {
     require_util curl "download things, like for installing guix"
 
     local destiny="/opt/nvim"
@@ -134,6 +134,10 @@ setupvim() {
         # remove the file
         doit unlink $dl
     fi
+}
+
+setupvim() {
+    require_util curl "download things, like for installing guix"
 
     if [ ! -f $HOME/.config/nvim/init.lua ]
     then
@@ -328,6 +332,11 @@ runrun() {
 if [ "x$1" = "x" ]
 then
     echo "Usage: $0 <install|vim|links|zig>"
+elif [ "x$1" = "xinstallvim" ]
+then
+    installvim
+    setupvim
+    echo "finished with vim!"
 elif [ "x$1" = "xvim" ]
 then
     setupvim
