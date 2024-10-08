@@ -260,45 +260,59 @@ ensure_dir_exists () {
 }
 
 dolinks() {
-    #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
-    #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+    if [[ "${_SYSTEM}" == "macos" ]] ; then
+        link_file $WORKDIR/zsh/zshrc "$HOME/.zshrc"
+        link_file $WORKDIR/zsh/zshenv "$HOME/.zshenv"
+        link_file $WORKDIR/zsh/zprofile "$HOME/.zprofile"
+    else
+        echo "wrong! bail!!"
+        exit
+        #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+        #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+        #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
+        link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
+        link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+        link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
+        link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
+        link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
+        link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
+        link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
+        #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
+    #    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
+        ensure_dir_exists "$HOME/.emacs.d/"
+        link_file $WORKDIR/emacs/Emacs.org "$HOME/.emacs.d/Emacs.org"
+    fi
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
     link_file $WORKDIR/nvim "$HOME/.config/nvim"
-    #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
     link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
     link_file $WORKDIR/tmux/tmux "$HOME/.tmux"
-    link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
-    link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
-    link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
-    link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
-    link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
-    link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
-    link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
-    #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
-#    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
-    ensure_dir_exists "$HOME/.emacs.d/"
-    link_file $WORKDIR/emacs/Emacs.org "$HOME/.emacs.d/Emacs.org"
 }
 
 undolinks() {
-    #unlink_file $WORKDIR/i3/config "$HOME/.config/i3/config"
-    #unlink_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+    if [[ "${_SYSTEM}" == "macos" ]] ; then
+        unlink_file "$HOME/.zshrc"
+        unlink_file "$HOME/.zshenv"
+        unlink_file "$HOME/.zshprofile"
+    else
+        #unlink_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+        #unlink_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+        unlink_file "$HOME/.bashrc"
+        unlink_file "$HOME/.bash_aliases"
+        unlink_file "$HOME/.bash_completion"
+        unlink_file "$HOME/.bash_completion.d"
+        unlink_file "$HOME/.bash_functions"
+        unlink_file "$HOME/.bash_functions.d"
+        unlink_file "$HOME/.dircolors"
+        #ensure_dir_exists "$HOME/.emacs.d/"
+        unlink_file "$HOME/.emacs.d/Emacs.org"
+        #unlink_file "$HOME/.Xresources"
+        #unlink_file "$HOME/.direnvrc"
+    fi
     unlink_file "$HOME/.vim"
     unlink_file "$HOME/.vimrc"
     unlink_file "$HOME/.tmux.conf"
     unlink_file "$HOME/.tmux"
-    unlink_file "$HOME/.bashrc"
-    unlink_file "$HOME/.bash_aliases"
-    unlink_file "$HOME/.bash_completion"
-    unlink_file "$HOME/.bash_completion.d"
-    unlink_file "$HOME/.bash_functions"
-    unlink_file "$HOME/.bash_functions.d"
-    unlink_file "$HOME/.dircolors"
-    #ensure_dir_exists "$HOME/.emacs.d/"
-    unlink_file "$HOME/.emacs.d/Emacs.org"
-    #unlink_file "$HOME/.Xresources"
-    #unlink_file "$HOME/.direnvrc"
 }
 
 install_rust() {

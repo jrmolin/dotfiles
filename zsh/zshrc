@@ -1,0 +1,11 @@
+eval "$(starship init zsh)"
+
+alias ls=eza
+alias ll='ls -larh -snew'
+
+if [ -d "$HOME/bin" ]; then
+    PATH="$PATH:$HOME/bin"
+fi
+
+alias vim=nvim
+alias vi=nvim
