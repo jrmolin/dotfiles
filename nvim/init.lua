@@ -283,14 +283,6 @@ require('lazy').setup({
   --       Uncomment any of the lines below to enable them.
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
-  {
-    -- install the distant plugin
-      'chipsenkbeil/distant.nvim',
-      branch = 'v0.3',
-      config = function()
-          require('distant'):setup()
-      end
-  },
 
   {
     "nvim-tree/nvim-tree.lua",
@@ -430,7 +422,7 @@ local function live_grep_git_root()
   end
 end
 
-vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
+--vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
@@ -456,7 +448,7 @@ vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { des
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
-vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', { desc = '[S]earch by [G]rep on Git Root' })
+vim.keymap.set('n', '<leader>sG', live_grep_git_root, { desc = '[S]earch by [G]rep on Git Root' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
 
@@ -466,10 +458,10 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'vimdoc', 'vim', 'bash' },
+    ensure_installed = { 'c', 'cpp', 'go', 'just', 'lua', 'python', 'rust', 'vimdoc', 'vim', 'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-    auto_install = false,
+    auto_install = true,
     -- Install languages synchronously (only applied to `ensure_installed`)
     sync_install = false,
     -- List of parsers to ignore installing
@@ -657,6 +649,7 @@ mason_lspconfig.setup_handlers {
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
+--[[
 local cmp = require 'cmp'
 local luasnip = require 'luasnip'
 require('luasnip.loaders.from_vscode').lazy_load()
@@ -706,7 +699,7 @@ cmp.setup {
     { name = 'path' },
   },
 }
-
+--]]
 local function open_nvim_tree()
 
   -- open the tree
@@ -716,7 +709,13 @@ end
 -- vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
 vim.keymap.set('n', '<leader>cdh', "<cmd>:cd $HOME<CR>", { noremap = true, desc = '[C]hange [D]irectory to [H]ome' })
 vim.keymap.set('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show current directory' })
-vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
+-- if windows
+if vim.fn.has 'win32' == 1 then
+  vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
+else -- not-windows
+  vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/.config/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
+end
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
