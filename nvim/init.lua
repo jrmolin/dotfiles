@@ -38,12 +38,6 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now :)
 --]]
 
--- Set <space> as the leader key
--- See `:help mapleader`
---  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
-
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -308,6 +302,13 @@ require('lazy').setup({
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 
+-- Set <space> as the leader key
+-- See `:help mapleader`
+--  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+vim.o.title = true
+
 -- Set highlight on search
 vim.o.hlsearch = true
 
@@ -372,6 +373,28 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 
+local function picker_up_a_dir(prompt_bufnr)
+   local current_picker =
+     require("telescope.actions.state").get_current_picker(prompt_bufnr)
+   -- cwd is only set if passed as telescope option
+   local cwd = current_picker.cwd and tostring(current_picker.cwd)
+     or vim.loop.cwd()
+   local parent_dir = vim.fs.dirname(cwd)
+   --local finder = current_picker.finder
+   --finder.path = parent_dir
+
+   --current_picker:refresh(
+   --  finder,
+   --  { new_prefix = parent_dir, reset_prompt = true, multi = current_picker._multi }
+   --)
+
+   require("telescope.actions").close(prompt_bufnr)
+   require("telescope.builtin").find_files {
+     prompt_title = vim.fs.basename(parent_dir),
+     cwd = parent_dir,
+   }
+end
+
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
@@ -380,6 +403,20 @@ require('telescope').setup {
       i = {
         ['<C-u>'] = false,
         ['<C-d>'] = false,
+      },
+    },
+  },
+  pickers = {
+    find_files = {
+      mappings = {
+        i = {
+          ["<C-j>"] = picker_from_buffer_dir,
+          ["<C-k>"] = picker_up_a_dir,
+        },
+        n = {
+          ["<C-j>"] = picker_from_buffer_dir,
+          ["<C-k>"] = picker_up_a_dir,
+        },
       },
     },
   },
@@ -435,12 +472,30 @@ vim.keymap.set('n', '<leader>/', function()
   })
 end, { desc = '[/] Fuzzily search in current buffer' })
 
+local function telescope_open_from_buffer_dir()
+  local buffer_dir = require('telescope.utils').buffer_dir()
+
+   require("telescope.builtin").find_files {
+     prompt_title = vim.fs.basename(buffer_dir),
+     cwd = buffer_dir,
+   }
+end
+
 local function telescope_live_grep_open_files()
   require('telescope.builtin').live_grep {
     grep_open_files = true,
     prompt_title = 'Live Grep in Open Files',
   }
 end
+
+local function telescope_find_files_ignore_gitignore()
+  require('telescope.builtin').find_files {
+    no_ignore = true,
+    prompt_title = 'Live Grep in Open Files',
+  }
+
+end
+
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
@@ -449,7 +504,7 @@ vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sG', live_grep_git_root, { desc = '[S]earch by [G]rep on Git Root' })
-vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>sd', telescope_open_from_buffer_dir, { desc = '[S]earch from [D]irectory of Buffer' })
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
 
 -- [[ Configure Treesitter ]]
@@ -574,22 +629,30 @@ local on_attach = function(_, bufnr)
 end
 
 -- document existing key chains
-require('which-key').register {
-  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-  ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-  ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-}
+require('which-key').add({
+  {'<leader>c', group = '[C]ode' },
+  {'<leader>c_', hidden = true },
+  {'<leader>d', group = '[D]ocument' },
+  {'<leader>d_', hidden = true },
+  {'<leader>g', group = '[G]it' },
+  {'<leader>g_', hidden = true },
+  {'<leader>h', group = 'Git [H]unk' },
+  {'<leader>h_', hidden = true },
+  {'<leader>r', group = '[R]ename' },
+  {'<leader>r_', hidden = true },
+  {'<leader>s', group = '[S]earch' },
+  {'<leader>s_', hidden = true },
+  {'<leader>t', group = '[T]oggle' },
+  {'<leader>t_', hidden = true },
+  {'<leader>w', group = '[W]orkspace' },
+  {'<leader>w_', hidden = true },
+})
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
-require('which-key').register({
-  ['<leader>'] = { name = 'VISUAL <leader>' },
-  ['<leader>h'] = { 'Git [H]unk' },
-}, { mode = 'v' })
+require('which-key').add({
+  {'<leader>', group = 'VISUAL <leader>', mode = 'v' },
+  {'<leader>h', group = 'Git [H]unk', mode = 'v' },
+})
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
@@ -608,6 +671,7 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
+  pylsp = {},
   -- rust_analyzer = {},
   -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
@@ -709,13 +773,18 @@ end
 -- vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
 vim.keymap.set('n', '<leader>cdh', "<cmd>:cd $HOME<CR>", { noremap = true, desc = '[C]hange [D]irectory to [H]ome' })
 vim.keymap.set('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show current directory' })
--- if windows
+
+-- for windows:
 if vim.fn.has 'win32' == 1 then
   vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
-else -- not-windows
+else
+
+  -- for not-windows:
   vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/.config/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
 end
 
+
+vim.keymap.set('n', '<leader>id', "<cmd>:pu=strftime('%A %d %B %Y %H:%m (%Z)')<CR>", { noremap = true, desc = '[I]nsert [D]ate' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

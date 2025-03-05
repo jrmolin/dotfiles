@@ -276,8 +276,8 @@ if [ "x$(uname)" = "xDarwin" ]; then
     export GOPATH="$HOME/go"
     export GOBIN="$GOPATH/bin"
     PATH="$GOPATH/bin:$PATH"
-    #alias vi=nvim
-    #alias vim=nvim
+    alias vi=nvim
+    alias vim=nvim
 fi
 
 # add direnv support
@@ -319,6 +319,8 @@ appendUnique /opt/cmake/bin
 export GOPATH=/opt/golang
 appendUnique $GOPATH/go/bin
 appendUnique $GOPATH/bin
+appendUnique /opt/nvim/bin
+appendUnique /opt/zig
 
 # add local binaries installed
 appendUnique $HOME/.local/bin
@@ -350,5 +352,4 @@ then
     eval "$(starship init bash)"
 fi
 
-appendUnique /opt/zig
 . "$HOME/.cargo/env"

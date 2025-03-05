@@ -1,0 +1,122 @@
+
+setopt inc_append_history
+
+eval "$(starship init zsh)"
+
+alias ls=eza
+alias ll='ls -larh -snew'
+
+if [ -d "$HOME/bin" ]; then
+    PATH="$PATH:$HOME/bin"
+fi
+
+alias vim=nvim
+alias vi=nvim
+
+bindkey -e
+
+# use go 1.23.2
+eval "$(gvm 1.23.2)"
+export GOPATH=$HOME/sandbox/golang/
+export PATH=$PATH:${GOPATH}/bin
+
+alias ep='elastic-package'
+alias epb='elastic-package build'
+alias epc='elastic-package check'
+alias epr='elastic-package stack up -vvd --services package-registry'
+
+# functions
+function root() {
+    local root_dir=$(find-root)
+
+    if [ -n ${root_dir} ] ; then
+        echo "Found root dir at ${root_dir}"
+        cd "${root_dir}"
+    else
+        echo "Could not find a root from here ($(pwd))"
+    fi
+}
+
+function beats() {
+    local beats_dir=$HOME/sandbox/golang/src/github.com/jrmolin/beats
+
+    if [ -d ${beats_dir} ] ; then
+        echo "Found beats dir at ${beats_dir}"
+        cd "${beats_dir}"
+    else
+        echo "Could not find a beats dir at ${beats_dir}"
+    fi
+}
+
+function tsa() {
+    typeset options=$(tmux ls 2>/dev/null)
+    typeset count=$(echo $options | wc -l)
+    typeset all_options=$(echo "add a new session: unnamed\n$options")
+    typeset choice=$(echo $all_options | gum choose | cut -d: -f1)
+
+    if [[ $choice = "add a new session" ]] ; then
+        typeset name=$(gum input)
+        if [[ -n $name ]] ; then
+            tmux new -s $choice
+        fi
+    elif [[ -n $choice ]] ; then
+        tmux attach -t $choice
+    fi
+}
+
+function serve() {
+    python3 -m http.server $*
+}
+
+function hugo() {
+    docker run --rm -u $(id -u):$(id -g) -v ./:/project hugo $*
+}
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/mo/.local/src/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/mo/.local/src/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/mo/.local/src/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/mo/.local/src/google-cloud-sdk/completion.zsh.inc'; fi
+
+export EDITOR=nvim
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/mo/.cache/lm-studio/bin"
+
+function onprem-ssh() {
+    gcloud compute ssh --zone "us-central1-b" "sit-sdd-on-prem-host" --project "elastic-security-dev"
+}
+
+function npx() {
+    node npx "$@"
+}
+
+function npm() {
+    node npm "$@"
+}
+
+function node() {
+    docker run -it --rm --net=host -e USER=node -u $(id -u):$(id -g) -v ./:/app -v $HOME/.npm:/home/node/.npm -w /app node:latest "$@"
+}
+
+function workdir() {
+    typeset count=$(wc -l ~/.workdir | awk '{ print $1 }' 2>/dev/null)
+    typeset options=$(cat ~/.workdir 2>/dev/null)
+
+    if [[ $count = 1 ]] ; then
+        echo "only one option: going to $options"
+        chdir $options
+    else
+        typeset choice=$(echo $options | gum choose | cut -d: -f1)
+
+        if [[ -n $choice ]] ; then
+            chdir "$choice"
+        fi
+    fi
+}
+
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/mo/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
