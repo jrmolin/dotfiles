@@ -9,6 +9,19 @@ alias ll='ls -larh -snew'
 if [ -d "$HOME/bin" ]; then
     PATH="$PATH:$HOME/bin"
 fi
+function appendUnique() {
+    if [[ ":$PATH:" != *":$1:"* ]]
+    then
+        # only append if the directory exists
+        if [ -d "$1" ]
+        then
+            PATH="$PATH:$1"
+        fi
+    fi
+}
+
+appendUnique /opt/nvim/bin
+appendUnique /opt/rust/bin
 
 alias vim=nvim
 alias vi=nvim
@@ -16,9 +29,11 @@ alias vi=nvim
 bindkey -e
 
 # use go 1.23.2
-eval "$(gvm 1.23.2)"
-export GOPATH=$HOME/sandbox/golang/
-export PATH=$PATH:${GOPATH}/bin
+if [[ -n "$(command -v gvm)" ]] ; then
+    eval "$(gvm 1.23.2)"
+    export GOPATH=$HOME/sandbox/golang/
+    export PATH=$PATH:${GOPATH}/bin
+fi
 
 alias ep='elastic-package'
 alias epb='elastic-package build'

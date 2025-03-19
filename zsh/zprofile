@@ -1,5 +1,7 @@
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+if [[ -d /opt/homebrew/bin ]] ; ; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 eval "$(starship init zsh)"
 
 alias ls=eza
@@ -15,9 +17,11 @@ alias vi=nvim
 bindkey -e
 
 # use go 1.23.2
-eval "$(gvm 1.23.2)"
-export GOPATH=$HOME/sandbox/golang/
-export PATH=$PATH:${GOPATH}/bin
+if [[ -n "$(command -v gvm 2>/dev/null)" ]] ; then
+    eval "$(gvm 1.23.2)"
+    export GOPATH=$HOME/sandbox/golang/
+    export PATH=$PATH:${GOPATH}/bin
+fi
 
 alias ep='elastic-package'
 alias epb='elastic-package build'
