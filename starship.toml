@@ -148,3 +148,16 @@ symbol = " "
 
 [spack]
 symbol = "🅢 "
+
+[git_status]
+disabled = true
+
+[vagrant]
+disabled = true
+
+[time]
+time_format = "%F %T"
+disabled = false
+
+[cmd_duration]
+min_time_to_notify = 400

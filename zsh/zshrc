@@ -4,6 +4,7 @@ setopt inc_append_history
 eval "$(starship init zsh)"
 
 alias ls=eza
+alias l='ls -larh -snew'
 alias ll='ls -larh -snew'
 
 if [ -d "$HOME/bin" ]; then
@@ -20,10 +21,12 @@ eval "$(gvm 1.23.2)"
 export GOPATH=$HOME/sandbox/golang/
 export PATH=$PATH:${GOPATH}/bin
 
-alias ep='elastic-package'
-alias epb='elastic-package build'
-alias epc='elastic-package check'
-alias epr='elastic-package stack up -vvd --services package-registry'
+if type elastic-package &>/dev/null; then
+    alias ep='elastic-package'
+    alias epb='elastic-package build'
+    alias epc='elastic-package check'
+    alias epr='elastic-package stack up -vvd --services package-registry'
+fi
 
 # functions
 function root() {
@@ -57,7 +60,7 @@ function tsa() {
     if [[ $choice = "add a new session" ]] ; then
         typeset name=$(gum input)
         if [[ -n $name ]] ; then
-            tmux new -s $choice
+            tmux new -s $name
         fi
     elif [[ -n $choice ]] ; then
         tmux attach -t $choice
@@ -87,36 +90,45 @@ function onprem-ssh() {
     gcloud compute ssh --zone "us-central1-b" "sit-sdd-on-prem-host" --project "elastic-security-dev"
 }
 
-function npx() {
-    node npx "$@"
-}
+# function npx() {
+#     node npx "$@"
+# }
+# 
+# function npm() {
+#     node npm "$@"
+# }
+# 
+# function node() {
+#     docker run -it --rm --net=host -e USER=node -u $(id -u):$(id -g) -v ./:/app -v $HOME/.npm:/home/node/.npm -w /app node:latest "$@"
+# }
 
-function npm() {
-    node npm "$@"
-}
-
-function node() {
-    docker run -it --rm --net=host -e USER=node -u $(id -u):$(id -g) -v ./:/app -v $HOME/.npm:/home/node/.npm -w /app node:latest "$@"
-}
-
+alias wd=workdir
 function workdir() {
-    typeset count=$(wc -l ~/.workdir | awk '{ print $1 }' 2>/dev/null)
+    typeset request=${1:-}
     typeset options=$(cat ~/.workdir 2>/dev/null)
 
-    if [[ $count = 1 ]] ; then
-        echo "only one option: going to $options"
-        chdir $options
-    else
-        typeset choice=$(echo $options | gum choose | cut -d: -f1)
+    typeset choice=$(echo $options | gum filter --select-if-one --value "${request}"| cut -d: -f1)
 
-        if [[ -n $choice ]] ; then
-            chdir "$choice"
-        fi
+    if [[ -n $choice ]] ; then
+        chdir "$choice"
     fi
 }
 
+if type brew &>/dev/null; then
+    fpath=($(brew --prefix)/share/zsh-completions $fpath)
+fi
+
+if [[ -d $HOME/.asdf ]] ; then
+    export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+    fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
+fi
+
+if [[ -d $HOME/.local/bin ]] ; then
+    export PATH="$PATH:$HOME/.local/bin"
+fi
+
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
 fpath=(/Users/mo/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
+autoload -Uz compinit && compinit
 # End of Docker CLI completions
+

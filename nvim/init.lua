@@ -768,21 +768,34 @@ local function open_nvim_tree()
   require("nvim-tree.api").tree.open()
 end
 
+local function key_map(mode, l, r, opts)
+  opts = opts or {}
+  opts.buffer = bufnr
+  vim.keymap.set(mode, l, r, opts)
+end
+
 -- vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
-vim.keymap.set('n', '<leader>cdh', "<cmd>:cd $HOME<CR>", { noremap = true, desc = '[C]hange [D]irectory to [H]ome' })
-vim.keymap.set('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show current directory' })
+key_map('n', '<leader>cdh', "<cmd>:cd $HOME<CR>", { noremap = true, desc = '[C]hange [D]irectory to [H]ome' })
+key_map('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show current directory' })
 
 -- for windows:
 if vim.fn.has 'win32' == 1 then
-  vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
+  key_map('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
 else
-
   -- for not-windows:
-  vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/.config/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
+  key_map('n', '<leader>ei', "<cmd>:e $HOME/.config/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
 end
 
 
-vim.keymap.set('n', '<leader>id', "<cmd>:pu=strftime('%A %d %B %Y %H:%m (%Z)')<CR>", { noremap = true, desc = '[I]nsert [D]ate' })
+key_map('n', '<leader>id', "<cmd>:pu=strftime('%A %d %B %Y %H:%m (%Z)')<CR>", { noremap = true, desc = '[I]nsert [D]ate' })
+
+key_map('n', '<leader>ws', "<C-W>s", { desc = '[W]indow [S]plit horizontal' })
+key_map('n', '<leader>wv', "<C-W>v", { desc = '[W]indow Split [V]ertical' })
+key_map('n', '<leader>ww', "<C-W>w", { desc = '[W]indow next [W]indow' })
+key_map('n', '<leader>wh', "<C-W>h", { desc = '[H]op to left window' })
+key_map('n', '<leader>wj', "<C-W>j", { desc = '[J]ump to window below' })
+key_map('n', '<leader>wk', "<C-W>k", { desc = 'S[K]ip to window above' })
+key_map('n', '<leader>wl', "<C-W>l", { desc = '[L]eap to the window on the right' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
