@@ -56,10 +56,10 @@ fi
 #         moli/slack "$@"
 # }
 #
-# htop()
-# {
-#     docker run --rm -it --pid host jess/htop
-# }
+htop()
+{
+    docker run --rm -it --pid host jess/htop
+}
 
 
 #formatter()
@@ -394,3 +394,33 @@ arc()
 #        -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
 #        cargo:latest $*
 #}
+#
+function npx() {
+    node npx "$@"
+}
+
+function npm() {
+    node npm "$@"
+}
+
+function node() {
+    docker run -it --rm --net=host -e USER=node -u $(id -u):$(id -g) -v ./:/app -v $HOME/.npm:/home/node/.npm -w /app node:latest "$@"
+}
+
+function workdir() {
+    typeset count=$(wc -l ~/.workdir | awk '{ print $1 }' 2>/dev/null)
+    typeset options=$(cat ~/.workdir 2>/dev/null)
+
+    if [[ $count = 1 ]] ; then
+        echo "only one option: going to $options"
+        chdir $options
+    else
+        typeset choice=$(echo $options | gum choose | cut -d: -f1)
+
+        if [[ -n $choice ]] ; then
+            chdir "$choice"
+        fi
+    fi
+}
+
+

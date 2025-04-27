@@ -32,6 +32,7 @@ fi
 case "$TERM" in
     xterm-color) color_prompt=yes;;
     xterm-256color) color_prompt=yes;;
+    alacritty) color_prompt=yes;;
 esac
 
 function fnexists()
@@ -279,18 +280,10 @@ if [ "x$(uname)" = "xDarwin" ]; then
     alias vim=nvim
 fi
 
-__nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
-
 # add direnv support
 if [ "xfile" = "x$(fnexists direnv)" ]
 then
     eval "$(direnv hook bash)"
-fi
-
-# only source the nix file if we haven't already done that
-if [ "x" = "x$(fnexists nix-env)" ]
-then
-    [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 fi
 
 # Alias definitions.
