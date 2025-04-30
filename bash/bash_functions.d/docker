@@ -339,6 +339,12 @@ pavucontrol()
         -e NO_AT_BRIDGE=1 \
         pulsey pavucontrol ${@}
 }
+
+mkpasswd()
+{
+    docker run -i busybox mkpasswd $*
+}
+
 #cargo()
 #{
 #    echo "[$*]"
@@ -348,3 +354,11 @@ pavucontrol()
 #        -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
 #        cargo:latest $*
 #}
+
+nmap()
+{
+    docker run -it --rm --name nmappy \
+        --user "$(id -u)":"$(id -g)" \
+        -e USER \
+        nmap $*
+}

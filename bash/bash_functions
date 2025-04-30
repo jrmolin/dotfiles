@@ -11,6 +11,11 @@ function isInPath()
     fi
 }
 
+function serve()
+{
+    python3 -m http.server $*
+}
+
 function enableVirtualenv()
 {
     venvwr="/usr/local/bin/virtualenvwrapper.sh"

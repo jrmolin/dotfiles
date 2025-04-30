@@ -234,9 +234,6 @@ elif [ -f /etc/profile.d/bash_completion.sh ]; then
     . /etc/profile.d/bash_completion.sh
 fi
 
-# add $HOME/local/bin to PATH, if it exists
-addUnique "$HOME/local/bin"
-
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
 
@@ -253,7 +250,6 @@ then
     addUniqueToClasspath $_JAVAFBP
 fi
 
-export EDITOR=vim
 
 # prompt command testing
 PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then prompt_status=; fi'
@@ -304,8 +300,6 @@ appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
 
-sourceIfExists "$HOME/.cargo/env"
-
 # add cmake to the path
 appendUnique /opt/cmake/bin
 
@@ -313,9 +307,6 @@ appendUnique /opt/cmake/bin
 export GOPATH=/opt/golang
 appendUnique $GOPATH/go/bin
 appendUnique $GOPATH/bin
-
-# add local binaries installed
-appendUnique $HOME/.local/bin
 
 # need a function to go to the root of a git project
 function root()
@@ -334,9 +325,15 @@ function root()
       fi
   fi
 }
-export EDITOR=nvim
-alias vim=nvim
-alias vi=nvim
+
+if [[ "xfile" == "x$(fnexists nvim)" ]] ; then
+    export EDITOR=nvim
+    alias vim=nvim
+    alias vi=nvim
+else
+    export EDITOR=vim
+fi
+
 sourceIfExists $HOME/.env
 
 if [ "xfile" = "x$(fnexists starship)" ]
@@ -345,4 +342,6 @@ then
 fi
 
 appendUnique /opt/zig
-. "$HOME/.cargo/env"
+appendUnique /opt/imagemagick/bin
+sourceIfExists "$HOME/.local/bin/env"
+appendUnique "$HOME/.rd/bin"
