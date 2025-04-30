@@ -56,10 +56,10 @@ fi
 #         moli/slack "$@"
 # }
 #
-# htop()
-# {
-#     docker run --rm -it --pid host jess/htop
-# }
+htop()
+{
+    docker run --rm -it --pid host jess/htop
+}
 
 
 #formatter()
@@ -327,23 +327,68 @@ rtl_433()
         --entrypoint=/usr/bin/rtl_433 \
         sdr "$*"
 }
-pavucontrol()
+
+_jekky()
 {
     local USER_UID=$(id -u)
-
-    docker run -ti \
-        -v=/run/user/${USER_UID}/pulse:/run/user/1000/pulse \
-        --mount type=bind,source=/dev/shm,target=/dev/shm \
-        -e DISPLAY \
-        -v=/tmp/.X11-unix:/tmp/.X11-unix \
-        -e NO_AT_BRIDGE=1 \
-        pulsey pavucontrol ${@}
+    docker run --rm \
+           --user "$(id -u)":"$(id -g)" \
+           -p 4000:4000 \
+           -e USER \
+           -e GEM_HOME=/srv/jekyll/.gem \
+           --volume="$PWD:/srv/jekyll" -it \
+           jekky "$@"
 }
 
 mkpasswd()
 {
     docker run -i busybox mkpasswd $*
 }
+
+bundle()
+{
+    _jekky bundle "$@"
+}
+
+jekyll()
+{
+    _jekky "jekyll $@"
+}
+
+php()
+{
+    local USER_UID=$(id -u)
+    docker run --rm \
+           --user "$(id -u)":"$(id -g)" \
+           -p 4000:4000 \
+           -e USER \
+           --volume="$PWD:/app" -it \
+           phpcli php "$@"
+}
+
+arc()
+{
+    local USER_UID=$(id -u)
+    docker run --rm \
+           --user "$(id -u)":"$(id -g)" \
+           -p 4000:4000 \
+           -e USER \
+           --volume="$HOME/git/arcanist/bin:/app" -it \
+           arcanist "$@"
+}
+
+#pavucontrol()
+#{
+#    local USER_UID=$(id -u)
+#
+#    docker run -ti \
+#        -v=/run/user/${USER_UID}/pulse:/run/user/1000/pulse \
+#        --mount type=bind,source=/dev/shm,target=/dev/shm \
+#        -e DISPLAY \
+#        -v=/tmp/.X11-unix:/tmp/.X11-unix \
+#        -e NO_AT_BRIDGE=1 \
+#        pulsey pavucontrol ${@}
+#}
 
 #cargo()
 #{
@@ -362,3 +407,21 @@ nmap()
         -e USER \
         nmap $*
 }
+
+function workdir() {
+    typeset count=$(wc -l ~/.workdir | awk '{ print $1 }' 2>/dev/null)
+    typeset options=$(cat ~/.workdir 2>/dev/null)
+
+    if [[ $count = 1 ]] ; then
+        echo "only one option: going to $options"
+        chdir $options
+    else
+        typeset choice=$(echo $options | gum choose | cut -d: -f1)
+
+        if [[ -n $choice ]] ; then
+            chdir "$choice"
+        fi
+    fi
+}
+
+

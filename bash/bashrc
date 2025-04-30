@@ -32,6 +32,7 @@ fi
 case "$TERM" in
     xterm-color) color_prompt=yes;;
     xterm-256color) color_prompt=yes;;
+    alacritty) color_prompt=yes;;
 esac
 
 function fnexists()
@@ -234,6 +235,12 @@ elif [ -f /etc/profile.d/bash_completion.sh ]; then
     . /etc/profile.d/bash_completion.sh
 fi
 
+# add /opt/bin to PATH, if it exists
+addUnique "/opt/bin"
+
+# add $HOME/local/bin to PATH, if it exists
+addUnique "$HOME/local/bin"
+
 # add $HOME/bin to PATH, if it exists
 addUnique "$HOME/bin"
 
@@ -268,22 +275,14 @@ if [ "x$(uname)" = "xDarwin" ]; then
     export GOPATH="$HOME/go"
     export GOBIN="$GOPATH/bin"
     PATH="$GOPATH/bin:$PATH"
-    #alias vi=nvim
-    #alias vim=nvim
+    alias vi=nvim
+    alias vim=nvim
 fi
-
-__nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
 
 # add direnv support
 if [ "xfile" = "x$(fnexists direnv)" ]
 then
     eval "$(direnv hook bash)"
-fi
-
-# only source the nix file if we haven't already done that
-if [ "x" = "x$(fnexists nix-env)" ]
-then
-    [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 fi
 
 # Alias definitions.
@@ -295,6 +294,16 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
+appendUnique /opt/st/stm32cubeide_1.9.0/
+
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
+export JEKYLL_VERSION=4.3
+
+sourceIfExists $HOME/.cargo/env
+appendUnique /opt/blender
+
+#eval "$(starship init bash)"
 appendUnique /opt/blender
 appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
@@ -307,6 +316,8 @@ appendUnique /opt/cmake/bin
 export GOPATH=/opt/golang
 appendUnique $GOPATH/go/bin
 appendUnique $GOPATH/bin
+appendUnique /opt/nvim/bin
+appendUnique /opt/zig
 
 # need a function to go to the root of a git project
 function root()
@@ -343,5 +354,5 @@ fi
 
 appendUnique /opt/zig
 appendUnique /opt/imagemagick/bin
-sourceIfExists "$HOME/.local/bin/env"
 appendUnique "$HOME/.rd/bin"
+sourceIfExists "$HOME/.local/bin/env"

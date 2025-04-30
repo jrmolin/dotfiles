@@ -17,4 +17,32 @@ if [ "Linux" = "$(uname)" ]
 then
     alias setclip="xclip -selection c"
     alias getclip="xclip -selection c -o"
+
+    alias ep="elastic-package"
+    alias epb="elastic-package build"
+    alias epp="elastic-package test pipeline"
+    alias epc="elastic-package check"
+    alias epr="elastic-package stack up -vvvd --services package-registry"
+
+    function elastic-package() {
+        # if elastic-package is not a file, enableGo
+        local path=$(type -P elastic-package)
+        if [ -z "${path}" ] ; then
+            enableGo
+            path=$(type -P elastic-package)
+        fi
+
+        if [ -n "${path}" ] ; then
+            # now unset myself
+            unset -f elastic-package
+
+            # and finally call elastic-package
+            elastic-package $@
+        else
+            echo "Could not find elastic-package, even with 'enableGo'"
+        fi
+    }
+
+    export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0"
 fi
+
