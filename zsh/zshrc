@@ -29,9 +29,9 @@ alias vi=nvim
 
 bindkey -e
 
-# use go 1.23.2
+# use go 1.24.2
 if [[ -n "$(command -v gvm)" ]] ; then
-    eval "$(gvm 1.23.2)"
+    eval "$(gvm 1.24.2)"
     export GOPATH=$HOME/sandbox/golang/
     export PATH=$PATH:${GOPATH}/bin
 fi
