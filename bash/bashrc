@@ -276,8 +276,6 @@ if [ "x$(uname)" = "xDarwin" ]; then
     export GOPATH="$HOME/go"
     export GOBIN="$GOPATH/bin"
     PATH="$GOPATH/bin:$PATH"
-    alias vi=nvim
-    alias vim=nvim
 fi
 
 # add direnv support
@@ -303,10 +301,6 @@ export JEKYLL_VERSION=4.3
 
 sourceIfExists $HOME/.cargo/env
 appendUnique /opt/blender
-
-#eval "$(starship init bash)"
-appendUnique /opt/blender
-appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
 
@@ -316,9 +310,6 @@ sourceIfExists "$HOME/.cargo/env"
 appendUnique /opt/cmake/bin
 
 # add go to the path
-export GOPATH=/opt/golang
-appendUnique $GOPATH/go/bin
-appendUnique $GOPATH/bin
 appendUnique /opt/nvim/bin
 appendUnique /opt/zig
 
@@ -352,4 +343,30 @@ then
     eval "$(starship init bash)"
 fi
 
-. "$HOME/.cargo/env"
+# The next line updates PATH for the Google Cloud SDK.
+sourceIfExists "$HOME/.local/google-cloud-sdk/path.bash.inc"
+# The next line enables shell command completion for gcloud.
+sourceIfExists "$HOME/.local/google-cloud-sdk/completion.bash.inc"
+
+function find-orig-files-and-eradicate-them() {
+    local count=$(find . -type f -name "*.orig" | wc -l)
+    if [[ $count > 0 ]] ; then
+        echo "Found ${count} file(s) to eradicate"
+        $(find . -type f -name "*.orig" -exec rm {} \;)
+        echo "Looking again ..."
+        count=$(find . -type f -name "*.orig" | wc -l)
+        echo "And now found ${count} file(s) to eradicate"
+    else
+        echo "No files found"
+    fi
+}
+
+function list-all-files-ignored-by-git-in-this-repo() {
+    local res=$(git ls-files --others --ignored --exclude-standard | bat)
+    echo "done ${res}"
+}
+
+if [ -f $HOME/.dco_path ]
+then
+    export EAF_CONFIG_FILEPATH=$(head -1 $HOME/.dco_path)/eaf_config-dev.yaml
+fi

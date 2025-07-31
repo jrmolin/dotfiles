@@ -9,6 +9,10 @@ CWD=`pwd`
 cd $WORKDIR
 WORKDIR=`pwd`
 
+arch() {
+    echo "$(uname -m | sed 's/aarch/arm/')"
+}
+
 oops() {
     echo "$0:" "$@" >&2
     exit 1
@@ -79,14 +83,14 @@ setupzig() {
     sudo mkdir /opt/zig
     sudo chown $USER:$USER /opt/zig
 
-    doit  curl -fLo /tmp/zig.tar.xz https://ziglang.org/download/$ver/zig-linux-x86_64-$ver.tar.xz
+    doit  curl -fLo /tmp/zig.tar.xz https://ziglang.org/download/$ver/zig-linux-$(arch)-$ver.tar.xz
 
     doit tar xf /tmp/zig.tar.xz -C /opt/zig --strip-components=1
 }
 
 install_font() {
     local font=FiraCodeNerdFont-Regular.ttf
-    local destiny="$HOME/.fonts/$font"
+    local destiny="$HOME/.local/share/fonts/$font"
     if [ ! -f $destiny ]
     then
         local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip"
@@ -116,16 +120,16 @@ installvim() {
 
     local destiny="/opt/nvim"
 
-    if [ ! -d $destiny ]
+    if [ ! -d "$destiny/bin" ]
     then
 
-        local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz"
+        local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$(arch).tar.gz"
         local dl="nvim.tgz"
 
         # curl the thing
         doit curl -Lo $dl $url
 
-        doit sudo mkdir $destiny
+        doit sudo mkdir -pv $destiny
         doit sudo chown $USER:$USER $destiny
 
         # tar xf nvim.tgz -C $destiny --strip-components=1
@@ -157,7 +161,7 @@ install_zig() {
 
     if [ ! -d $destiny ]
     then
-        local url="https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz"
+        local url="https://ziglang.org/download/0.11.0/zig-linux-$(arch)-0.11.0.tar.xz"
         local dl=zig.txz
 
         sudo mkdir $destiny
@@ -331,7 +335,7 @@ install_rust() {
 
 runrun() {
     install_curl
-    install_zig
+    #install_zig
     install_font
     install_rust
 
