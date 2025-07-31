@@ -361,10 +361,10 @@ vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = tr
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- Diagnostic keymaps
--- vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
--- vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
--- vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
--- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+vim.keymap.set('n', '<leader>dp', vim.diagnostic.goto_prev, { desc = 'Go to [D]iagnostic [P]revious message' })
+vim.keymap.set('n', '<leader>dn', vim.diagnostic.goto_next, { desc = 'Go to [D]iagnostic [N]ext message' })
+vim.keymap.set('n', '<leader>df', vim.diagnostic.open_float, { desc = 'Open [D]iagnostic ([F]loating) message' })
+vim.keymap.set('n', '<leader>dl', vim.diagnostic.setloclist, { desc = 'Open [D]iagnostics [L]ist' })
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -490,12 +490,30 @@ local function telescope_live_grep_open_files()
   }
 end
 
-local function telescope_find_files_ignore_gitignore()
-  require('telescope.builtin').find_files {
-    no_ignore = true,
-    prompt_title = 'Live Grep in Open Files',
-  }
+local function show_cwd()
+  local cwd = vim.fn.getcwd()
 
+  print('you are in ' .. cwd)
+
+end
+
+vim.keymap.set('n', '<leader>where', show_cwd, { desc = '[WHERE] am i?' })
+local function create_file_from_current_directory()
+  local current_file = vim.api.nvim_buf_get_name(0)
+  local current_dir
+  local cwd = vim.fn.getcwd()
+  -- If the buffer is not associated with a file, return nil
+  if current_file == '' then
+    current_dir = cwd
+  else
+    -- Extract the directory from the current file's path
+    current_dir = vim.fn.fnamemodify(current_file, ':h')
+  end
+
+  local new_file = vim.fn.input('New file path: ' .. current_dir .. '/')
+
+  -- now, open a new buffer with this path
+  vim.cmd(':e ' .. current_dir .. '/' .. new_file)
 end
 
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
@@ -800,6 +818,7 @@ key_map('n', '<leader>wh', "<C-W>h", { desc = '[H]op to left window' })
 key_map('n', '<leader>wj', "<C-W>j", { desc = '[J]ump to window below' })
 key_map('n', '<leader>wk', "<C-W>k", { desc = 'S[K]ip to window above' })
 key_map('n', '<leader>wl', "<C-W>l", { desc = '[L]eap to the window on the right' })
+key_map('n', '<leader>en', create_file_from_current_directory, { desc = '[E]dit a [N]ew file' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
