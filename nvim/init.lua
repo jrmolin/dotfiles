@@ -221,7 +221,7 @@ require('lazy').setup({
     opts = {
       options = {
         icons_enabled = false,
-        theme = 'auto',
+        theme = 'onedark',
         component_separators = '|',
         section_separators = '',
         disabled_filetypes = {
@@ -278,20 +278,6 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
 
-  -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
-  --       These are some example plugins that I've included in the kickstart repository.
-  --       Uncomment any of the lines below to enable them.
-  -- require 'kickstart.plugins.autoformat',
-  -- require 'kickstart.plugins.debug',
-  {
-    -- install the distant plugin
-      'chipsenkbeil/distant.nvim',
-      branch = 'v0.3',
-      config = function()
-          require('distant'):setup()
-      end
-  },
-
   {
     "nvim-tree/nvim-tree.lua",
     version = "*",
@@ -303,6 +289,7 @@ require('lazy').setup({
       require("nvim-tree").setup {}
     end,
   }
+
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    You can use this folder to prevent any conflicts with this init.lua if you're interested in keeping
   --    up-to-date with whatever is in the kickstart repo.
@@ -582,22 +569,30 @@ local on_attach = function(_, bufnr)
 end
 
 -- document existing key chains
-require('which-key').register {
-  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-  ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-  ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-}
+require('which-key').add ({
+  {'<leader>c', group = '[C]ode'},
+  {'<leader>c_', hidden = true },
+  {'<leader>d', group = '[D]ocument'},
+  {'<leader>d_', hidden = true },
+  {'<leader>g', group = '[G]it'},
+  {'<leader>g_', hidden = true },
+  {'<leader>h', group = 'Git [H]unk'},
+  {'<leader>h_', hidden = true },
+  {'<leader>r', group = '[R]ename'},
+  {'<leader>r_', hidden = true },
+  {'<leader>s', group = '[S]earch'},
+  {'<leader>s_', hidden = true },
+  {'<leader>t', group = '[T]oggle'},
+  {'<leader>t_', hidden = true },
+  {'<leader>w', group = '[W]orkspace'},
+  {'<leader>w_', hidden = true },
+})
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
-require('which-key').register({
-  ['<leader>'] = { name = 'VISUAL <leader>' },
-  ['<leader>h'] = { 'Git [H]unk' },
-}, { mode = 'v' })
+require('which-key').add({
+  {'<leader>', group = 'VISUAL <leader>', mode = "v" },
+  {'<leader>h', desc = 'Git [H]unk', mode = "v" },
+})
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
@@ -625,7 +620,7 @@ local servers = {
       workspace = { checkThirdParty = false },
       telemetry = { enable = false },
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-      -- diagnostics = { disable = { 'missing-fields' } },
+      diagnostics = { disable = { 'missing-fields' } },
     },
   },
 }
@@ -715,7 +710,7 @@ end
 
 -- vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
 vim.keymap.set('n', '<leader>cdh', "<cmd>:cd $HOME<CR>", { noremap = true, desc = '[C]hange [D]irectory to [H]ome' })
-vim.keymap.set('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show current directory' })
+vim.keymap.set('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show [L]ocal [L]ocation' })
 vim.keymap.set('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`

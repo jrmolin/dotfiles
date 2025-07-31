@@ -14,6 +14,23 @@ function enableGo()
         return
     fi
 
+    # if gvm is installed, use that
+    local path=$(type -P gvm)
+    if [ -n "${path}" ] ; then
+        echo "you are using gvm, bro. use 'gvm list' to show the available versions"
+        echo "$(gvm list)"
+        local ver=$(gvm list | tail -1)
+        echo "then pick one and use 'eval \"gvm $(gvm list | tail -1)\"'"
+        echo "i just did that for you"
+        eval "$(gvm ${ver})"
+
+        export GOPATH="${HOME}/gopath"
+        export PATH="${PATH}:${HOME}/gopath/bin"
+
+        unset -f enableGo
+        return
+    fi
+
     GOINSTALL="$HOME/local/go"
     if [ -d "$GOINSTALL" ]
     then
