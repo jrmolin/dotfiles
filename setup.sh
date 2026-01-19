@@ -4,9 +4,24 @@ set -e
 
 DEBUG=1
 
+WORKDIR=`dirname $0`
+CWD=`pwd`
+cd $WORKDIR
+WORKDIR=`pwd`
+
+arch() {
+    echo "$(uname -m | sed 's/aarch/arm/')"
+}
+
 oops() {
     echo "$0:" "$@" >&2
     exit 1
+}
+
+function fnexists()
+{
+    local result=$(LC_ALL=C type -t "$1")
+    echo $result
 }
 
 require_util() {
@@ -56,14 +71,106 @@ setup() {
 }
 
 
+setupzig() {
+    require_util curl "download things, like for installing zig"
+    local ver=0.11.0
+
+    if [ -d /opt/zig ]
+    then
+        sudo rm -rf /opt/zig
+    fi
+
+    sudo mkdir /opt/zig
+    sudo chown $USER:$USER /opt/zig
+
+    doit  curl -fLo /tmp/zig.tar.xz https://ziglang.org/download/$ver/zig-linux-$(arch)-$ver.tar.xz
+
+    doit tar xf /tmp/zig.tar.xz -C /opt/zig --strip-components=1
+}
+
+install_font() {
+    local font=FiraCodeNerdFont-Regular.ttf
+    local destiny="$HOME/.local/share/fonts/$font"
+    if [ ! -f $destiny ]
+    then
+        local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip"
+        local _file="firacode.zip"
+        mkdir -p tmpfonts
+        pushd .
+        cd tmpfonts
+        curl -Lo $_file $url
+
+
+        if [ ! -d $HOME/.fonts ]
+        then
+            mkdir $HOME/.fonts
+        fi
+
+        unzip -q $_file
+        mv $font $destiny
+        popd
+        rm -rf tmpfonts
+        fc-cache -fv
+    fi
+
+}
+
+installvim() {
+    require_util curl "download things, like for installing guix"
+
+    local destiny="/opt/nvim"
+
+    if [ ! -d "$destiny/bin" ]
+    then
+
+        local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$(arch).tar.gz"
+        local dl="nvim.tgz"
+
+        # curl the thing
+        doit curl -Lo $dl $url
+
+        doit sudo mkdir -pv $destiny
+        doit sudo chown $USER:$USER $destiny
+
+        # tar xf nvim.tgz -C $destiny --strip-components=1
+        doit tar xf $dl -C $destiny --strip-components=1
+
+        # remove the file
+        doit unlink $dl
+    fi
+}
+
 setupvim() {
     require_util curl "download things, like for installing guix"
+
+    if [ ! -f $HOME/.config/nvim/init.lua ]
+    then
+        doit mkdir -pv $HOME/.config/nvim
+        doit ln -s $WORKDIR/nvim/init.lua $HOME/.config/nvim
+    fi
 
     if [ ! -e vim/vim/autoload/plug.vim ]
     then
         doit curl -fLo vim/vim/autoload/plug.vim --create-dirs \
             https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     fi
+}
+
+install_zig() {
+    destiny=/opt/zig
+
+    if [ ! -d $destiny ]
+    then
+        local url="https://ziglang.org/download/0.11.0/zig-linux-$(arch)-0.11.0.tar.xz"
+        local dl=zig.txz
+
+        sudo mkdir $destiny
+        sudo chown $USER:$USER $destiny
+        doit curl -fLo $dl $url
+        doit tar xf $dl -C $destiny --strip-components=1
+        doit rm $dl
+    fi
+
 }
 
 doit() {
@@ -115,7 +222,7 @@ _install() {
 
     local _path=$(type -p $_exe)
 
-    if [ -f $_path ]
+    if [[ -n $_path && -f "$_path" ]]
     then
         echo "[$_exe] exists at [$_path] -- not installing!"
     else
@@ -136,22 +243,15 @@ link_file() {
     fi
 }
 
-_stow() {
-    local _source=$1
-    local _target=${2:- $HOME}
+unlink_file() {
+    local _target=$1
 
-    if [ -e "$_target/$_source" ]
+    if [ -e "$_target" ]
     then
-        echo "[$_target/$_source] already exists! skipping"
-    else
-        stow $_source --target $_target
+        echo "target: $_target"
+        doit unlink $_target
     fi
 }
-
-WORKDIR=`dirname $0`
-CWD=`pwd`
-cd $WORKDIR
-WORKDIR=`pwd`
 
 _SYSTEM=$(getsystem)
 INSTALL=$(setup)
@@ -164,29 +264,80 @@ ensure_dir_exists () {
 }
 
 dolinks() {
-    #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
-    #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+    if [[ "${_SYSTEM}" == "macos" ]] ; then
+        link_file $WORKDIR/zsh/zshrc "$HOME/.zshrc"
+        link_file $WORKDIR/zsh/zshenv "$HOME/.zshenv"
+        link_file $WORKDIR/zsh/zprofile "$HOME/.zprofile"
+    else
+        echo "wrong! bail!!"
+        exit
+        #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+        #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+        #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
+        link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
+        link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
+        link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
+        link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
+        link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
+        link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
+        link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
+        #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
+    #    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
+        ensure_dir_exists "$HOME/.emacs.d/"
+        link_file $WORKDIR/emacs/Emacs.org "$HOME/.emacs.d/Emacs.org"
+    fi
     link_file $WORKDIR/vim/vim "$HOME/.vim"
     link_file $WORKDIR/vim/vimrc "$HOME/.vimrc"
-    #link_file $WORKDIR/stow/stowrc "$HOME/.stowrc"
+    link_file $WORKDIR/nvim "$HOME/.config/nvim"
     link_file $WORKDIR/tmux/tmux.conf "$HOME/.tmux.conf"
     link_file $WORKDIR/tmux/tmux "$HOME/.tmux"
-    link_file $WORKDIR/bash/bashrc "$HOME/.bashrc"
-    link_file $WORKDIR/bash/bash_aliases "$HOME/.bash_aliases"
-    link_file $WORKDIR/bash/bash_completion "$HOME/.bash_completion"
-    link_file $WORKDIR/bash/bash_completion.d "$HOME/.bash_completion.d"
-    link_file $WORKDIR/bash/bash_functions "$HOME/.bash_functions"
-    link_file $WORKDIR/bash/bash_functions.d "$HOME/.bash_functions.d"
-    link_file $WORKDIR/bash/dircolors.nord "$HOME/.dircolors"
-    #link_file $WORKDIR/X/Xresources "$HOME/.Xresources"
-#    link_file $WORKDIR/direnv/direnvrc "$HOME/.direnvrc"
-    ensure_dir_exists "$HOME/.emacs.d/"
-    link_file $WORKDIR/emacs/Emacs.org "$HOME/.emacs.d/Emacs.org"
+}
+
+undolinks() {
+    if [[ "${_SYSTEM}" == "macos" ]] ; then
+        unlink_file "$HOME/.zshrc"
+        unlink_file "$HOME/.zshenv"
+        unlink_file "$HOME/.zshprofile"
+    else
+        #unlink_file $WORKDIR/i3/config "$HOME/.config/i3/config"
+        #unlink_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
+        unlink_file "$HOME/.bashrc"
+        unlink_file "$HOME/.bash_aliases"
+        unlink_file "$HOME/.bash_completion"
+        unlink_file "$HOME/.bash_completion.d"
+        unlink_file "$HOME/.bash_functions"
+        unlink_file "$HOME/.bash_functions.d"
+        unlink_file "$HOME/.dircolors"
+        #ensure_dir_exists "$HOME/.emacs.d/"
+        unlink_file "$HOME/.emacs.d/Emacs.org"
+        #unlink_file "$HOME/.Xresources"
+        #unlink_file "$HOME/.direnvrc"
+    fi
+    unlink_file "$HOME/.vim"
+    unlink_file "$HOME/.vimrc"
+    unlink_file "$HOME/.tmux.conf"
+    unlink_file "$HOME/.tmux"
+}
+
+install_rust() {
+    if [ ! -d $HOME/.cargo ]
+    then
+        doit curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        source $HOME/.cargo/env
+    fi
+
+
+    if [ "xfile" != "x$(fnexists starship)" ]
+    then
+        doit curl -sS https://starship.rs/install.sh | sh
+    fi
 }
 
 runrun() {
     install_curl
-    #_install stow
+    #install_zig
+    install_font
+    install_rust
 
     _install sqlite3
     _install vim
@@ -198,20 +349,36 @@ runrun() {
 
 if [ "x$1" = "x" ]
 then
-    echo "Usage: $0 <install|links>"
+    echo "Usage: $0 <install|vim|links|zig>"
+elif [ "x$1" = "xinstallvim" ]
+then
+    installvim
+    setupvim
+    echo "finished with vim!"
 elif [ "x$1" = "xvim" ]
 then
     setupvim
-    echo "finished!"
+    echo "finished with vim!"
+elif [ "x$1" = "xzig" ]
+then
+    setupzig
+    echo "finished with zig!"
 elif [ "x$1" = "xlinks" ]
 then
-    echo "found install to be [$INSTALL]"
     dolinks
+    echo "finished!"
+elif [ "x$1" = "xunlink" ]
+then
+    undolinks
     echo "finished!"
 elif [ "x$1" = "xinstall" ]
 then
     echo "found install to be [$INSTALL]"
     runrun
+    echo "finished!"
+elif [ "x$1" = "xfont" ]
+then
+    install_font
     echo "finished!"
 else
     echo "trying to run whatever you passed. danger!!"

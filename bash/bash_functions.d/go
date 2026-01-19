@@ -1,9 +1,33 @@
 #!/usr/bin/env bash
 
+function gvm_setup()
+{
+    local ver=${1:-1.21.0}
+
+    eval "$(${HOME}/bin/gvm ${ver})"
+}
+
 function enableGo()
 {
     if [ "xfunction" = "x$(fnexists disableGo)" ]
     then
+        return
+    fi
+
+    # if gvm is installed, use that
+    local path=$(type -P gvm)
+    if [ -n "${path}" ] ; then
+        echo "you are using gvm, bro. use 'gvm list' to show the available versions"
+        echo "$(gvm list)"
+        local ver=$(gvm list | tail -1)
+        echo "then pick one and use 'eval \"gvm $(gvm list | tail -1)\"'"
+        echo "i just did that for you"
+        eval "$(gvm ${ver})"
+
+        export GOPATH="${HOME}/gopath"
+        export PATH="${PATH}:${HOME}/gopath/bin"
+
+        unset -f enableGo
         return
     fi
 

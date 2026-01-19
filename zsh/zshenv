@@ -1,0 +1,6 @@
+source "$HOME/.cargo/env"
+
+alias vim=nvim
+alias vi=nvim
+
+export GOPRIVATE="github.com/elastic/*"

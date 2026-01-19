@@ -6,9 +6,6 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-# if in nix shell, don't load anything
-#[[ -n $IN_NIX_SHELL ]] && return
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -24,10 +21,6 @@ HISTFILESIZE=2000
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
-
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
@@ -40,23 +33,8 @@ fi
 case "$TERM" in
     xterm-color) color_prompt=yes;;
     xterm-256color) color_prompt=yes;;
+    alacritty) color_prompt=yes;;
 esac
-
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-force_color_prompt=yes
-
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    # We have color support; assume it's compliant with Ecma-48
-    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    # a case would tend to support setf rather than setaf.)
-    color_prompt=yes
-    else
-    color_prompt=
-    fi
-fi
 
 function fnexists()
 {
@@ -258,6 +236,9 @@ elif [ -f /etc/profile.d/bash_completion.sh ]; then
     . /etc/profile.d/bash_completion.sh
 fi
 
+# add /opt/bin to PATH, if it exists
+addUnique "/opt/bin"
+
 # add $HOME/local/bin to PATH, if it exists
 addUnique "$HOME/local/bin"
 
@@ -297,22 +278,12 @@ if [ "x$(uname)" = "xDarwin" ]; then
     export GOPATH="$HOME/go"
     export GOBIN="$GOPATH/bin"
     PATH="$GOPATH/bin:$PATH"
-    #alias vi=nvim
-    #alias vim=nvim
 fi
-
-__nix_sh_file="$HOME/.nix-profile/etc/profile.d/nix.sh"
 
 # add direnv support
 if [ "xfile" = "x$(fnexists direnv)" ]
 then
     eval "$(direnv hook bash)"
-fi
-
-# only source the nix file if we haven't already done that
-if [ "x" = "x$(fnexists nix-env)" ]
-then
-    [ -f "$__nix_sh_file" ] && . "$__nix_sh_file"
 fi
 
 # Alias definitions.
@@ -324,10 +295,80 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/mo/.sdkman"
-[[ -s "/home/mo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/mo/.sdkman/bin/sdkman-init.sh"
 
-sourceIfExists "$HOME/.cargo/env"
+appendUnique /opt/st/stm32cubeide_1.9.0/
+
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
+export JEKYLL_VERSION=4.3
+
+appendUnique /opt/blender
+export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
+PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
+
+sourceIfExists "$HOME/.cargo/env"
+
+# add cmake to the path
+appendUnique /opt/cmake/bin
+
+# add go to the path
+appendUnique /opt/nvim/bin
+appendUnique /opt/zig
+
+# add local binaries installed
+appendUnique $HOME/.local/bin
+
+# need a function to go to the root of a git project
+function root()
+{
+  local git_root=$(git -C . rev-parse --show-toplevel 2> /dev/null)
+  if [ "x${git_root}" = "x" ]
+  then
+      echo "no git root found"
+  else
+      if [ "$(pwd)" = "$git_root" ]
+      then
+	  # do nothing
+	  echo "already at root [$git_root]"
+      else
+	  cd "$git_root"
+      fi
+  fi
+}
+export EDITOR=nvim
+alias vim=nvim
+alias vi=nvim
+sourceIfExists $HOME/.env
+
+if [ "xfile" = "x$(fnexists starship)" ]
+then
+    eval "$(starship init bash)"
+fi
+
+# The next line updates PATH for the Google Cloud SDK.
+sourceIfExists "$HOME/.local/google-cloud-sdk/path.bash.inc"
+# The next line enables shell command completion for gcloud.
+sourceIfExists "$HOME/.local/google-cloud-sdk/completion.bash.inc"
+
+function find-orig-files-and-eradicate-them() {
+    local count=$(find . -type f -name "*.orig" | wc -l)
+    if [[ $count > 0 ]] ; then
+        echo "Found ${count} file(s) to eradicate"
+        $(find . -type f -name "*.orig" -exec rm {} \;)
+        echo "Looking again ..."
+        count=$(find . -type f -name "*.orig" | wc -l)
+        echo "And now found ${count} file(s) to eradicate"
+    else
+        echo "No files found"
+    fi
+}
+
+function list-all-files-ignored-by-git-in-this-repo() {
+    local res=$(git ls-files --others --ignored --exclude-standard | bat)
+    echo "done ${res}"
+}
+
+if [ -f $HOME/.dco_path ]
+then
+    export EAF_CONFIG_FILEPATH=$(head -1 $HOME/.dco_path)/eaf_config-dev.yaml
+fi
