@@ -219,7 +219,7 @@ require('lazy').setup({
     opts = {
       options = {
         icons_enabled = false,
-        theme = 'auto',
+        theme = 'onedark',
         component_separators = '|',
         section_separators = '',
         disabled_filetypes = {
@@ -276,12 +276,6 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
 
-  -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
-  --       These are some example plugins that I've included in the kickstart repository.
-  --       Uncomment any of the lines below to enable them.
-  -- require 'kickstart.plugins.autoformat',
-  -- require 'kickstart.plugins.debug',
-
   {
     "nvim-tree/nvim-tree.lua",
     version = "*",
@@ -293,6 +287,7 @@ require('lazy').setup({
       require("nvim-tree").setup {}
     end,
   }
+
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    You can use this folder to prevent any conflicts with this init.lua if you're interested in keeping
   --    up-to-date with whatever is in the kickstart repo.
@@ -361,10 +356,10 @@ vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = tr
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- Diagnostic keymaps
--- vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
--- vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
--- vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
--- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+vim.keymap.set('n', '<leader>dp', vim.diagnostic.goto_prev, { desc = 'Go to [D]iagnostic [P]revious message' })
+vim.keymap.set('n', '<leader>dn', vim.diagnostic.goto_next, { desc = 'Go to [D]iagnostic [N]ext message' })
+vim.keymap.set('n', '<leader>df', vim.diagnostic.open_float, { desc = 'Open [D]iagnostic ([F]loating) message' })
+vim.keymap.set('n', '<leader>dl', vim.diagnostic.setloclist, { desc = 'Open [D]iagnostics [L]ist' })
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -490,12 +485,30 @@ local function telescope_live_grep_open_files()
   }
 end
 
-local function telescope_find_files_ignore_gitignore()
-  require('telescope.builtin').find_files {
-    no_ignore = true,
-    prompt_title = 'Live Grep in Open Files',
-  }
+local function show_cwd()
+  local cwd = vim.fn.getcwd()
 
+  print('you are in ' .. cwd)
+
+end
+
+vim.keymap.set('n', '<leader>where', show_cwd, { desc = '[WHERE] am i?' })
+local function create_file_from_current_directory()
+  local current_file = vim.api.nvim_buf_get_name(0)
+  local current_dir
+  local cwd = vim.fn.getcwd()
+  -- If the buffer is not associated with a file, return nil
+  if current_file == '' then
+    current_dir = cwd
+  else
+    -- Extract the directory from the current file's path
+    current_dir = vim.fn.fnamemodify(current_file, ':h')
+  end
+
+  local new_file = vim.fn.input('New file path: ' .. current_dir .. '/')
+
+  -- now, open a new buffer with this path
+  vim.cmd(':e ' .. current_dir .. '/' .. new_file)
 end
 
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
@@ -631,29 +644,29 @@ local on_attach = function(_, bufnr)
 end
 
 -- document existing key chains
-require('which-key').add({
-  {'<leader>c', group = '[C]ode' },
+require('which-key').add ({
+  {'<leader>c', group = '[C]ode'},
   {'<leader>c_', hidden = true },
-  {'<leader>d', group = '[D]ocument' },
+  {'<leader>d', group = '[D]ocument'},
   {'<leader>d_', hidden = true },
-  {'<leader>g', group = '[G]it' },
+  {'<leader>g', group = '[G]it'},
   {'<leader>g_', hidden = true },
-  {'<leader>h', group = 'Git [H]unk' },
+  {'<leader>h', group = 'Git [H]unk'},
   {'<leader>h_', hidden = true },
-  {'<leader>r', group = '[R]ename' },
+  {'<leader>r', group = '[R]ename'},
   {'<leader>r_', hidden = true },
-  {'<leader>s', group = '[S]earch' },
+  {'<leader>s', group = '[S]earch'},
   {'<leader>s_', hidden = true },
-  {'<leader>t', group = '[T]oggle' },
+  {'<leader>t', group = '[T]oggle'},
   {'<leader>t_', hidden = true },
-  {'<leader>w', group = '[W]orkspace' },
+  {'<leader>w', group = '[W]orkspace'},
   {'<leader>w_', hidden = true },
 })
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
 require('which-key').add({
-  {'<leader>', group = 'VISUAL <leader>', mode = 'v' },
-  {'<leader>h', group = 'Git [H]unk', mode = 'v' },
+  {'<leader>', group = 'VISUAL <leader>', mode = "v" },
+  {'<leader>h', desc = 'Git [H]unk', mode = "v" },
 })
 
 -- mason-lspconfig requires that these setup functions are called in this order
@@ -683,7 +696,7 @@ local servers = {
       workspace = { checkThirdParty = false },
       telemetry = { enable = false },
       -- NOTE: toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-      -- diagnostics = { disable = { 'missing-fields' } },
+      diagnostics = { disable = { 'missing-fields' } },
     },
   },
 }
@@ -801,6 +814,7 @@ key_map('n', '<leader>wh', "<C-W>h", { desc = '[H]op to left window' })
 key_map('n', '<leader>wj', "<C-W>j", { desc = '[J]ump to window below' })
 key_map('n', '<leader>wk', "<C-W>k", { desc = 'S[K]ip to window above' })
 key_map('n', '<leader>wl', "<C-W>l", { desc = '[L]eap to the window on the right' })
+key_map('n', '<leader>en', create_file_from_current_directory, { desc = '[E]dit a [N]ew file' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

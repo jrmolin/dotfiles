@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMPLETION_DIR="${HOME}/.bash_completion.d"
+#complete -d cd
 
 complete -d cd
 
@@ -21,8 +21,9 @@ fi
 
 if [ -d "${COMPLETION_DIR}" ] ;
 then
-    for f in $(ls -1 "${COMPLETION_DIR}/") ;
+    for f in $(command ls -1 "${COMPLETION_DIR}")
     do
-        source ${COMPLETION_DIR}/$f
+        . ${COMPLETION_DIR}/$f
     done
 fi
+

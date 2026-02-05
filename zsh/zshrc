@@ -29,9 +29,9 @@ alias vi=nvim
 
 bindkey -e
 
-# use go 1.23.2
+# use go 1.24.2
 if [[ -n "$(command -v gvm)" ]] ; then
-    eval "$(gvm 1.23.2)"
+    eval "$(gvm 1.24.2)"
     export GOPATH=$HOME/sandbox/golang/
     export PATH=$PATH:${GOPATH}/bin
 fi
@@ -125,7 +125,9 @@ function workdir() {
     typeset choice=$(echo $options | gum filter --select-if-one --value "${request}"| cut -d: -f1)
 
     if [[ -n $choice ]] ; then
-        chdir "$choice"
+        # make sure to get rid of comments
+        typeset d=$(echo $choice | cut -d'#' -f1)
+        chdir "$d"
     fi
 }
 
@@ -138,10 +140,17 @@ if [[ -d $HOME/.asdf ]] ; then
     fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
 fi
 
+if type zoxide > /dev/null ; then
+    eval "$(zoxide init zsh)"
+fi
+
 if [[ -d $HOME/.local/bin ]] ; then
     export PATH="$PATH:$HOME/.local/bin"
 fi
 
+if [[ -d $HOME/.bun ]] ; then
+    export PATH="$HOME/.bun/bin:$PATH"
+fi
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
 fpath=(/Users/mo/.docker/completions $fpath)
 autoload -Uz compinit && compinit

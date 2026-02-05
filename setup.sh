@@ -4,13 +4,61 @@ set -e
 
 DEBUG=1
 
+# Colors (only if terminal supports them)
+if [[ -t 1 ]]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    BLUE='\033[0;34m'
+    MAGENTA='\033[0;35m'
+    CYAN='\033[0;36m'
+    BOLD='\033[1m'
+    DIM='\033[2m'
+    NC='\033[0m' # No Color
+else
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    MAGENTA=''
+    CYAN=''
+    BOLD=''
+    DIM=''
+    NC=''
+fi
+
+# Colored output helpers
+info() {
+    echo -e "${BLUE}[INFO]${NC} $*"
+}
+
+success() {
+    echo -e "${GREEN}[OK]${NC} $*"
+}
+
+warn() {
+    echo -e "${YELLOW}[WARN]${NC} $*"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${NC} $*" >&2
+}
+
+header() {
+    echo -e "\n${BOLD}${CYAN}==> $*${NC}"
+}
+
 WORKDIR=`dirname $0`
 CWD=`pwd`
 cd $WORKDIR
 WORKDIR=`pwd`
 
+arch() {
+    echo "$(uname -m | sed 's/aarch/arm/')"
+}
+
 oops() {
-    echo "$0:" "$@" >&2
+    error "$0:" "$@"
     exit 1
 }
 
@@ -71,68 +119,114 @@ setupzig() {
     require_util curl "download things, like for installing zig"
     local ver=0.11.0
 
+    info "Installing ${BOLD}Zig${NC} v${ver}..."
+
     if [ -d /opt/zig ]
     then
+        warn "Removing existing Zig installation..."
         sudo rm -rf /opt/zig
     fi
 
     sudo mkdir /opt/zig
     sudo chown $USER:$USER /opt/zig
 
-    doit  curl -fLo /tmp/zig.tar.xz https://ziglang.org/download/$ver/zig-linux-x86_64-$ver.tar.xz
+    doit curl -fLo /tmp/zig.tar.xz https://ziglang.org/download/$ver/zig-linux-$(arch)-$ver.tar.xz
 
     doit tar xf /tmp/zig.tar.xz -C /opt/zig --strip-components=1
+    success "Zig installed to ${CYAN}/opt/zig${NC}"
 }
 
 install_font() {
     local font=FiraCodeNerdFont-Regular.ttf
-    local destiny="$HOME/.fonts/$font"
-    if [ ! -f $destiny ]
-    then
-        local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip"
-        local _file="firacode.zip"
-        mkdir -p tmpfonts
-        pushd .
-        cd tmpfonts
-        curl -Lo $_file $url
+    local font_mono=FiraCodeNerdFontMono-Regular.ttf
 
+    if [[ "${_SYSTEM}" == "macos" ]]; then
+        # macOS: use Homebrew cask
+        require_util brew "install fonts on macOS"
 
-        if [ ! -d $HOME/.fonts ]
-        then
-            mkdir $HOME/.fonts
+        # Check if font is already installed
+        if [ -f "$HOME/Library/Fonts/$font" ] || brew list --cask font-fira-code-nerd-font &> /dev/null; then
+            success "FiraCode Nerd Font already installed -- skipping"
+        else
+            info "Installing ${BOLD}FiraCode Nerd Font${NC} via Homebrew..."
+            doit brew install --cask font-fira-code-nerd-font
+            success "Font installed!"
         fi
+    else
+        # Linux: download and install manually
+        require_util curl "download fonts"
+        require_util unzip "extract font archive"
 
-        unzip -q $_file
-        mv $font $destiny
-        popd
-        rm -rf tmpfonts
-        fc-cache -fv
+        local font_dir="$HOME/.local/share/fonts"
+
+        if [ ! -f "$font_dir/$font" ]; then
+            info "Installing ${BOLD}FiraCode Nerd Font${NC}..."
+
+            local url="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip"
+            local _file="firacode.zip"
+
+            # Create font directory if needed
+            mkdir -p "$font_dir"
+
+            # Download and extract
+            mkdir -p tmpfonts
+            pushd . > /dev/null
+            cd tmpfonts
+            curl -Lo $_file $url
+            unzip -q $_file
+            mv $font "$font_dir/$font"
+            mf $font_mono "$font_dir/$font_mono"
+            popd > /dev/null
+            rm -rf tmpfonts
+
+            # Update font cache
+            doit fc-cache -fv
+            success "Font installed to ${CYAN}$font_dir${NC}"
+        else
+            success "FiraCode Nerd Font already installed -- skipping"
+        fi
     fi
-
 }
 
 installvim() {
-    require_util curl "download things, like for installing guix"
+    if [[ "${_SYSTEM}" == "macos" ]]; then
+        # macOS: use Homebrew
+        require_util brew "install packages on macOS"
 
-    local destiny="/opt/nvim"
+        if command -v nvim &> /dev/null; then
+            success "Neovim already installed via brew -- skipping"
+        else
+            info "Installing ${BOLD}Neovim${NC} via Homebrew..."
+            doit brew install neovim
+            success "Neovim installed via Homebrew!"
+        fi
+    else
+        # Linux: download binary based on architecture
+        require_util curl "download neovim release"
 
-    if [ ! -d $destiny ]
-    then
+        local destiny="/opt/nvim"
+        local _arch=$(arch)
 
-        local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
-        local dl="nvim.tgz"
+        if [ ! -d "$destiny/bin" ]; then
+            info "Installing ${BOLD}Neovim${NC} for Linux (${_arch})..."
 
-        # curl the thing
-        doit curl -Lo $dl $url
+            local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${_arch}.tar.gz"
+            local dl="nvim.tgz"
 
-        doit sudo mkdir $destiny
-        doit sudo chown $USER:$USER $destiny
+            # Download the release
+            doit curl -Lo $dl $url
 
-        # tar xf nvim.tgz -C $destiny --strip-components=1
-        doit tar xf $dl -C $destiny --strip-components=1
+            # Create destination and extract
+            doit sudo mkdir -pv $destiny
+            doit sudo chown $USER:$USER $destiny
+            doit tar xf $dl -C $destiny --strip-components=1
 
-        # remove the file
-        doit unlink $dl
+            # Cleanup
+            doit unlink $dl
+            success "Neovim installed to ${CYAN}$destiny${NC}"
+        else
+            success "Neovim already installed at ${CYAN}$destiny${NC} -- skipping"
+        fi
     fi
 }
 
@@ -141,14 +235,21 @@ setupvim() {
 
     if [ ! -f $HOME/.config/nvim/init.lua ]
     then
+        info "Setting up ${BOLD}Neovim${NC} config..."
         doit mkdir -pv $HOME/.config/nvim
         doit ln -s $WORKDIR/nvim/init.lua $HOME/.config/nvim
+    else
+        success "Neovim config already exists -- skipping"
     fi
 
     if [ ! -e vim/vim/autoload/plug.vim ]
     then
+        info "Installing ${BOLD}vim-plug${NC}..."
         doit curl -fLo vim/vim/autoload/plug.vim --create-dirs \
             https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        success "vim-plug installed!"
+    else
+        success "vim-plug already installed -- skipping"
     fi
 }
 
@@ -157,7 +258,8 @@ install_zig() {
 
     if [ ! -d $destiny ]
     then
-        local url="https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz"
+        info "Installing ${BOLD}Zig${NC}..."
+        local url="https://ziglang.org/download/0.11.0/zig-linux-$(arch)-0.11.0.tar.xz"
         local dl=zig.txz
 
         sudo mkdir $destiny
@@ -165,13 +267,16 @@ install_zig() {
         doit curl -fLo $dl $url
         doit tar xf $dl -C $destiny --strip-components=1
         doit rm $dl
+        success "Zig installed to ${CYAN}$destiny${NC}"
+    else
+        success "Zig already installed -- skipping"
     fi
 
 }
 
 doit() {
     if [ "x$DEBUG" = "x1" ]; then
-        echo "$@"
+        echo -e "${DIM}+ $*${NC}"
     fi
 
     eval "$@"
@@ -206,8 +311,9 @@ install_curl() {
 
     if [ -e "$CURL" ]
     then
-        echo "[curl] exists at [$CURL] -- not installing!"
+        success "curl exists at ${CYAN}$CURL${NC} -- skipping"
     else
+        info "Installing curl..."
         doit sudo $INSTALL curl
     fi
 
@@ -220,8 +326,9 @@ _install() {
 
     if [[ -n $_path && -f "$_path" ]]
     then
-        echo "[$_exe] exists at [$_path] -- not installing!"
+        success "${BOLD}$_exe${NC} exists at ${CYAN}$_path${NC} -- skipping"
     else
+        info "Installing ${BOLD}$1${NC}..."
         doit sudo $INSTALL $1
     fi
 }
@@ -232,9 +339,9 @@ link_file() {
 
     if [ -e "$_target" ]
     then
-        echo "[$_target] already exists! skipping"
+        warn "${CYAN}$_target${NC} already exists -- skipping"
     else
-        echo "source: $_source ; target: $_target"
+        info "Linking ${CYAN}$_source${NC} -> ${CYAN}$_target${NC}"
         doit ln -s $_source $_target
     fi
 }
@@ -244,8 +351,10 @@ unlink_file() {
 
     if [ -e "$_target" ]
     then
-        echo "target: $_target"
+        info "Unlinking ${CYAN}$_target${NC}"
         doit unlink $_target
+    else
+        warn "${CYAN}$_target${NC} does not exist -- skipping"
     fi
 }
 
@@ -260,12 +369,13 @@ ensure_dir_exists () {
 }
 
 dolinks() {
+    header "Creating symlinks"
     if [[ "${_SYSTEM}" == "macos" ]] ; then
         link_file $WORKDIR/zsh/zshrc "$HOME/.zshrc"
         link_file $WORKDIR/zsh/zshenv "$HOME/.zshenv"
         link_file $WORKDIR/zsh/zprofile "$HOME/.zprofile"
     else
-        echo "wrong! bail!!"
+        error "Unsupported system for automatic linking!"
         exit
         #link_file $WORKDIR/i3/config "$HOME/.config/i3/config"
         #link_file $WORKDIR/i3/i3status.conf "$HOME/.i3status.conf"
@@ -290,6 +400,7 @@ dolinks() {
 }
 
 undolinks() {
+    header "Removing symlinks"
     if [[ "${_SYSTEM}" == "macos" ]] ; then
         unlink_file "$HOME/.zshrc"
         unlink_file "$HOME/.zshenv"
@@ -318,8 +429,12 @@ undolinks() {
 install_rust() {
     if [ ! -d $HOME/.cargo ]
     then
+        info "Installing ${BOLD}Rust${NC}..."
         doit curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
         source $HOME/.cargo/env
+        success "Rust installed!"
+    else
+        success "Rust already installed -- skipping"
     fi
 
 
@@ -328,13 +443,18 @@ install_rust() {
 install_starship() {
     if [ "xfile" != "x$(fnexists starship)" ]
     then
+        info "Installing ${BOLD}Starship${NC}..."
         doit curl -sS https://starship.rs/install.sh | sh
+        success "Starship installed!"
+    else
+        success "Starship already installed -- skipping"
     fi
 }
 
 runrun() {
+    header "Installing dependencies"
     install_curl
-    install_zig
+    #install_zig
     install_font
     install_rust
     install_starship
@@ -349,42 +469,53 @@ runrun() {
 
 if [ "x$1" = "x" ]
 then
-    echo "Usage: $0 <install|vim|links|zig>"
-elif [ "x$1" = "x-f" ] ; then
-    eval "$2"
+    echo -e "${BOLD}Usage:${NC} $0 ${CYAN}<command>${NC}"
+    echo ""
+    echo -e "${BOLD}Commands:${NC}"
+    echo -e "  ${CYAN}install${NC}     Full installation (curl, fonts, rust, vim, tmux, links)"
+    echo -e "  ${CYAN}installvim${NC}  Install and setup neovim"
+    echo -e "  ${CYAN}vim${NC}         Setup vim configuration only"
+    echo -e "  ${CYAN}zig${NC}         Install zig compiler"
+    echo -e "  ${CYAN}links${NC}       Create dotfile symlinks"
+    echo -e "  ${CYAN}unlink${NC}      Remove dotfile symlinks"
+    echo -e "  ${CYAN}font${NC}        Install Nerd Fonts"
 elif [ "x$1" = "xinstallvim" ]
 then
+    header "Installing Neovim"
     installvim
     if [[ "x$2" != "x--no-setup" ]] ; then
         setupvim
     fi
-    echo "finished with vim!"
+    success "Neovim installation complete!"
 elif [ "x$1" = "xvim" ]
 then
+    header "Setting up Vim"
     setupvim
-    echo "finished with vim!"
+    success "Vim setup complete!"
 elif [ "x$1" = "xzig" ]
 then
+    header "Installing Zig"
     setupzig
-    echo "finished with zig!"
+    success "Zig installation complete!"
 elif [ "x$1" = "xlinks" ]
 then
     dolinks
-    echo "finished!"
+    success "Symlinks created!"
 elif [ "x$1" = "xunlink" ]
 then
     undolinks
-    echo "finished!"
+    success "Symlinks removed!"
 elif [ "x$1" = "xinstall" ]
 then
-    echo "found install to be [$INSTALL]"
+    info "Package manager: ${BOLD}$INSTALL${NC}"
     runrun
-    echo "finished!"
+    success "Installation complete!"
 elif [ "x$1" = "xfont" ]
 then
+    header "Installing fonts"
     install_font
-    echo "finished!"
+    success "Font installation complete!"
 else
-    echo "trying to run whatever you passed. danger!!"
+    warn "Running custom command: ${BOLD}$1${NC}"
     $1
 fi

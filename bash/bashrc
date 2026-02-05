@@ -2,6 +2,7 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
+#set -x
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
@@ -156,18 +157,18 @@ if [ -x /usr/bin/dircolors ]; then
     #export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
     test -r $HOME/.dircolors && eval "$(dircolors -b $HOME/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
+    #alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
 
-    alias cgrep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+    #alias cgrep='grep --color=auto'
+    #alias fgrep='fgrep --color=auto'
+    #alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
 alias ll='ls -trhalF'
-alias l='ls -A'
+alias l='ls -al'
 alias c='clear'
 alias s='less'
 
@@ -179,7 +180,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 
 sourceIfExists()
 {
-    _PATH=$1
+    local _PATH=$1
 
     if [ -f "$_PATH" ]
     then
@@ -263,6 +264,7 @@ PROMPT_COMMAND='prompt_status=":: $? "; if [[ $prompt_status == ":: 0 " ]]; then
 #PS1='[\[\033[01;34m\] \w \[\033[00m\]] ${prompt_status}\012\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\$ '
 
 sourceIfExists $HOME/.bash_functions
+sourceIfExists $HOME/.bash_completion
 
 if [ "x$(uname)" = "xDarwin" ]; then
     export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
@@ -275,8 +277,6 @@ if [ "x$(uname)" = "xDarwin" ]; then
     export GOPATH="$HOME/go"
     export GOBIN="$GOPATH/bin"
     PATH="$GOPATH/bin:$PATH"
-    alias vi=nvim
-    alias vim=nvim
 fi
 
 # add direnv support
@@ -294,14 +294,12 @@ sourceIfExists $HOME/.bash_completion
 
 MANPATH=$MANPATH:$HOME/share/man
 
+
 appendUnique /opt/st/stm32cubeide_1.9.0/
 
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; printf $1 }')
 export JEKYLL_VERSION=4.3
-
-sourceIfExists $HOME/.cargo/env
-appendUnique /opt/blender
 
 appendUnique /opt/blender
 appendUnique /opt/nvim/bin
@@ -312,9 +310,6 @@ PATH=$(printf "%s" "$PATH" | awk -v RS=':' '!a[$1]++ { if (NR > 1) printf RS; pr
 appendUnique /opt/cmake/bin
 
 # add go to the path
-export GOPATH=/opt/golang
-appendUnique $GOPATH/go/bin
-appendUnique $GOPATH/bin
 appendUnique /opt/nvim/bin
 appendUnique /opt/zig
 
@@ -360,3 +355,30 @@ sourceIfExists "$HOME/.local/bin/env"
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 . <(asdf completion bash)
 
+# The next line updates PATH for the Google Cloud SDK.
+sourceIfExists "$HOME/.local/google-cloud-sdk/path.bash.inc"
+# The next line enables shell command completion for gcloud.
+sourceIfExists "$HOME/.local/google-cloud-sdk/completion.bash.inc"
+
+function find-orig-files-and-eradicate-them() {
+    local count=$(find . -type f -name "*.orig" | wc -l)
+    if [[ $count > 0 ]] ; then
+        echo "Found ${count} file(s) to eradicate"
+        $(find . -type f -name "*.orig" -exec rm {} \;)
+        echo "Looking again ..."
+        count=$(find . -type f -name "*.orig" | wc -l)
+        echo "And now found ${count} file(s) to eradicate"
+    else
+        echo "No files found"
+    fi
+}
+
+function list-all-files-ignored-by-git-in-this-repo() {
+    local res=$(git ls-files --others --ignored --exclude-standard | bat)
+    echo "done ${res}"
+}
+
+if [ -f $HOME/.dco_path ]
+then
+    export EAF_CONFIG_FILEPATH=$(head -1 $HOME/.dco_path)/eaf_config-dev.yaml
+fi
