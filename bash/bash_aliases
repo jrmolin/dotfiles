@@ -43,6 +43,10 @@ then
         fi
     }
 
-    export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0"
+    # I don't remember what this was supposed to do
+    typeset gtk_nocsd='/usr/lib/x86_64-linux-gnu/libgtk3-nocsd.so.0'
+    if [[ -f $gtk_nocsd ]] ; then
+        export LD_PRELOAD=$gtk_nocsd
+    fi
 fi
 

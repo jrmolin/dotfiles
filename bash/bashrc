@@ -303,7 +303,6 @@ export JEKYLL_VERSION=4.3
 sourceIfExists $HOME/.cargo/env
 appendUnique /opt/blender
 
-#eval "$(starship init bash)"
 appendUnique /opt/blender
 appendUnique /opt/nvim/bin
 export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
@@ -355,4 +354,9 @@ fi
 appendUnique /opt/zig
 appendUnique /opt/imagemagick/bin
 appendUnique "$HOME/.rd/bin"
+appendUnique /opt/applications
 sourceIfExists "$HOME/.local/bin/env"
+
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+. <(asdf completion bash)
+

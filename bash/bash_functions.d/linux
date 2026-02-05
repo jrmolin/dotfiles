@@ -105,4 +105,5 @@ function releaseTc()
     echo "$(sudo tc qdisc del dev $(getEth) clsact)"
 }
 
+sourceIfExists $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 fi

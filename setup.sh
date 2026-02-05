@@ -119,7 +119,7 @@ installvim() {
     if [ ! -d $destiny ]
     then
 
-        local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz"
+        local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
         local dl="nvim.tgz"
 
         # curl the thing
@@ -323,6 +323,9 @@ install_rust() {
     fi
 
 
+}
+
+install_starship() {
     if [ "xfile" != "x$(fnexists starship)" ]
     then
         doit curl -sS https://starship.rs/install.sh | sh
@@ -334,6 +337,7 @@ runrun() {
     install_zig
     install_font
     install_rust
+    install_starship
 
     _install sqlite3
     _install vim
@@ -346,10 +350,14 @@ runrun() {
 if [ "x$1" = "x" ]
 then
     echo "Usage: $0 <install|vim|links|zig>"
+elif [ "x$1" = "x-f" ] ; then
+    eval "$2"
 elif [ "x$1" = "xinstallvim" ]
 then
     installvim
-    setupvim
+    if [[ "x$2" != "x--no-setup" ]] ; then
+        setupvim
+    fi
     echo "finished with vim!"
 elif [ "x$1" = "xvim" ]
 then

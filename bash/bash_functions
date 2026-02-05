@@ -451,6 +451,22 @@ function whatsmyip()
     echo "$result"
 }
 
+function tsa() {
+    typeset options=$(tmux ls 2>/dev/null)
+    typeset count=$(echo $options | wc -l)
+    typeset all_options=$(echo "add a new session: unnamed\n$options")
+    typeset choice=$(echo $all_options | gum choose | cut -d: -f1)
+
+    if [[ $choice = "add a new session" ]] ; then
+        typeset name=$(gum input)
+        if [[ -n $name ]] ; then
+            tmux new -s $name
+        fi
+    elif [[ -n $choice ]] ; then
+        tmux attach -t $choice
+    fi
+}
+
 if [ -d "${HOME}/.bash_functions.d" ]
 then
     for f in $(ls -1 ${HOME}/.bash_functions.d/*)

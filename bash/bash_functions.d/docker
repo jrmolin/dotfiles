@@ -56,10 +56,10 @@ fi
 #         moli/slack "$@"
 # }
 #
-htop()
-{
-    docker run --rm -it --pid host jess/htop
-}
+# htop()
+# {
+#     docker run --rm -it --pid host jess/htop
+# }
 
 
 #formatter()

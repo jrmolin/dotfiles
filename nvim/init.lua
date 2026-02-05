@@ -673,7 +673,7 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  pylsp = {},
+  -- pylsp = {},
   -- rust_analyzer = {},
   -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
@@ -782,6 +782,7 @@ end
 key_map('n', '<leader>cdh', "<cmd>:cd $HOME<CR>", { noremap = true, desc = '[C]hange [D]irectory to [H]ome' })
 key_map('n', '<leader>ll', "<cmd>:echom expand('%:p:h')<CR>", { noremap = true, desc = 'show current directory' })
 
+key_map('n', 'M', ":%s/<C-R>///g<Left><Left>", { noremap = true, desc = '[M]odify search' })
 -- for windows:
 if vim.fn.has 'win32' == 1 then
   key_map('n', '<leader>ei', "<cmd>:e $HOME/AppData/Local/nvim/init.lua<CR>", { noremap = true, desc = '[E]dit [i]nit.lua' })
