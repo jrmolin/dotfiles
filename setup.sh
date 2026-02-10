@@ -253,56 +253,12 @@ setupvim() {
     fi
 }
 
-install_zig() {
-    destiny=/opt/zig
-
-    if [ ! -d $destiny ]
-    then
-        info "Installing ${BOLD}Zig${NC}..."
-        local url="https://ziglang.org/download/0.11.0/zig-linux-$(arch)-0.11.0.tar.xz"
-        local dl=zig.txz
-
-        sudo mkdir $destiny
-        sudo chown $USER:$USER $destiny
-        doit curl -fLo $dl $url
-        doit tar xf $dl -C $destiny --strip-components=1
-        doit rm $dl
-        success "Zig installed to ${CYAN}$destiny${NC}"
-    else
-        success "Zig already installed -- skipping"
-    fi
-
-}
-
 doit() {
     if [ "x$DEBUG" = "x1" ]; then
         echo -e "${DIM}+ $*${NC}"
     fi
 
     eval "$@"
-}
-
-# install sqlite stuff
-install_sqlite() {
-    local _sqlite=$(which sqlite3)
-    if [ -e "$_sqlite" ]
-    then
-        return
-    fi
-
-    local _package="sqlite3"
-
-    if [ "x$_SYSTEM" = "fedora" ]
-    then
-        _package="sqlite"
-    elif [ "x$_SYSTEM" = "redhat" ]
-    then
-        _package="sqlite"
-    fi
-
-    if [ "x$SQLITE" = "x" ]; then
-        doit sudo $INSTALL $_package
-    fi
 }
 
 # install curl
@@ -451,7 +407,6 @@ install_rust() {
 runrun() {
     header "Installing dependencies"
     install_curl
-    #install_zig
     install_font
     install_rust
 
