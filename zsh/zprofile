@@ -69,3 +69,10 @@ export XDG_CONFIG_HOME=$HOME/.config/
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/mo/.cache/lm-studio/bin"
+
+if [ -d /Library/Frameworks ] ; then
+    # Setting PATH for Python 3.14
+    # The original version is saved in .zprofile.pysave
+    PATH="/Library/Frameworks/Python.framework/Versions/3.14/bin:${PATH}"
+    export PATH
+fi
